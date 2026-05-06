@@ -93,7 +93,7 @@ def multi_stop():
     
     IMPORTANT: The trip starts in {departure}. The FIRST leg MUST depart from {departure}.
     
-    Create a realistic multi-stop flight itinerary with 5-8 legs.
+    Create a realistic multi-stop flight itinerary with 5-8 legs. IMPORTANT: Do NOT use the word "Anywhere" as a city. Every "from" and "to" must be a REAL city name like Tokyo, Bangkok, Singapore, Hong Kong, Seoul, Taipei, Kuala Lumpur, Mumbai, Dubai, Istanbul, London, Paris, New York, Los Angeles, San Francisco, etc.
     Use REAL airline codes (AC, UA, DL, AA, BA, LH, AF, KL, EK, QR, SQ, TG, CX, NH, JL, KE).
     
     Return EXACTLY this structure:
