@@ -11,9 +11,7 @@ import re
 app = Flask(__name__, static_url_path='', static_folder='.')
 CORS(app)
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
-
 DB_PATH = os.environ.get('DB_PATH', '/tmp/tripsync.db')
 
 def init_db():
@@ -21,15 +19,10 @@ def init_db():
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS search_log
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  query TEXT,
-                  timestamp TEXT,
-                  departure TEXT,
-                  currency TEXT)''')
+                  query TEXT, timestamp TEXT, departure TEXT, currency TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS clicks
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  destination TEXT,
-                  link_type TEXT,
-                  timestamp TEXT)''')
+                  destination TEXT, link_type TEXT, timestamp TEXT)''')
     conn.commit()
     conn.close()
 
@@ -38,11 +31,9 @@ init_db()
 def call_groq(prompt):
     api_key = os.environ.get('GROQ_API_KEY')
     if not api_key:
+        logging.error("No GROQ_API_KEY found")
         return None
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
@@ -52,6 +43,8 @@ def call_groq(prompt):
         response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=data, timeout=30)
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
+        else:
+            logging.error(f"Groq API error: {response.status_code}")
     except Exception as e:
         logging.error(f"Groq error: {e}")
     return None
@@ -67,7 +60,7 @@ def tripsync():
     departure = data.get('departure', 'Toronto')
     currency = data.get('currency', 'CAD')
     
-    prompt = f"""Return ONLY valid JSON. User wants: "{query}" from {departure}. Currency: {currency}.
+    prompt = f"""Return ONLY valid JSON. No other text. User wants: "{query}" from {departure}. Currency: {currency}.
     Structure: {{"destinations": [{{"city": "", "country": "", "description": "", "match_score": "9.2/10", "best_season": "", "budget_per_day": "CAD X-Y", "flight_estimate": "CAD X-Y return", "flight_duration": "X hours", "visa": "", "highlights": ["a","b","c","d","e"]}}]}}
     Return 3 destinations."""
     
@@ -77,42 +70,54 @@ def tripsync():
             json_match = re.search(r'\{.*\}', result, re.DOTALL)
             if json_match:
                 return jsonify(json.loads(json_match.group()))
-        except:
-            pass
-    return jsonify({"destinations": []})
+        except Exception as e:
+            logging.error(f"JSON parse error: {e}")
+    
+    return jsonify({"destinations": [], "error": "AI temporarily unavailable"})
 
 @app.route('/api/multi-stop', methods=['POST'])
 def multi_stop():
     data = request.json
     query = data.get('query', '')
-    departure = data.get('departure', 'Toronto')
+    departure = data.get('departure', '')
     currency = data.get('currency', 'CAD')
     
-    prompt = f"""Return ONLY valid JSON. User wants: "{query}"
-    Departure: {departure}
-    Currency: {currency}
+    # Extract the starting city from the query if departure is empty
+    if not departure or departure == '':
+        import re
+        match = re.search(r'from\s+(\w+)', query.lower())
+        if match:
+            departure = match.group(1).capitalize()
+        else:
+            departure = "your departure city"
     
-    Structure:
+    prompt = f"""Return ONLY valid JSON. No other text. User wants this exact route: "{query}"
+    
+    IMPORTANT: The trip starts in {departure}. The FIRST leg MUST depart from {departure}.
+    Do NOT add Toronto or any other city unless the user specified it.
+    
+    Create a realistic multi-stop flight itinerary with 5-8 legs.
+    Use REAL airline codes (AC, UA, DL, AA, BA, LH, AF, KL, EK, QR, SQ, TG, CX, NH, JL, KE).
+    
+    Return EXACTLY this structure:
     {{
-      "total_estimated_cost_{currency}": 2850,
-      "savings_vs_direct_percent": 42,
+      "total_estimated_cost_{currency}": number,
+      "savings_vs_direct_percent": number,
       "legs": [
-        {{"from": "Toronto", "to": "Vancouver", "flight_number_example": "AC119", "duration_hours": 5, "estimated_cost_{currency}": 250, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/transport/flights/toronto/vancouver/"}},
-        {{"from": "Vancouver", "to": "Tokyo", "flight_number_example": "AC23", "duration_hours": 10, "estimated_cost_{currency}": 850, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/transport/flights/vancouver/tokyo/"}},
-        {{"from": "Tokyo", "to": "Bangkok", "flight_number_example": "TG661", "duration_hours": 7, "estimated_cost_{currency}": 320, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/transport/flights/tokyo/bangkok/"}},
-        {{"from": "Bangkok", "to": "Denpasar", "flight_number_example": "FD396", "duration_hours": 4, "estimated_cost_{currency}": 110, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/transport/flights/bangkok/bali/"}},
-        {{"from": "Denpasar", "to": "Taipei", "flight_number_example": "BR256", "duration_hours": 5, "estimated_cost_{currency}": 280, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/transport/flights/bali/taipei/"}},
-        {{"from": "Taipei", "to": "Los Angeles", "flight_number_example": "BR12", "duration_hours": 11, "estimated_cost_{currency}": 750, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/transport/flights/taipei/losangeles/"}},
-        {{"from": "Los Angeles", "to": "Toronto", "flight_number_example": "AC788", "duration_hours": 5, "estimated_cost_{currency}": 290, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/transport/flights/losangeles/toronto/"}}
+        {{
+          "from": "city name",
+          "to": "city name", 
+          "flight_number_example": "XX123",
+          "duration_hours": number,
+          "estimated_cost_{currency}": number,
+          "stopover_days_suggested": number,
+          "booking_link": "https://www.skyscanner.com/transport/flights/city1/city2/"
+        }}
       ],
-      "tips": [
-        "Book this as 3 separate tickets for lowest price",
-        "Use Zipair for Vancouver→Tokyo to save ~$300",
-        "Taipei stopover: EVA Air offers free hotel",
-        "All flights operate Jan-Apr 2027"
-      ]
+      "tips": ["tip1", "tip2", "tip3", "tip4"]
     }}
-    Return ONLY valid JSON."""
+    
+    Make sure the route makes geographic sense. The last leg should end where the user wants to finish."""
     
     result = call_groq(prompt)
     if result:
@@ -120,24 +125,11 @@ def multi_stop():
             json_match = re.search(r'\{.*\}', result, re.DOTALL)
             if json_match:
                 return jsonify(json.loads(json_match.group()))
-        except:
-            pass
+        except Exception as e:
+            logging.error(f"JSON parse error: {e}")
+            return jsonify({"error": f"AI response invalid: {str(e)}", "raw": result[:500]}), 500
     
-    # Fallback response
-    return jsonify({
-        "total_estimated_cost_CAD": 2850,
-        "savings_vs_direct_percent": 42,
-        "legs": [
-            {"from": departure, "to": "Vancouver", "flight_number_example": "AC119", "duration_hours": 5, "estimated_cost_CAD": 250, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/"},
-            {"from": "Vancouver", "to": "Tokyo", "flight_number_example": "AC23", "duration_hours": 10, "estimated_cost_CAD": 850, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/"},
-            {"from": "Tokyo", "to": "Bangkok", "flight_number_example": "TG661", "duration_hours": 7, "estimated_cost_CAD": 320, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/"},
-            {"from": "Bangkok", "to": "Denpasar", "flight_number_example": "FD396", "duration_hours": 4, "estimated_cost_CAD": 110, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/"},
-            {"from": "Denpasar", "to": "Taipei", "flight_number_example": "BR256", "duration_hours": 5, "estimated_cost_CAD": 280, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/"},
-            {"from": "Taipei", "to": "Los Angeles", "flight_number_example": "BR12", "duration_hours": 11, "estimated_cost_CAD": 750, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/"},
-            {"from": "Los Angeles", "to": "Toronto", "flight_number_example": "AC788", "duration_hours": 5, "estimated_cost_CAD": 290, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/"}
-        ],
-        "tips": ["Book as 3 separate tickets", "Use Zipair for Pacific crossing", "Check EVA Air stopover deals"]
-    })
+    return jsonify({"error": "AI could not generate route. Please try again."}), 503
 
 @app.route('/api/track-click', methods=['POST'])
 def track_click():
