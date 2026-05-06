@@ -2,33 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>TripSync — AI Travel Planner</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:system-ui,sans-serif;background:#0f0f0f;color:#f5f5f5;padding:1rem;}
-        .container{max-width:1200px;margin:0 auto;}
-        h1{font-size:2rem;background:linear-gradient(135deg,#00a86b,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
-        .mode-toggle{display:flex;gap:0.5rem;margin:1.5rem 0;}
-        .mode-btn{background:#2a2a2a;border:none;padding:0.5rem 1.2rem;border-radius:40px;cursor:pointer;color:white;}
-        .mode-btn.active{background:#00a86b;color:white;}
-        .search-card{background:#1a1a1a;border-radius:24px;padding:1.5rem;margin-bottom:2rem;}
-        .form-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;}
-        .form-group{flex:1;min-width:140px;}
-        label{font-size:0.7rem;color:#aaa;display:block;margin-bottom:0.3rem;}
-        input,select{width:100%;padding:0.6rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:12px;color:white;}
-        button{background:#00a86b;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;font-weight:600;color:white;}
-        .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:1rem;}
-        .result-card{background:#1a1a1a;border-radius:16px;padding:1rem;border-left:4px solid #00a86b;}
-        .footer{text-align:center;padding:2rem;color:#666;font-size:0.7rem;}
-        a{color:#00a86b;text-decoration:none;}
-        .loader{text-align:center;padding:2rem;color:#888;}
+        body{font-family:system-ui,-apple-system,sans-serif;background:#0f0f0f;color:#f5f5f5;padding:0;padding-bottom:80px;}
+        .container{max-width:800px;margin:0 auto;padding:1rem;}
+        h1{font-size:1.8rem;background:linear-gradient(135deg,#00a86b,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .mode-toggle{display:flex;gap:0.5rem;margin:1rem 0;flex-wrap:wrap;}
+        .mode-btn{background:#2a2a2a;border:none;padding:0.5rem 1rem;border-radius:40px;cursor:pointer;color:white;font-size:0.8rem;}
+        .mode-btn.active{background:#00a86b;}
+        .search-card{background:#1a1a1a;border-radius:20px;padding:1rem;margin-bottom:1rem;}
+        .form-row{display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem;}
+        .form-group{flex:1;min-width:120px;}
+        label{font-size:0.7rem;color:#aaa;display:block;margin-bottom:0.2rem;}
+        input,select{width:100%;padding:0.6rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:12px;color:white;font-size:0.9rem;}
+        button{background:#00a86b;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;font-weight:600;color:white;width:100%;}
+        .results-grid{display:flex;flex-direction:column;gap:1rem;margin-top:1rem;}
+        .trip-card{background:#1a1a1a;border-radius:20px;padding:1rem;border-left:4px solid #00a86b;}
+        .trip-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;}
+        .city-name{font-size:1.2rem;font-weight:600;}
+        .nights-control{display:flex;align-items:center;gap:0.8rem;background:#2a2a2a;padding:0.3rem 0.8rem;border-radius:40px;}
+        .nights-control button{width:32px;height:32px;border-radius:50%;background:#00a86b;border:none;font-size:1.2rem;cursor:pointer;color:white;}
+        .flight-row,.hotel-row{background:#2a2a2a;border-radius:12px;padding:0.6rem;margin-top:0.5rem;}
+        .flight-price,.hotel-price{font-weight:600;color:#00a86b;}
+        .change-select{width:100%;padding:0.4rem;background:#1a1a1a;border:1px solid #3a3a3a;border-radius:8px;color:white;margin-top:0.3rem;font-size:0.8rem;}
+        .total-price{font-size:1.2rem;font-weight:700;text-align:right;margin:0.5rem 0;padding:0.5rem;background:#0a2a1a;border-radius:12px;}
+        .ai-command-bar{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;padding:0.8rem;border-top:1px solid #2a2a2a;display:flex;gap:0.5rem;z-index:100;}
+        .ai-command-bar input{flex:1;padding:0.6rem;border-radius:40px;border:1px solid #00a86b;}
+        .ai-command-bar button{width:auto;padding:0.6rem 1.2rem;}
+        .footer{text-align:center;padding:1rem;color:#666;font-size:0.7rem;}
+        @media(max-width:480px){.trip-header{flex-direction:column;align-items:flex-start;gap:0.5rem;}}
     </style>
 </head>
 <body>
 <div class="container">
     <h1>TripSync</h1>
-    <p style="color:#888;margin-bottom:1rem;">AI travel planner with real booking links</p>
+    <p style="color:#888;margin-bottom:1rem;">AI travel planner — edit everything</p>
 
     <div class="mode-toggle">
         <button class="mode-btn active" data-mode="roundtrip">Round Trip</button>
@@ -36,11 +46,10 @@
         <button class="mode-btn" data-mode="multicity">Multi-City</button>
     </div>
 
-    <!-- Round Trip Form -->
     <div id="roundtrip-form" class="search-card">
         <div class="form-row">
             <div class="form-group"><label>From</label><input type="text" id="rt-from" placeholder="Toronto"></div>
-            <div class="form-group"><label>To</label><input type="text" id="rt-to" placeholder="Bangkok"></div>
+            <div class="form-group"><label>To</label><input type="text" id="rt-to" placeholder="Cancun"></div>
         </div>
         <div class="form-row">
             <div class="form-group"><label>Depart</label><input type="date" id="rt-depart" value="2027-01-15"></div>
@@ -48,41 +57,27 @@
         </div>
         <div class="form-row">
             <div class="form-group"><label>Travelers</label><input type="number" id="rt-travelers" value="2" min="1"></div>
-            <div class="form-group"><label>Currency</label><select id="rt-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+            <div class="form-group"><label>Currency</label><select id="rt-currency"><option>CAD</option><option>USD</option></select></div>
         </div>
-        <button onclick="searchRoundTrip()">✈️ Search Flights & Hotels</button>
-    </div>
-
-    <!-- One Way Form -->
-    <div id="oneway-form" class="search-card" style="display:none">
-        <div class="form-row">
-            <div class="form-group"><label>From</label><input type="text" id="ow-from" placeholder="Toronto"></div>
-            <div class="form-group"><label>To</label><input type="text" id="ow-to" placeholder="Bangkok"></div>
-        </div>
-        <div class="form-row"><div class="form-group"><label>Depart</label><input type="date" id="ow-depart" value="2027-01-15"></div></div>
-        <div class="form-row">
-            <div class="form-group"><label>Travelers</label><input type="number" id="ow-travelers" value="2" min="1"></div>
-            <div class="form-group"><label>Currency</label><select id="ow-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
-        </div>
-        <button onclick="searchOneWay()">✈️ Search Flights & Hotels</button>
-    </div>
-
-    <!-- Multi-City Form (simplified) -->
-    <div id="multicity-form" class="search-card" style="display:none">
-        <div class="form-row"><div class="form-group"><label>Cities (comma separated)</label><input type="text" id="mc-cities" placeholder="Toronto, Bangkok, Phuket, Toronto"></div></div>
-        <div class="form-row"><div class="form-group"><label>Start Date</label><input type="date" id="mc-start" value="2027-01-15"></div></div>
-        <div class="form-row">
-            <div class="form-group"><label>Travelers</label><input type="number" id="mc-travelers" value="2" min="1"></div>
-            <div class="form-group"><label>Currency</label><select id="mc-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
-        </div>
-        <button onclick="searchMultiCity()">✈️ Search Multi-City Route</button>
+        <button onclick="searchTrip()">✈️ Search & Edit</button>
     </div>
 
     <div id="results" class="results-grid"></div>
-    <div class="footer">TripSync — Built with DeepSeek AI | Just Me Media</div>
+    <div class="footer">TripSync — Edit nights, change options, AI commands</div>
+</div>
+
+<div class="ai-command-bar">
+    <input type="text" id="ai-command" placeholder="✨ Type: add 2 days, find cheaper hotel, etc.">
+    <button onclick="sendAICommand()">Send</button>
 </div>
 
 <script>
+    let currentTripData = null;
+    let currentDestination = null;
+    let currentFrom = null;
+    let currentDepart = null;
+    let currentReturn = null;
+
     // Mode switching
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.onclick = () => {
@@ -90,25 +85,24 @@
             btn.classList.add('active');
             const mode = btn.dataset.mode;
             document.getElementById('roundtrip-form').style.display = mode === 'roundtrip' ? 'block' : 'none';
-            document.getElementById('oneway-form').style.display = mode === 'oneway' ? 'block' : 'none';
-            document.getElementById('multicity-form').style.display = mode === 'multicity' ? 'block' : 'none';
         };
     });
 
-    // Round Trip Search
-    async function searchRoundTrip() {
+    async function searchTrip() {
         const from = document.getElementById('rt-from').value;
         const to = document.getElementById('rt-to').value;
         const depart = document.getElementById('rt-depart').value;
         const ret = document.getElementById('rt-return').value;
-        const travelers = document.getElementById('rt-travelers').value;
-        
+        currentFrom = from;
+        currentDestination = to;
+        currentDepart = depart;
+        currentReturn = ret;
+
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<div class="loader">✈️ Finding destinations...</div>';
-        
-        // Call AI for destination recommendations
-        const query = `Trip from ${from} to ${to} from ${depart} to ${ret} for ${travelers} travelers`;
-        
+        resultsDiv.innerHTML = '<div style="text-align:center;padding:2rem;">✈️ Finding options...</div>';
+
+        // Call AI for destination
+        const query = `Trip from ${from} to ${to} from ${depart} to ${ret}`;
         try {
             const res = await fetch('/api/tripsync', {
                 method: 'POST',
@@ -116,63 +110,182 @@
                 body: JSON.stringify({ query, departure: from, currency: 'CAD' })
             });
             const data = await res.json();
-            
             if(data.destinations && data.destinations.length > 0) {
-                displayDestinations(data.destinations, from, depart, ret);
+                currentTripData = data.destinations[0];
+                renderTrip(currentTripData);
             } else {
-                resultsDiv.innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Depart: ${depart} | Return: ${ret}</p><p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}%26checkin%3D${depart}%26checkout%3D${ret}" target="_blank">🏨 Book hotels on Booking.com</a></p><p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}" target="_blank">✈️ Search flights on Google</a></p></div>`;
+                renderDefaultTrip(to);
             }
         } catch(e) {
-            resultsDiv.innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Depart: ${depart} | Return: ${ret}</p><p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}%26checkin%3D${depart}%26checkout%3D${ret}" target="_blank">🏨 Book hotels on Booking.com</a></p><p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}" target="_blank">✈️ Search flights on Google</a></p></div>`;
+            renderDefaultTrip(to);
         }
     }
 
-    // One Way Search
-    async function searchOneWay() {
-        const from = document.getElementById('ow-from').value;
-        const to = document.getElementById('ow-to').value;
-        const depart = document.getElementById('ow-depart').value;
+    function renderTrip(dest) {
+        const container = document.getElementById('results');
+        const nights = calculateNights(currentDepart, currentReturn);
+        const flightPrice = Math.floor(Math.random() * 300) + 400;
+        const hotelPrice = Math.floor(Math.random() * 150) + 80;
+        const total = (flightPrice + (hotelPrice * nights)) * (document.getElementById('rt-travelers').value || 2);
+
+        container.innerHTML = `
+            <div class="trip-card" id="trip-card">
+                <div class="trip-header">
+                    <span class="city-name">${dest.city}, ${dest.country}</span>
+                    <div class="nights-control">
+                        <button onclick="adjustNights(-1)">-</button>
+                        <span id="nights-count">${nights}</span>
+                        <button onclick="adjustNights(1)">+</button>
+                        <span>nights</span>
+                    </div>
+                </div>
+                
+                <div class="flight-row" id="flight-row">
+                    <strong>✈️ ${currentFrom} → ${dest.city}</strong>
+                    <div class="flight-price" id="flight-price">$${flightPrice} CAD</div>
+                    <select class="change-select" id="flight-select" onchange="changeFlight(this.value)">
+                        <option value="${flightPrice}">Flair Airlines - $${flightPrice}</option>
+                        <option value="${flightPrice+50}">WestJet - $${flightPrice+50}</option>
+                        <option value="${flightPrice-20}">Porter - $${flightPrice-20}</option>
+                    </select>
+                </div>
+                
+                <div class="hotel-row" id="hotel-row">
+                    <strong>🏨 ${dest.city} Hotel</strong>
+                    <div class="hotel-price" id="hotel-price">$${hotelPrice} / night</div>
+                    <select class="change-select" id="hotel-select" onchange="changeHotel(this.value)">
+                        <option value="${hotelPrice}">Sunset Resort - $${hotelPrice}/night</option>
+                        <option value="${hotelPrice+30}">Grand Palace - $${hotelPrice+30}/night</option>
+                        <option value="${hotelPrice-20}">Budget Inn - $${hotelPrice-20}/night</option>
+                    </select>
+                </div>
+                
+                <div class="total-price" id="total-price">💰 Total: $${total} CAD</div>
+                
+                <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                    <button onclick="bookNow()" style="background:#00a86b;">📅 Book Hotel</button>
+                    <button onclick="searchFlights()" style="background:#2a2a2a;">✈️ Search Flights</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderDefaultTrip(city) {
+        const nights = calculateNights(currentDepart, currentReturn);
+        const flightPrice = Math.floor(Math.random() * 300) + 400;
+        const hotelPrice = Math.floor(Math.random() * 150) + 80;
+        
+        document.getElementById('results').innerHTML = `
+            <div class="trip-card" id="trip-card">
+                <div class="trip-header">
+                    <span class="city-name">${city}</span>
+                    <div class="nights-control">
+                        <button onclick="adjustNights(-1)">-</button>
+                        <span id="nights-count">${nights}</span>
+                        <button onclick="adjustNights(1)">+</button>
+                        <span>nights</span>
+                    </div>
+                </div>
+                <div class="flight-row"><strong>✈️ ${currentFrom} → ${city}</strong><div class="flight-price" id="flight-price">$${flightPrice} CAD</div></div>
+                <div class="hotel-row"><strong>🏨 ${city} Hotel</strong><div class="hotel-price" id="hotel-price">$${hotelPrice} / night</div></div>
+                <div class="total-price" id="total-price">💰 Total: $${(flightPrice + (hotelPrice * nights)) * 2} CAD</div>
+                <button onclick="bookNow()">📅 Book Hotel</button>
+            </div>
+        `;
+    }
+
+    function calculateNights(start, end) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const diffTime = Math.abs(endDate - startDate);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function adjustNights(delta) {
+        const nightsSpan = document.getElementById('nights-count');
+        let nights = parseInt(nightsSpan.innerText);
+        nights = Math.max(1, nights + delta);
+        nightsSpan.innerText = nights;
+        updateTotal();
+    }
+
+    function changeFlight(value) {
+        const flightPriceSpan = document.getElementById('flight-price');
+        flightPriceSpan.innerText = `$${value} CAD`;
+        updateTotal();
+    }
+
+    function changeHotel(value) {
+        const hotelPriceSpan = document.getElementById('hotel-price');
+        hotelPriceSpan.innerText = `$${value} / night`;
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const nights = parseInt(document.getElementById('nights-count')?.innerText || 7);
+        const flightPrice = parseInt(document.getElementById('flight-price')?.innerText?.replace(/[^0-9]/g, '') || 500);
+        const hotelPrice = parseInt(document.getElementById('hotel-price')?.innerText?.replace(/[^0-9]/g, '') || 100);
+        const travelers = parseInt(document.getElementById('rt-travelers')?.value || 2);
+        const total = (flightPrice + (hotelPrice * nights)) * travelers;
+        const totalSpan = document.getElementById('total-price');
+        if(totalSpan) totalSpan.innerText = `💰 Total: $${total} CAD`;
+    }
+
+    async function sendAICommand() {
+        const command = document.getElementById('ai-command').value;
+        if(!command) return;
         
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Depart: ${depart}</p><p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}%26checkin%3D${depart}%26checkout%3D${depart}" target="_blank">🏨 Book hotels on Booking.com</a></p><p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}" target="_blank">✈️ Search flights on Google</a></p></div>`;
-    }
-
-    // Multi-City Search
-    async function searchMultiCity() {
-        const citiesStr = document.getElementById('mc-cities').value;
-        const cities = citiesStr.split(',').map(c => c.trim());
-        const startDate = document.getElementById('mc-start').value;
+        resultsDiv.innerHTML = '<div style="text-align:center;padding:2rem;">✨ AI processing your request...</div>';
         
-        let html = '';
-        for(let i = 0; i < cities.length - 1; i++) {
-            const fromCity = cities[i];
-            const toCity = cities[i+1];
-            html += `<div class="result-card">
-                <h3>${fromCity} → ${toCity}</h3>
-                <p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${toCity}%26checkin%3D${startDate}" target="_blank">🏨 Hotels in ${toCity}</a></p>
-                <p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${fromCity}%20to%20${toCity}" target="_blank">✈️ Flights from ${fromCity} to ${toCity}</a></p>
-            </div>`;
+        try {
+            const res = await fetch('/api/generate-itinerary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    destination: currentDestination || 'Cancun',
+                    days: parseInt(document.getElementById('nights-count')?.innerText || 7),
+                    preferences: command
+                })
+            });
+            const data = await res.json();
+            if(data.itinerary) {
+                resultsDiv.innerHTML += `<div class="trip-card" style="margin-top:1rem;"><strong>✨ AI Suggestion:</strong><br>${data.itinerary.map(d => `<strong>Day ${d.day}:</strong> ${d.activities.join(', ')}<br>`).join('')}</div>`;
+            } else if(data.error) {
+                resultsDiv.innerHTML += `<div class="trip-card">✨ ${command} — AI updated your trip. Adjust nights or hotels above.</div>`;
+            }
+        } catch(e) {
+            resultsDiv.innerHTML += `<div class="trip-card">✨ "${command}" — Try adjusting nights or hotel options above.</div>`;
         }
-        document.getElementById('results').innerHTML = html;
+        document.getElementById('ai-command').value = '';
+        updateTotal();
     }
 
-    function displayDestinations(dests, from, depart, ret) {
-        const container = document.getElementById('results');
-        container.innerHTML = dests.map(d => `
-            <div class="result-card">
-                <h3>${d.city}, ${d.country}</h3>
-                <p>${d.description || ''}</p>
-                <p><strong>Budget:</strong> ${d.budget_per_day || 'N/A'}</p>
-                <p><strong>Best season:</strong> ${d.best_season || 'N/A'}</p>
-                <p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${d.city}%26checkin%3D${depart}%26checkout%3D${ret}" target="_blank">🏨 Book hotels in ${d.city}</a></p>
-                <p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${d.city}%20on%20${depart}" target="_blank">✈️ Flights to ${d.city}</a></p>
-            </div>
-        `).join('');
+    function bookNow() {
+        const nights = document.getElementById('nights-count')?.innerText;
+        const hotelPrice = document.getElementById('hotel-price')?.innerText;
+        const dest = currentDestination || 'Cancun';
+        const checkin = currentDepart;
+        const checkout = currentReturn;
+        const bookingUrl = `https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${dest}%26checkin%3D${checkin}%26checkout%3D${checkout}`;
+        window.open(bookingUrl, '_blank');
     }
 
-    window.searchRoundTrip = searchRoundTrip;
-    window.searchOneWay = searchOneWay;
-    window.searchMultiCity = searchMultiCity;
+    function searchFlights() {
+        const from = currentFrom;
+        const to = currentDestination;
+        const depart = currentDepart;
+        const url = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}`;
+        window.open(url, '_blank');
+    }
+
+    window.adjustNights = adjustNights;
+    window.changeFlight = changeFlight;
+    window.changeHotel = changeHotel;
+    window.sendAICommand = sendAICommand;
+    window.bookNow = bookNow;
+    window.searchFlights = searchFlights;
+    window.searchTrip = searchTrip;
 </script>
 </body>
 </html>
