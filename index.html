@@ -2,44 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripSync — AI Travel Planner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:#0f0f0f;color:#f5f5f5;padding:1rem;}
-        .container{max-width:1200px;margin:0 auto;}
-        h1{font-size:2rem;background:linear-gradient(135deg,#00a86b,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:0.5rem;}
-        .subhead{color:#888;margin-bottom:2rem;}
-        .mode-toggle{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
-        .mode-btn{background:#2a2a2a;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;font-weight:500;transition:0.2s;}
+        body{font-family:system-ui,sans-serif;background:#0f0f0f;color:#f5f5f5;padding:1rem;}
+        .container{max-width:1000px;margin:0 auto;}
+        h1{font-size:2rem;background:linear-gradient(135deg,#00a86b,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .mode-toggle{display:flex;gap:0.5rem;margin:1.5rem 0;}
+        .mode-btn{background:#2a2a2a;border:none;padding:0.5rem 1.2rem;border-radius:40px;cursor:pointer;}
         .mode-btn.active{background:#00a86b;color:white;}
         .search-card{background:#1a1a1a;border-radius:24px;padding:1.5rem;margin-bottom:2rem;}
         .form-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;}
-        .form-group{flex:1;min-width:150px;}
-        label{display:block;font-size:0.75rem;margin-bottom:0.3rem;color:#aaa;}
-        input,select{width:100%;padding:0.7rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:12px;color:white;font-family:inherit;}
-        button{background:#00a86b;border:none;padding:0.7rem 1.5rem;border-radius:40px;cursor:pointer;font-weight:600;}
+        .form-group{flex:1;min-width:140px;}
+        label{font-size:0.7rem;color:#aaa;}
+        input,select{width:100%;padding:0.6rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:12px;color:white;}
+        button{background:#00a86b;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;font-weight:600;}
         .city-builder{background:#1a1a1a;border-radius:24px;padding:1.5rem;margin-top:1rem;}
         .city-row{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;}
-        .add-city-btn{background:#2a2a2a;border:1px solid #00a86b;margin-top:0.5rem;}
         .result-card{background:#1a1a1a;border-radius:16px;padding:1rem;margin-bottom:0.5rem;border-left:4px solid #00a86b;}
-        .footer{text-align:center;padding:2rem;color:#666;font-size:0.75rem;margin-top:2rem;}
-        @media(max-width:768px){.form-row{flex-direction:column;}}
+        .footer{text-align:center;padding:2rem;color:#666;font-size:0.7rem;}
+        a{color:#00a86b;text-decoration:none;}
     </style>
 </head>
 <body>
 <div class="container">
     <h1>TripSync</h1>
-    <div class="subhead">AI travel planner with real booking links</div>
+    <p style="color:#888;margin-bottom:1rem;">AI travel planner with real booking links</p>
 
     <div class="mode-toggle">
-        <button class="mode-btn" data-mode="roundtrip">Round Trip</button>
+        <button class="mode-btn active" data-mode="roundtrip">Round Trip</button>
         <button class="mode-btn" data-mode="oneway">One Way</button>
         <button class="mode-btn" data-mode="multicity">Multi-City</button>
     </div>
 
-    <!-- Round Trip Form -->
     <div id="roundtrip-form" class="search-card">
         <div class="form-row">
             <div class="form-group"><label>From</label><input type="text" id="rt-from" placeholder="Toronto"></div>
@@ -53,58 +49,38 @@
             <div class="form-group"><label>Travelers</label><input type="number" id="rt-travelers" value="2" min="1"></div>
             <div class="form-group"><label>Currency</label><select id="rt-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
         </div>
-        <button id="search-roundtrip">✈️ Search Flights & Hotels</button>
+        <button onclick="searchRoundTrip()">✈️ Search Flights & Hotels</button>
     </div>
 
-    <!-- One Way Form -->
     <div id="oneway-form" class="search-card" style="display:none">
         <div class="form-row">
             <div class="form-group"><label>From</label><input type="text" id="ow-from" placeholder="Toronto"></div>
             <div class="form-group"><label>To</label><input type="text" id="ow-to" placeholder="Bangkok"></div>
         </div>
-        <div class="form-row">
-            <div class="form-group"><label>Depart</label><input type="date" id="ow-depart" value="2027-01-15"></div>
-        </div>
+        <div class="form-row"><div class="form-group"><label>Depart</label><input type="date" id="ow-depart" value="2027-01-15"></div></div>
         <div class="form-row">
             <div class="form-group"><label>Travelers</label><input type="number" id="ow-travelers" value="2" min="1"></div>
             <div class="form-group"><label>Currency</label><select id="ow-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
         </div>
-        <button id="search-oneway">✈️ Search Flights & Hotels</button>
+        <button onclick="searchOneWay()">✈️ Search Flights & Hotels</button>
     </div>
 
-    <!-- Multi-City Builder -->
     <div id="multicity-form" class="city-builder" style="display:none">
         <h3>Build your route</h3>
         <div id="city-list"></div>
-        <button id="add-city-btn" class="add-city-btn">+ Add destination</button>
+        <button id="add-city-btn" style="margin-top:0.5rem;background:#2a2a2a;border:1px solid #00a86b;">+ Add destination</button>
         <div class="form-row" style="margin-top:1rem;">
             <div class="form-group"><label>Travelers</label><input type="number" id="mc-travelers" value="2" min="1"></div>
             <div class="form-group"><label>Currency</label><select id="mc-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
         </div>
-        <button id="search-multicity" style="margin-top:1rem;">✈️ Search Multi-City Route</button>
+        <button onclick="searchMultiCity()" style="margin-top:1rem;">✈️ Search Multi-City Route</button>
     </div>
 
     <div id="results"></div>
-    <div class="footer">TripSync — Real flights, real hotels, edit anytime. Built with DeepSeek AI.</div>
+    <div class="footer">TripSync — Built with DeepSeek AI | Just Me Media</div>
 </div>
 
 <script>
-    // Mode switching
-    const modes = ['roundtrip', 'oneway', 'multicity'];
-    let currentMode = 'roundtrip';
-
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentMode = btn.dataset.mode;
-            document.getElementById('roundtrip-form').style.display = currentMode === 'roundtrip' ? 'block' : 'none';
-            document.getElementById('oneway-form').style.display = currentMode === 'oneway' ? 'block' : 'none';
-            document.getElementById('multicity-form').style.display = currentMode === 'multicity' ? 'block' : 'none';
-        };
-    });
-
-    // Multi-city logic
     let cities = [
         { from: "Toronto", to: "Bangkok", nights: 3 },
         { from: "Bangkok", to: "Phuket", nights: 2 },
@@ -113,111 +89,67 @@
 
     function renderCities() {
         const container = document.getElementById('city-list');
+        if(!container) return;
         container.innerHTML = cities.map((city, idx) => `
             <div class="city-row">
-                <input type="text" value="${city.from}" placeholder="From" style="flex:1" disabled>
+                <input type="text" value="${city.from}" style="flex:1" disabled>
                 <span>→</span>
-                <input type="text" value="${city.to}" placeholder="To" style="flex:1" onchange="updateCity(${idx}, 'to', this.value)">
-                <span>🏨</span>
-                <input type="number" value="${city.nights}" placeholder="Nights" style="width:80px" onchange="updateCity(${idx}, 'nights', this.value)">
-                ${idx > 0 && idx < cities.length-1 ? `<button onclick="removeCity(${idx})" style="background:#8b0000;padding:0.3rem 0.8rem;">✕</button>` : ''}
+                <input type="text" value="${city.to}" style="flex:1" onchange="updateCity(${idx}, 'to', this.value)">
+                <input type="number" value="${city.nights}" style="width:70px" onchange="updateCity(${idx}, 'nights', this.value)" placeholder="nights">
+                ${idx > 0 && idx < cities.length-1 ? `<button onclick="removeCity(${idx})" style="background:#8b0000;padding:0.2rem 0.6rem;">✕</button>` : ''}
             </div>
         `).join('');
     }
 
-    window.updateCity = function(idx, field, value) {
-        cities[idx][field] = field === 'nights' ? parseInt(value) : value;
-        if (field === 'to' && idx < cities.length-1) {
-            cities[idx+1].from = value;
-            renderCities();
-        }
-    };
+    window.updateCity = function(idx, field, val) { cities[idx][field] = field === 'nights' ? parseInt(val) : val; if(field === 'to' && idx < cities.length-1) cities[idx+1].from = val; renderCities(); };
+    window.removeCity = function(idx) { cities.splice(idx,1); renderCities(); };
+    window.addCity = function() { const last = cities[cities.length-1]; cities.splice(cities.length-1, 0, { from: last.to, to: "", nights: 2 }); renderCities(); };
+    document.getElementById('add-city-btn')?.addEventListener('click', addCity);
 
-    window.removeCity = function(idx) {
-        cities.splice(idx, 1);
-        renderCities();
-    };
+    const modes = ['roundtrip','oneway','multicity'];
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const mode = btn.dataset.mode;
+            document.getElementById('roundtrip-form').style.display = mode === 'roundtrip' ? 'block' : 'none';
+            document.getElementById('oneway-form').style.display = mode === 'oneway' ? 'block' : 'none';
+            document.getElementById('multicity-form').style.display = mode === 'multicity' ? 'block' : 'none';
+        };
+    });
 
-    function addCity() {
-        const lastCity = cities[cities.length-1];
-        const newCity = { from: lastCity.to, to: "", nights: 2 };
-        cities.splice(cities.length-1, 0, newCity);
-        renderCities();
+    function searchRoundTrip() {
+        const from = document.getElementById('rt-from').value;
+        const to = document.getElementById('rt-to').value;
+        const depart = document.getElementById('rt-depart').value;
+        const ret = document.getElementById('rt-return').value;
+        const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}%20returning%20${ret}`;
+        const hotelUrl = `https://www.booking.com/searchresults.html?ss=${to}`;
+        document.getElementById('results').innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Round trip | Depart ${depart} | Return ${ret}</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights on Google</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${to}</a></p></div>`;
     }
 
-    document.getElementById('add-city-btn').onclick = addCity;
-
-    // Search handlers
-    document.getElementById('search-roundtrip').onclick = () => {
-        const data = {
-            mode: 'roundtrip',
-            from: document.getElementById('rt-from').value,
-            to: document.getElementById('rt-to').value,
-            depart: document.getElementById('rt-depart').value,
-            return: document.getElementById('rt-return').value,
-            travelers: document.getElementById('rt-travelers').value,
-            currency: document.getElementById('rt-currency').value
-        };
-        searchFlights(data);
-    };
-
-    document.getElementById('search-oneway').onclick = () => {
-        const data = {
-            mode: 'oneway',
-            from: document.getElementById('ow-from').value,
-            to: document.getElementById('ow-to').value,
-            depart: document.getElementById('ow-depart').value,
-            travelers: document.getElementById('ow-travelers').value,
-            currency: document.getElementById('ow-currency').value
-        };
-        searchFlights(data);
-    };
-
-    document.getElementById('search-multicity').onclick = () => {
-        const data = {
-            mode: 'multicity',
-            cities: cities,
-            travelers: document.getElementById('mc-travelers').value,
-            currency: document.getElementById('mc-currency').value
-        };
-        searchMultiCity(data);
-    };
-
-    async function searchFlights(data) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<p>Searching flights and hotels...</p>';
-        // Build Google Flights URL
-        const googleUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${data.from}%20to%20${data.to}%20on%20${data.depart}${data.return ? `%20returning%20${data.return}` : ''}`;
-        const hotelUrl = `https://www.booking.com/searchresults.html?ss=${data.to}`;
-        resultsDiv.innerHTML = `
-            <div class="result-card">
-                <h3>${data.from} → ${data.to}</h3>
-                <p>Depart: ${data.depart} ${data.return ? `| Return: ${data.return}` : ''}</p>
-                <p><a href="${googleUrl}" target="_blank" style="color:#00a86b;">✈️ Search flights on Google</a></p>
-                <p><a href="${hotelUrl}" target="_blank" style="color:#00a86b;">🏨 Search hotels in ${data.to} on Booking.com</a></p>
-            </div>
-        `;
+    function searchOneWay() {
+        const from = document.getElementById('ow-from').value;
+        const to = document.getElementById('ow-to').value;
+        const depart = document.getElementById('ow-depart').value;
+        const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}`;
+        const hotelUrl = `https://www.booking.com/searchresults.html?ss=${to}`;
+        document.getElementById('results').innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>One way | Depart ${depart}</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights on Google</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${to}</a></p></div>`;
     }
 
-    async function searchMultiCity(data) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<p>Building your multi-city route...</p>';
+    function searchMultiCity() {
         let html = '';
-        for (let i = 0; i < data.cities.length; i++) {
-            const leg = data.cities[i];
-            const googleUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${leg.from}%20to%20${leg.to}`;
+        for(let leg of cities) {
+            const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${leg.from}%20to%20${leg.to}`;
             const hotelUrl = `https://www.booking.com/searchresults.html?ss=${leg.to}`;
-            html += `
-                <div class="result-card">
-                    <h3>${leg.from} → ${leg.to}</h3>
-                    <p>Stay: ${leg.nights} nights</p>
-                    <p><a href="${googleUrl}" target="_blank" style="color:#00a86b;">✈️ Search flights</a> | <a href="${hotelUrl}" target="_blank" style="color:#00a86b;">🏨 Hotels in ${leg.to}</a></p>
-                </div>
-            `;
+            html += `<div class="result-card"><h3>${leg.from} → ${leg.to}</h3><p>Stay: ${leg.nights} nights</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${leg.to}</a></p></div>`;
         }
-        resultsDiv.innerHTML = html;
+        document.getElementById('results').innerHTML = html;
     }
 
+    window.searchRoundTrip = searchRoundTrip;
+    window.searchOneWay = searchOneWay;
+    window.searchMultiCity = searchMultiCity;
     renderCities();
 </script>
 </body>
