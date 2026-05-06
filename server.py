@@ -2,11 +2,11 @@ import os
 import json
 import sqlite3
 import logging
+import re
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import requests
-import re
 
 app = Flask(__name__, static_url_path='', static_folder='.')
 CORS(app)
@@ -72,19 +72,20 @@ def tripsync():
                 return jsonify(json.loads(json_match.group()))
         except Exception as e:
             logging.error(f"JSON parse error: {e}")
+            return jsonify({"destinations": [], "error": f"JSON parse error: {str(e)}"})
     
     return jsonify({"destinations": [], "error": "AI temporarily unavailable"})
 
 @app.route('/api/multi-stop', methods=['POST'])
 def multi_stop():
+    import re
     data = request.json
     query = data.get('query', '')
     departure = data.get('departure', '')
     currency = data.get('currency', 'CAD')
     
-    # Extract the starting city from the query if departure is empty
+    # Extract starting city if departure is empty
     if not departure or departure == '':
-        import re
         match = re.search(r'from\s+(\w+)', query.lower())
         if match:
             departure = match.group(1).capitalize()
@@ -94,7 +95,6 @@ def multi_stop():
     prompt = f"""Return ONLY valid JSON. No other text. User wants this exact route: "{query}"
     
     IMPORTANT: The trip starts in {departure}. The FIRST leg MUST depart from {departure}.
-    Do NOT add Toronto or any other city unless the user specified it.
     
     Create a realistic multi-stop flight itinerary with 5-8 legs.
     Use REAL airline codes (AC, UA, DL, AA, BA, LH, AF, KL, EK, QR, SQ, TG, CX, NH, JL, KE).
@@ -115,9 +115,7 @@ def multi_stop():
         }}
       ],
       "tips": ["tip1", "tip2", "tip3", "tip4"]
-    }}
-    
-    Make sure the route makes geographic sense. The last leg should end where the user wants to finish."""
+    }}"""
     
     result = call_groq(prompt)
     if result:
