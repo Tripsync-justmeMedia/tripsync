@@ -343,10 +343,10 @@
                 <p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p>
                 <div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div>
                 <div class="booking-links">
-                    <a href="https://www.booking.com/searchresults.html?dest=${d.city}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn">Booking.com</a>
+                    <a href="`https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}https://www.booking.com/searchresults.html?dest=${d.city}&aid=${AFFILIATE.booking_aid}aid=${AFFILIATE.booking_aid}`" target="_blank" class="booking-btn">Booking.com</a>
                     <a href="https://www.agoda.com/search?city=${d.city}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn">Agoda</a>
                     <a href="https://www.expedia.com/Hotel-Search?destination=${d.city}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn">Expedia</a>
-                    <a href="https://www.skyscanner.com/transport/flights/${document.getElementById('departureCity').value.toLowerCase()}/${d.city.toLowerCase()}/" target="_blank" class="booking-btn">✈️ Search Flights</a>
+                    <a href="`https://www.skyscanner.com/transport/flights/${departure}/${d.city.toLowerCase()}/${startDate}/`" target="_blank" class="booking-btn">✈️ Search Flights</a>
                 </div>
                 <div class="share-buttons">
                     <button class="action-btn" onclick="shareWhatsApp()">💬 WhatsApp</button>
