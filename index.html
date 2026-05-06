@@ -7,47 +7,44 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:system-ui,sans-serif;background:#0f0f0f;color:#f5f5f5;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
-        .header{background:#1a1a1a;padding:1rem;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;}
+        .header{background:#1a1a1a;padding:1rem;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;align-items:center;}
         h1{font-size:1.5rem;background:linear-gradient(135deg,#00a86b,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
         .menu-btn{background:#2a2a2a;border:none;padding:0.5rem 1rem;border-radius:40px;cursor:pointer;color:white;}
         .main{display:flex;flex:1;overflow:hidden;}
-        .sidebar{width:300px;background:#0f0f0f;border-right:1px solid #2a2a2a;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform 0.3s ease;position:absolute;z-index:200;height:100%;}
+        .sidebar{width:280px;background:#0f0f0f;border-right:1px solid #2a2a2a;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform 0.3s;position:absolute;z-index:200;height:100%;}
         .sidebar.open{transform:translateX(0);}
-        .sidebar-header{padding:1rem;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;}
-        .saved-list{flex:1;overflow-y:auto;padding:0.5rem;}
-        .saved-item{background:#1a1a1a;border-radius:12px;padding:0.8rem;margin-bottom:0.5rem;cursor:pointer;}
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:150;display:none;}
+        .overlay.active{display:block;}
         .content{flex:1;overflow-y:auto;padding:1rem;}
-        .prefs-panel{background:#1a1a1a;border-radius:24px;padding:1rem;margin-bottom:1rem;}
-        .pref-section{margin-bottom:1rem;}
-        .pref-title{font-size:0.8rem;color:#00a86b;margin-bottom:0.5rem;font-weight:600;}
-        .pref-buttons{display:flex;flex-wrap:wrap;gap:0.5rem;}
+        .prefs-panel{background:#1a1a1a;border-radius:20px;padding:1rem;margin-bottom:1rem;}
+        .pref-title{color:#00a86b;font-size:0.8rem;margin-bottom:0.5rem;}
+        .pref-buttons{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;}
         .pref-btn{background:#2a2a2a;border:1px solid #3a3a3a;padding:0.4rem 0.8rem;border-radius:40px;cursor:pointer;font-size:0.8rem;color:white;}
         .pref-btn.active{background:#00a86b;}
         .amenities-grid{display:flex;flex-wrap:wrap;gap:0.5rem;}
         .amenity-btn{background:#2a2a2a;border:1px solid #3a3a3a;padding:0.3rem 0.7rem;border-radius:40px;cursor:pointer;font-size:0.75rem;}
         .amenity-btn.active{background:#00a86b;}
-        .chat-container{background:#1a1a1a;border-radius:24px;padding:1rem;max-height:250px;overflow-y:auto;margin-bottom:1rem;}
-        .chat-message{margin-bottom:0.5rem;padding:0.5rem;border-radius:16px;max-width:85%;}
+        .chat-container{background:#1a1a1a;border-radius:20px;padding:1rem;max-height:200px;overflow-y:auto;margin-bottom:1rem;}
+        .chat-message{padding:0.5rem;border-radius:16px;margin-bottom:0.5rem;max-width:85%;}
         .chat-user{background:#00a86b;color:white;margin-left:auto;text-align:right;}
-        .chat-bot{background:#2a2a2a;color:#f5f5f5;}
+        .chat-bot{background:#2a2a2a;}
         .chat-input{display:flex;gap:0.5rem;margin-top:0.5rem;}
-        .chat-input input{flex:1;padding:0.8rem;border-radius:40px;border:1px solid #3a3a3a;background:#2a2a2a;color:white;}
-        .result-card{background:#1a1a1a;border-radius:20px;padding:1rem;margin-bottom:1rem;border-left:4px solid #00a86b;}
-        .share-buttons{display:flex;gap:0.5rem;margin:0.5rem 0;flex-wrap:wrap;}
+        .chat-input input{flex:1;padding:0.6rem;border-radius:40px;border:1px solid #3a3a3a;background:#2a2a2a;color:white;}
+        .chat-input button{background:#00a86b;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;color:white;}
+        .result-card{background:#1a1a1a;border-radius:16px;padding:1rem;margin-bottom:1rem;border-left:4px solid #00a86b;}
+        .share-buttons{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;}
         .share-btn{background:#2a2a2a;padding:0.3rem 0.7rem;border-radius:40px;font-size:0.7rem;cursor:pointer;border:none;color:white;}
-        .safeguard-btn{background:#f5a623;color:#1a1a1a;}
-        .book-btn{background:#00a86b;width:100%;padding:0.8rem;border-radius:40px;border:none;color:white;font-weight:600;cursor:pointer;margin-top:0.5rem;}
-        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:150;display:none;}
-        .overlay.active{display:block;}
+        .book-btn{background:#00a86b;width:100%;padding:0.7rem;border-radius:40px;border:none;color:white;font-weight:600;cursor:pointer;margin-top:0.5rem;}
         input,select{background:#2a2a2a;border:1px solid #3a3a3a;padding:0.6rem;border-radius:40px;color:white;}
-        @media(max-width:768px){.sidebar{width:85%;}}
+        .row{display:flex;gap:0.5rem;margin-bottom:0.5rem;}
+        .row input{flex:1;}
     </style>
 </head>
 <body>
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header"><strong>📁 Saved Trips</strong><button onclick="closeSidebar()" style="background:none;border:none;color:white;font-size:1.2rem;">✕</button></div>
-    <div class="saved-list" id="saved-list"><div style="color:#666;text-align:center;padding:1rem;">No saved trips yet</div></div>
+    <div class="sidebar-header" style="padding:1rem;display:flex;justify-content:space-between;"><strong>📁 Saved Trips</strong><button onclick="closeSidebar()" style="background:none;border:none;color:white;font-size:1.2rem;">✕</button></div>
+    <div class="saved-list" id="saved-list" style="padding:0.5rem;flex:1;overflow-y:auto;"><div style="color:#666;text-align:center;padding:1rem;">No saved trips yet</div></div>
     <div style="padding:0.5rem;"><button onclick="clearAllSaved()" style="background:#8b0000;width:100%;padding:0.5rem;border-radius:40px;border:none;color:white;">🗑 Clear All</button></div>
 </div>
 
@@ -60,65 +57,61 @@
 <div class="main">
     <div class="content">
         <div class="prefs-panel">
-            <div class="pref-section"><div class="pref-title">✈️ FLIGHT</div>
+            <div class="pref-title">✈️ FLIGHT</div>
             <div class="pref-buttons" id="flight-class">
                 <button class="pref-btn active" onclick="setFlightClass('economy')">Economy</button>
                 <button class="pref-btn" onclick="setFlightClass('premium')">Premium</button>
                 <button class="pref-btn" onclick="setFlightClass('business')">Business</button>
                 <button class="pref-btn" onclick="setFlightClass('first')">First</button>
             </div>
-            <div class="pref-buttons" style="margin-top:0.5rem;" id="flight-priority">
+            <div class="pref-buttons" id="flight-priority">
                 <button class="pref-btn active" onclick="setFlightPriority('cheapest')">💰 Cheapest</button>
                 <button class="pref-btn" onclick="setFlightPriority('fastest')">⏱️ Fastest</button>
                 <button class="pref-btn" onclick="setFlightPriority('best')">✨ Best</button>
-            </div></div>
+            </div>
         </div>
 
         <div class="prefs-panel">
-            <div class="pref-section"><div class="pref-title">🏨 HOTEL</div>
+            <div class="pref-title">🏨 HOTEL</div>
             <div class="pref-buttons" id="hotel-rating">
                 <button class="pref-btn active" onclick="setHotelRating('any')">Any</button>
                 <button class="pref-btn" onclick="setHotelRating('3')">3★+</button>
                 <button class="pref-btn" onclick="setHotelRating('4')">4★+</button>
                 <button class="pref-btn" onclick="setHotelRating('5')">5★</button>
             </div>
-            <div class="amenities-grid" id="hotel-amenities" style="margin-top:0.5rem;">
+            <div class="amenities-grid" id="hotel-amenities">
                 <button class="amenity-btn" onclick="toggleAmenity('pool')">🏊 Pool</button>
                 <button class="amenity-btn" onclick="toggleAmenity('spa')">💆 Spa</button>
                 <button class="amenity-btn" onclick="toggleAmenity('gym')">💪 Gym</button>
                 <button class="amenity-btn" onclick="toggleAmenity('beachfront')">🏖️ Beachfront</button>
                 <button class="amenity-btn" onclick="toggleAmenity('restaurant')">🍽️ Restaurant</button>
-                <button class="amenity-btn" onclick="toggleAmenity('wifi')">📶 Free WiFi</button>
-            </div></div>
+            </div>
         </div>
 
         <div class="prefs-panel">
-            <div class="pref-section"><div class="pref-title">🚗 CAR (optional)</div>
+            <div class="pref-title">🚗 CAR (optional)</div>
             <div class="pref-buttons" id="car-type">
                 <button class="pref-btn" onclick="setCarType('none')">No car</button>
                 <button class="pref-btn" onclick="setCarType('economy')">Economy</button>
                 <button class="pref-btn" onclick="setCarType('suv')">SUV</button>
                 <button class="pref-btn" onclick="setCarType('minivan')">Minivan</button>
             </div>
-            <div class="pref-buttons" style="margin-top:0.5rem;" id="car-transmission">
+            <div class="pref-buttons" id="car-transmission">
                 <button class="pref-btn active" onclick="setCarTransmission('automatic')">Automatic</button>
                 <button class="pref-btn" onclick="setCarTransmission('manual')">Manual</button>
-            </div></div>
+            </div>
         </div>
 
         <div class="prefs-panel">
-            <div class="pref-section"><div class="pref-title">📍 DESTINATION</div>
-            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                <div style="display:flex; gap:0.5rem; width:100%;"><input type="text" id="from-destination" placeholder="From (e.g., Toronto)" style="flex:1;"><input type="text" id="to-destination" placeholder="To (e.g., Cancun)" style="flex:1;"></div>
-                <input type="date" id="depart-date">
-                <input type="date" id="return-date">
-                <input type="number" id="travelers" value="2" min="1" style="width:80px;">
-            </div>
-            <button onclick="searchTrip()" style="width:100%;margin-top:0.8rem;background:#00a86b;padding:0.8rem;border-radius:40px;border:none;color:white;font-weight:600;">✨ Find My Trip</button>
-        </div></div>
+            <div class="pref-title">📍 TRIP DETAILS</div>
+            <div class="row"><input type="text" id="from-destination" placeholder="From (e.g., Toronto)"><input type="text" id="to-destination" placeholder="To (e.g., Cancun)"></div>
+            <div class="row"><input type="date" id="depart-date"><input type="date" id="return-date"></div>
+            <input type="number" id="travelers" value="2" min="1" style="width:100%; margin-bottom:0.5rem;">
+            <button onclick="searchTrip()" style="width:100%;background:#00a86b;padding:0.7rem;border-radius:40px;border:none;color:white;font-weight:600;">✨ Find My Trip</button>
+        </div>
 
-        <div class="chat-container" id="chat-container">
-            <div id="chat-messages"><div class="chat-message chat-bot">🤖 Set your preferences, add destination, then click "Find My Trip"!</div></div>
+        <div class="chat-container">
+            <div id="chat-messages"><div class="chat-message chat-bot">🤖 Set your preferences, add From/To, then click "Find My Trip"!</div></div>
             <div class="chat-input"><input type="text" id="chat-input" placeholder="Ask me anything..."><button onclick="askAI()">Send</button></div>
         </div>
 
@@ -127,9 +120,8 @@
 </div>
 
 <script>
-    let tripPrefs = { flightClass: 'economy', flightPriority: 'cheapest', hotelRating: 'any', hotelAmenities: [], carType: 'none', carTransmission: 'automatic', destination: '', depart: '2027-01-15', ret: '2027-01-22', travelers: 2 };
+    let tripPrefs = { flightClass: 'economy', flightPriority: 'cheapest', hotelRating: 'any', hotelAmenities: [], carType: 'none', carTransmission: 'automatic', from: '', to: '', depart: '2027-01-15', ret: '2027-01-22', travelers: 2 };
     let currentTrip = null;
-    let tripConfirmed = false;
 
     const today = new Date();
     const depart = new Date(); depart.setDate(today.getDate() + 60);
@@ -143,92 +135,60 @@
     function setCarType(t) { tripPrefs.carType = t; updateActive('car-type', t); }
     function setCarTransmission(t) { tripPrefs.carTransmission = t; updateActive('car-transmission', t); }
     function updateActive(containerId, value) { document.querySelectorAll(`#${containerId} .pref-btn`).forEach(btn => { btn.classList.toggle('active', btn.innerText.toLowerCase().includes(value) || btn.innerText === value); }); }
-    function toggleAmenity(a) { let idx = tripPrefs.hotelAmenities.indexOf(a); idx === -1 ? tripPrefs.hotelAmenities.push(a) : tripPrefs.hotelAmenities.splice(idx, 1); updateAmenityButtons(); }
-    function updateAmenityButtons() { document.querySelectorAll('#hotel-amenities .amenity-btn').forEach(btn => { let a = btn.innerText.includes('Pool')?'pool':btn.innerText.includes('Spa')?'spa':btn.innerText.includes('Gym')?'gym':btn.innerText.includes('Beachfront')?'beachfront':btn.innerText.includes('Restaurant')?'restaurant':'wifi'; btn.classList.toggle('active', tripPrefs.hotelAmenities.includes(a)); }); }
+    function toggleAmenity(a) { let idx = tripPrefs.hotelAmenities.indexOf(a); idx === -1 ? tripPrefs.hotelAmenities.push(a) : tripPrefs.hotelAmenities.splice(idx, 1); document.querySelectorAll('#hotel-amenities .amenity-btn').forEach(btn => { let amenity = btn.innerText.includes('Pool')?'pool':btn.innerText.includes('Spa')?'spa':btn.innerText.includes('Gym')?'gym':btn.innerText.includes('Beachfront')?'beachfront':'restaurant'; btn.classList.toggle('active', tripPrefs.hotelAmenities.includes(amenity)); }); }
 
-    function saveTrip() { if(!currentTrip) { alert('No trip to save'); return; } let saved = JSON.parse(localStorage.getItem('tripsync_saved')||'[]'); let name = prompt('Name this trip:', `${tripPrefs.destination} - ${new Date().toLocaleDateString()}`); if(name){ saved.push({name, data:currentTrip, prefs:{...tripPrefs}, savedAt:new Date().toISOString()}); localStorage.setItem('tripsync_saved', JSON.stringify(saved)); renderSavedList(); alert('Trip saved!'); } }
-    function renderSavedList() { let saved = JSON.parse(localStorage.getItem('tripsync_saved')||'[]'); let c = document.getElementById('saved-list'); if(!saved.length){ c.innerHTML='<div style="color:#666;text-align:center;padding:1rem;">No saved trips yet</div>'; return; } c.innerHTML = saved.map((t,i)=>`<div class="saved-item" onclick="loadSaved(${i})"><div class="title">${t.name}</div><div class="date">${new Date(t.savedAt).toLocaleDateString()}</div></div>`).join(''); }
-    function loadSaved(i) { let saved=JSON.parse(localStorage.getItem('tripsync_saved')||'[]'); let t=saved[i]; if(t.prefs){ tripPrefs=t.prefs; document.getElementById('destination').value=tripPrefs.destination; document.getElementById('depart-date').value=tripPrefs.depart; document.getElementById('return-date').value=tripPrefs.ret; document.getElementById('travelers').value=tripPrefs.travelers; updateActive('flight-class',tripPrefs.flightClass); updateActive('flight-priority',tripPrefs.flightPriority); updateActive('hotel-rating',tripPrefs.hotelRating); updateActive('car-type',tripPrefs.carType); tripPrefs.hotelAmenities.forEach(a=>toggleAmenity(a)); } currentTrip=t.data; displayTripSummary(); closeSidebar(); }
+    function saveTrip() { if(!currentTrip) { alert('No trip to save'); return; } let saved = JSON.parse(localStorage.getItem('tripsync_saved')||'[]'); let name = prompt('Name this trip:', `${tripPrefs.to} - ${new Date().toLocaleDateString()}`); if(name){ saved.push({name, data:currentTrip, prefs:{...tripPrefs}}); localStorage.setItem('tripsync_saved', JSON.stringify(saved)); renderSavedList(); alert('Trip saved!'); } }
+    function renderSavedList() { let saved = JSON.parse(localStorage.getItem('tripsync_saved')||'[]'); let c = document.getElementById('saved-list'); if(!saved.length){ c.innerHTML='<div style="color:#666;text-align:center;padding:1rem;">No saved trips yet</div>'; return; } c.innerHTML = saved.map((t,i)=>`<div class="saved-item" onclick="loadSaved(${i})" style="background:#1a1a1a;border-radius:12px;padding:0.6rem;margin-bottom:0.5rem;"><div>${t.name}</div><div style="font-size:0.7rem;color:#888;">${new Date(t.savedAt).toLocaleDateString()}</div></div>`).join(''); }
+    function loadSaved(i) { let saved=JSON.parse(localStorage.getItem('tripsync_saved')||'[]'); let t=saved[i]; if(t.prefs){ tripPrefs=t.prefs; document.getElementById('from-destination').value=tripPrefs.from; document.getElementById('to-destination').value=tripPrefs.to; document.getElementById('depart-date').value=tripPrefs.depart; document.getElementById('return-date').value=tripPrefs.ret; document.getElementById('travelers').value=tripPrefs.travelers; updateActive('flight-class',tripPrefs.flightClass); updateActive('flight-priority',tripPrefs.flightPriority); updateActive('hotel-rating',tripPrefs.hotelRating); updateActive('car-type',tripPrefs.carType); tripPrefs.hotelAmenities.forEach(a=>toggleAmenity(a)); } currentTrip=t.data; displayTripSummary(); closeSidebar(); }
     function clearAllSaved(){ localStorage.removeItem('tripsync_saved'); renderSavedList(); alert('Cleared'); }
     function toggleSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); }
     function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }
 
     async function searchTrip() {
-        tripPrefs.from = document.getElementById("from-destination").value; tripPrefs.destination = document.getElementById("to-destination").value;
+        tripPrefs.from = document.getElementById('from-destination').value;
+        tripPrefs.to = document.getElementById('to-destination').value;
         tripPrefs.depart = document.getElementById('depart-date').value;
         tripPrefs.ret = document.getElementById('return-date').value;
         tripPrefs.travelers = parseInt(document.getElementById('travelers').value)||2;
-        if(!tripPrefs.destination){ alert('Enter destination'); return; }
-        let nights = Math.ceil((new Date(tripPrefs.ret)-new Date(tripPrefs.depart))/(1000*60*60*24));
-        let flightPrices={cheapest:490,fastest:610,best:680}, hotelPrices={any:120,'3':120,'4':180,'5':250};
-        currentTrip = { flight: { airline: tripPrefs.flightPriority==='cheapest'?'Flair Airlines':tripPrefs.flightPriority==='fastest'?'WestJet':'Air Canada', price: flightPrices[tripPrefs.flightPriority], duration: '4h 30m', class: tripPrefs.flightClass }, hotel: { name: tripPrefs.hotelRating==='5'?'Grand Sunset Resort':'Sunset Resort', rating: parseInt(tripPrefs.hotelRating)||4, pricePerNight: hotelPrices[tripPrefs.hotelRating]||120, amenities: tripPrefs.hotelAmenities }, car: tripPrefs.carType!=='none'?{ type: tripPrefs.carType, pricePerDay: tripPrefs.carType==='suv'?65:35, transmission: tripPrefs.carTransmission }:null, nights: nights, total:0 };
-        let flightTotal=currentTrip.flight.price, hotelTotal=currentTrip.hotel.pricePerNight*nights, carTotal=currentTrip.car?currentTrip.car.pricePerDay*nights:0;
-        currentTrip.total=(flightTotal+hotelTotal+carTotal)*tripPrefs.travelers;
-        tripConfirmed = false;
-        displayTripSummary();
-        addAIMessage(`Found a ${tripPrefs.flightClass} flight from ${tripPrefs.from} to ${tripPrefs.destination} and ${currentTrip.hotel.name}. Review and click "Save & Continue" to confirm.`);
-    }
-
-    function displayTripSummary() {
-        let nights=currentTrip.nights, flightTotal=currentTrip.flight.price, hotelTotal=currentTrip.hotel.pricePerNight*nights, carTotal=currentTrip.car?currentTrip.car.pricePerDay*nights:0, amenitiesText=currentTrip.hotel.amenities.length?` (${currentTrip.hotel.amenities.join(', ')})`:'';
+        if(!tripPrefs.from || !tripPrefs.to){ alert('Enter both From and To destinations'); return; }
+        
+        document.getElementById('results').innerHTML = '<div style="text-align:center;padding:2rem;">🔍 Searching real flights and hotels...</div>';
+        
+        // For now, direct users to Google Flights and Booking.com
+        const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${encodeURIComponent(tripPrefs.from)}%20to%20${encodeURIComponent(tripPrefs.to)}%20on%20${tripPrefs.depart}`;
+        const bookingUrl = `https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${encodeURIComponent(tripPrefs.to)}%26checkin%3D${tripPrefs.depart}%26checkout%3D${tripPrefs.ret}`;
+        
         document.getElementById('results').innerHTML = `
-            <div class="result-card"><strong>✈️ ${currentTrip.flight.airline}</strong> • ${currentTrip.flight.class}<br>💰 $${flightTotal} CAD<div class="option-buttons"><button class="share-btn" onclick="findAlternative('cheaper')">💰 Cheaper</button><button class="share-btn" onclick="findAlternative('faster')">⏱️ Faster</button></div></div>
-            <div class="result-card"><strong>🏨 ${currentTrip.hotel.name}</strong> • ${currentTrip.hotel.rating}★ • $${currentTrip.hotel.pricePerNight}/night${amenitiesText}<br>💰 $${hotelTotal} CAD<div class="option-buttons"><button class="share-btn" onclick="findAlternativeHotel()">🏨 Different hotel</button></div></div>
-            <div class="result-card">🚗 ${currentTrip.car?`${currentTrip.car.type.toUpperCase()} • $${currentTrip.car.pricePerDay}/day`:'No car selected'}<div class="option-buttons"><button class="share-btn" onclick="toggleCarInResults()">🚗 Change car</button></div></div>
-            <div class="result-card" style="background:#0a2a1a;"><strong>💰 Total: $${currentTrip.total} CAD</strong> (${tripPrefs.travelers} travelers)</div>
-            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                <button class="book-btn safeguard-btn" onclick="confirmAndSave()">💾 Save & Continue</button>
-                <button class="book-btn" onclick="showShareOptions()">📤 Share Trip</button>
-            </div>
-            <div id="share-options" style="display:none; margin-top:0.5rem;" class="share-buttons"></div>
+            <div class="result-card"><strong>✈️ FLIGHTS</strong><br>From ${tripPrefs.from} to ${tripPrefs.to}<br><a href="${googleFlightsUrl}" target="_blank" style="color:#00a86b;">Search flights on Google Flights →</a></div>
+            <div class="result-card"><strong>🏨 HOTELS</strong><br>In ${tripPrefs.to}<br><a href="${bookingUrl}" target="_blank" style="color:#00a86b;">Search hotels on Booking.com →</a></div>
+            <button class="book-btn" onclick="saveTrip()">💾 Save This Trip</button>
+            <div class="share-buttons"><button class="share-btn" onclick="shareTo('whatsapp')">💬 WhatsApp</button><button class="share-btn" onclick="shareTo('twitter')">𝕏 Twitter</button><button class="share-btn" onclick="shareTo('facebook')">📘 Facebook</button><button class="share-btn" onclick="shareTo('instagram')">📸 Instagram</button><button class="share-btn" onclick="shareTo('snapchat')">👻 Snapchat</button><button class="share-btn" onclick="shareTo('email')">✉️ Email</button><button class="share-btn" onclick="shareTo('copy')">🔗 Copy Link</button></div>
         `;
-    }
-
-    function confirmAndSave() { tripConfirmed = true; document.getElementById('results').innerHTML += `<div class="result-card" style="background:#1a3a2a;"><strong>✅ Trip confirmed!</strong> You can now book below.</div><div style="display:flex; gap:0.5rem;"><button class="book-btn" onclick="bookNow()">📅 Book Hotel</button><button class="book-btn" onclick="saveTrip()" style="background:#2a2a2a;">💾 Save Trip</button><button class="book-btn" onclick="searchFlights()">✈️ Search Flights</button></div>`; addAIMessage(`Your trip is saved. Click "Book Hotel" to complete your booking.`); }
-    
-    function showShareOptions() {
-        let shareHtml = `
-            <button class="share-btn" onclick="shareTo('whatsapp')">💬 WhatsApp</button>
-            <button class="share-btn" onclick="shareTo('twitter')">𝕏 Twitter</button>
-            <button class="share-btn" onclick="shareTo('facebook')">📘 Facebook</button>
-            <button class="share-btn" onclick="shareTo('instagram')">📸 Instagram</button>
-            <button class="share-btn" onclick="shareTo('snapchat')">👻 Snapchat</button>
-            <button class="share-btn" onclick="shareTo('email')">✉️ Email</button>
-            <button class="share-btn" onclick="shareTo('copy')">🔗 Copy Link</button>
-        `;
-        document.getElementById('share-options').style.display = 'flex';
-        document.getElementById('share-options').innerHTML = shareHtml;
+        
+        addAIMessage(`Found real flight and hotel options for ${tripPrefs.from} to ${tripPrefs.to}. Click the links above to book!`);
     }
 
     function shareTo(platform) {
         let url = window.location.href;
-        let text = `Check out my ${tripPrefs.destination} trip on TripSync! Total $${currentTrip?.total||0} CAD. Plan yours at TripSync!`;
+        let text = `Check out my trip from ${tripPrefs.from} to ${tripPrefs.to} on TripSync! Plan yours at TripSync!`;
         let finalUrl = '';
         switch(platform) {
             case 'whatsapp': finalUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`; break;
             case 'twitter': finalUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`; break;
             case 'facebook': finalUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`; break;
             case 'instagram': alert('Instagram: Take a screenshot of your trip and share it! Tag @tripsync'); return;
-            case 'snapchat': alert('Snapchat: Take a screenshot of your trip and share it! Add your snapcode.'); return;
+            case 'snapchat': alert('Snapchat: Take a screenshot of your trip and share it!'); return;
             case 'email': finalUrl = `mailto:?subject=My TripSync Trip&body=${encodeURIComponent(text + '\n\n' + url)}`; break;
             case 'copy': navigator.clipboard.writeText(url + '\n\n' + text); alert('Link copied!'); return;
         }
         if(finalUrl) window.open(finalUrl, '_blank');
-        addAIMessage(`Shared your trip on ${platform}!`);
     }
 
-    function findAlternative(type){ if(type==='cheaper')currentTrip.flight={...currentTrip.flight,airline:'Swoop Airlines',price:currentTrip.flight.price-80}; else currentTrip.flight={...currentTrip.flight,airline:'Porter Airlines',price:currentTrip.flight.price+40}; recalcTotal(); displayTripSummary(); }
-    function findAlternativeHotel(){ let alts=[{name:'Beach Palace Resort',pricePerNight:currentTrip.hotel.pricePerNight+40,rating:5},{name:'Budget Inn',pricePerNight:currentTrip.hotel.pricePerNight-50,rating:3}]; currentTrip.hotel={...currentTrip.hotel,...alts[Math.floor(Math.random()*alts.length)]}; recalcTotal(); displayTripSummary(); }
-    function toggleCarInResults(){ if(currentTrip.car) currentTrip.car=null; else currentTrip.car={type:'Economy',pricePerDay:35,transmission:'automatic'}; recalcTotal(); displayTripSummary(); }
-    function recalcTotal(){ let nights=currentTrip.nights, flightTotal=currentTrip.flight.price, hotelTotal=currentTrip.hotel.pricePerNight*nights, carTotal=currentTrip.car?currentTrip.car.pricePerDay*nights:0; currentTrip.total=(flightTotal+hotelTotal+carTotal)*tripPrefs.travelers; }
-    function bookNow(){ let url=`https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${tripPrefs.destination}%26checkin%3D${tripPrefs.depart}%26checkout%3D${tripPrefs.ret}`; window.open(url,'_blank'); }
-    function searchFlights(){ window.open(`https://www.google.com/travel/flights?q=Flights%20to%20${tripPrefs.destination}`,'_blank'); }
-    function shareCurrentTrip(){ showShareOptions(); addAIMessage(`Share this trip with friends using the buttons above!`); }
-    
+    function shareCurrentTrip() { shareTo('copy'); }
     function addAIMessage(m){ let c=document.getElementById('chat-messages'); let d=document.createElement('div'); d.className='chat-message chat-bot'; d.innerHTML=`🤖 ${m}`; c.appendChild(d); c.scrollTop=c.scrollHeight; }
-    function askAI(){ let i=document.getElementById('chat-input'); let q=i.value.trim(); if(!q)return; let c=document.getElementById('chat-messages'); let u=document.createElement('div'); u.className='chat-message chat-user'; u.innerHTML=q; c.appendChild(u); i.value=''; setTimeout(()=>{ let r=''; if(q.toLowerCase().includes('cheaper')) r='Try clicking "Cheaper" under flights or "Different hotel" under hotels.'; else if(q.toLowerCase().includes('hotel')) r=`Your hotel is ${currentTrip?.hotel?.name||'not set'}. Adjust rating or amenities above.`; else if(q.toLowerCase().includes('car')) r=`Car rental is ${currentTrip?.car?'included':'optional'}. You can change in preferences or results.`; else r=`I can help! Adjust preferences above, click "Find My Trip", then "Save & Continue" before booking.`; addAIMessage(r); }, 100); }
-    
-    window.setFlightClass=setFlightClass; window.setFlightPriority=setFlightPriority; window.setHotelRating=setHotelRating; window.setCarType=setCarType; window.setCarTransmission=setCarTransmission; window.toggleAmenity=toggleAmenity; window.searchTrip=searchTrip; window.askAI=askAI; window.findAlternative=findAlternative; window.findAlternativeHotel=findAlternativeHotel; window.toggleCarInResults=toggleCarInResults; window.bookNow=bookNow; window.saveTrip=saveTrip; window.loadSaved=loadSaved; window.clearAllSaved=clearAllSaved; window.toggleSidebar=toggleSidebar; window.closeSidebar=closeSidebar; window.shareCurrentTrip=shareCurrentTrip; window.confirmAndSave=confirmAndSave; window.showShareOptions=showShareOptions; window.shareTo=shareTo;
+    function askAI(){ let i=document.getElementById('chat-input'); let q=i.value.trim(); if(!q)return; let c=document.getElementById('chat-messages'); let u=document.createElement('div'); u.className='chat-message chat-user'; u.innerHTML=q; c.appendChild(u); i.value=''; setTimeout(()=>{ addAIMessage(`Thanks for your question! Use the flight and hotel links above to find real-time options.`); }, 100); }
+
+    window.setFlightClass=setFlightClass; window.setFlightPriority=setFlightPriority; window.setHotelRating=setHotelRating; window.setCarType=setCarType; window.setCarTransmission=setCarTransmission; window.toggleAmenity=toggleAmenity; window.searchTrip=searchTrip; window.askAI=askAI; window.saveTrip=saveTrip; window.loadSaved=loadSaved; window.clearAllSaved=clearAllSaved; window.toggleSidebar=toggleSidebar; window.closeSidebar=closeSidebar; window.shareCurrentTrip=shareCurrentTrip; window.shareTo=shareTo;
     renderSavedList();
 </script>
 </body>
