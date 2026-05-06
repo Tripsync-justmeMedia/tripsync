@@ -43,8 +43,6 @@ def call_groq(prompt):
         response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=data, timeout=30)
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
-        else:
-            logging.error(f"Groq API error: {response.status_code}")
     except Exception as e:
         logging.error(f"Groq error: {e}")
     return None
@@ -84,7 +82,6 @@ def multi_stop():
     departure = data.get('departure', '')
     currency = data.get('currency', 'CAD')
     
-    # Extract starting city if departure is empty
     if not departure or departure == '':
         match = re.search(r'from\s+(\w+)', query.lower())
         if match:
@@ -111,7 +108,7 @@ def multi_stop():
           "duration_hours": number,
           "estimated_cost_{currency}": number,
           "stopover_days_suggested": number,
-          "booking_link": "https://www.skyscanner.com/transport/flights/city1/city2/"
+          "booking_link": "https://www.google.com/travel/flights?q=Flights%20from%20city1%20to%20city2"
         }}
       ],
       "tips": ["tip1", "tip2", "tip3", "tip4"]
@@ -128,6 +125,72 @@ def multi_stop():
             return jsonify({"error": f"AI response invalid: {str(e)}", "raw": result[:500]}), 500
     
     return jsonify({"error": "AI could not generate route. Please try again."}), 503
+
+@app.route('/api/generate-itinerary', methods=['POST'])
+def generate_itinerary():
+    data = request.json
+    destination = data.get('destination')
+    days = data.get('days', 5)
+    preferences = data.get('preferences', '')
+    
+    api_key = os.environ.get('DEEPSEEK_API_KEY')
+    if not api_key:
+        return jsonify({"error": "DeepSeek API key not configured"}), 500
+    
+    prompt = f"""Create a {days}-day travel itinerary for {destination}.
+    Preferences: {preferences}
+    
+    Return as JSON with this exact structure:
+    {{
+      "destination": "{destination}",
+      "days": {days},
+      "itinerary": [
+        {{
+          "day": 1,
+          "title": "Arrival and Exploration",
+          "activities": ["Activity 1", "Activity 2", "Activity 3"],
+          "meals": ["Breakfast spot", "Lunch spot", "Dinner spot"],
+          "tips": ["Local tip here"]
+        }}
+      ],
+      "budget_estimate": "$$-$$$ per day",
+      "best_time_to_visit": "Months here"
+    }}
+    
+    Make it realistic, fun, and tailored to {preferences}. Return ONLY valid JSON."""
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "deepseek-chat",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": 4000
+    }
+    
+    try:
+        response = requests.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            content = result['choices'][0]['message']['content']
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                return jsonify(json.loads(json_match.group()))
+            else:
+                return jsonify({"error": "Could not parse itinerary", "raw": content[:200]}), 500
+        else:
+            return jsonify({"error": f"DeepSeek API error: {response.status_code}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/track-click', methods=['POST'])
 def track_click():

@@ -93,7 +93,7 @@
     
     <div id="multiStopCard" style="display:none;"></div>
     <div id="resultsGrid" class="destinations-grid"></div>
-    <div class="footer">Built by Just Me Media · TripSync · Free forever · <a href="#" id="addToHomeScreen" style="color:#00a86b;">📱 Add to Home Screen</a></div>
+    <div class="footer">Built with <a href="https://deepseek.com" target="_blank" style="color:#00a86b;">DeepSeek AI</a> · Just Me Media · TripSync · Free forever · <a href="#" id="addToHomeScreen" style="color:#00a86b;">📱 Add to Home Screen</a></div>
 </div>
 <script>
 let currentRouteData = null;
@@ -178,6 +178,62 @@ async function search() {
     } catch(e) { document.getElementById('resultsGrid').innerHTML = '<p>Error</p>'; }
 }
 
+async function generateItinerary(destination) {
+    const days = prompt("How many days?", "5");
+    const preferences = prompt("Any preferences? (e.g., 'street food, museums, nightlife')", "");
+    
+    if (!days) return;
+    
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "✨ Generating...";
+    
+    try {
+        const res = await fetch('/api/generate-itinerary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                destination: destination, 
+                days: parseInt(days), 
+                preferences: preferences 
+            })
+        });
+        
+        const itinerary = await res.json();
+        
+        if (itinerary.error) {
+            alert("Error: " + itinerary.error);
+        } else {
+            displayItinerary(itinerary);
+        }
+    } catch(err) {
+        alert("Network error: " + err.message);
+    } finally {
+        btn.innerText = originalText;
+    }
+}
+
+function displayItinerary(itinerary) {
+    let html = `<div class="multi-stop-card" style="margin-top: 1rem;">
+        <h3>✨ AI-Generated Itinerary: ${itinerary.destination}</h3>
+        <p><strong>Budget:</strong> ${itinerary.budget_estimate}</p>
+        <p><strong>Best time:</strong> ${itinerary.best_time_to_visit}</p>`;
+    
+    for (const day of itinerary.itinerary) {
+        html += `<div class="leg-item">
+            <strong>Day ${day.day}: ${day.title}</strong>
+            <div><strong>Activities:</strong> ${day.activities.join(', ')}</div>
+            <div><strong>Meals:</strong> ${day.meals.join(', ')}</div>
+            <div><strong>💡 Tips:</strong> ${day.tips.join(', ')}</div>
+        </div>`;
+    }
+    
+    html += `<button onclick="downloadPDF()" class="action-btn">📄 Download Itinerary</button>
+        <button onclick="location.reload()" class="action-btn">Close</button></div>`;
+    
+    document.getElementById('resultsGrid').innerHTML = html + document.getElementById('resultsGrid').innerHTML;
+}
+
 function renderMultiStop(route) {
     const cur = document.getElementById('currencySelect').value;
     let html = `<div class="multi-stop-card"><div class="action-buttons"><button class="action-btn" onclick="downloadPDF()">📄 PDF</button><button class="action-btn" onclick="shareViaEmail()">✉️ Email</button><button class="action-btn" onclick="shareWhatsApp()">💬 WhatsApp</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button><button class="action-btn" onclick="saveCurrentTrip()">💾 Save</button></div><h3>✈️ Your Multi-Stop Route</h3><p>Total: ${route.total_estimated_cost_CAD || '?'} ${cur} · Save ${route.savings_vs_direct_percent || '?'}%</p>`;
@@ -227,7 +283,7 @@ function renderDestinations(dests) {
                 <a href="https://www.skyscanner.com/transport/flights/${dep}/${d.city}/" target="_blank" class="flight-btn">Skyscanner</a>
             </div>
         `;
-        return `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;font-size:0.9rem;">${d.country}</span></h2><p style="font-size:0.85rem;margin:0.4rem 0;">${d.description || ''}</p><p><strong>💰 Day:</strong> ${d.budget_per_day || 'N/A'} · <strong>✈️:</strong> ${d.flight_estimate || 'N/A'}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links">${hotelLinks}</div>${flightLinks}<div style="margin-top:0.5rem;"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button></div></div>`;
+        return `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;font-size:0.9rem;">${d.country}</span></h2><p style="font-size:0.85rem;margin:0.4rem 0;">${d.description || ''}</p><p><strong>💰 Day:</strong> ${d.budget_per_day || 'N/A'} · <strong>✈️:</strong> ${d.flight_estimate || 'N/A'}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links">${hotelLinks}</div>${flightLinks}<div style="margin-top:0.5rem;"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button><button class="action-btn" onclick="generateItinerary('${d.city}')">✨ AI Itinerary</button></div></div>`;
     }).join('');
     document.getElementById('multiStopCard').style.display = 'none';
 }
