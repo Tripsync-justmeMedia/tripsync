@@ -7,22 +7,22 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:system-ui,sans-serif;background:#0f0f0f;color:#f5f5f5;padding:1rem;}
-        .container{max-width:1000px;margin:0 auto;}
+        .container{max-width:1200px;margin:0 auto;}
         h1{font-size:2rem;background:linear-gradient(135deg,#00a86b,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
         .mode-toggle{display:flex;gap:0.5rem;margin:1.5rem 0;}
-        .mode-btn{background:#2a2a2a;border:none;padding:0.5rem 1.2rem;border-radius:40px;cursor:pointer;}
+        .mode-btn{background:#2a2a2a;border:none;padding:0.5rem 1.2rem;border-radius:40px;cursor:pointer;color:white;}
         .mode-btn.active{background:#00a86b;color:white;}
         .search-card{background:#1a1a1a;border-radius:24px;padding:1.5rem;margin-bottom:2rem;}
         .form-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;}
         .form-group{flex:1;min-width:140px;}
-        label{font-size:0.7rem;color:#aaa;}
+        label{font-size:0.7rem;color:#aaa;display:block;margin-bottom:0.3rem;}
         input,select{width:100%;padding:0.6rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:12px;color:white;}
-        button{background:#00a86b;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;font-weight:600;}
-        .city-builder{background:#1a1a1a;border-radius:24px;padding:1.5rem;margin-top:1rem;}
-        .city-row{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;}
-        .result-card{background:#1a1a1a;border-radius:16px;padding:1rem;margin-bottom:0.5rem;border-left:4px solid #00a86b;}
+        button{background:#00a86b;border:none;padding:0.6rem 1.2rem;border-radius:40px;cursor:pointer;font-weight:600;color:white;}
+        .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:1rem;}
+        .result-card{background:#1a1a1a;border-radius:16px;padding:1rem;border-left:4px solid #00a86b;}
         .footer{text-align:center;padding:2rem;color:#666;font-size:0.7rem;}
         a{color:#00a86b;text-decoration:none;}
+        .loader{text-align:center;padding:2rem;color:#888;}
     </style>
 </head>
 <body>
@@ -36,6 +36,7 @@
         <button class="mode-btn" data-mode="multicity">Multi-City</button>
     </div>
 
+    <!-- Round Trip Form -->
     <div id="roundtrip-form" class="search-card">
         <div class="form-row">
             <div class="form-group"><label>From</label><input type="text" id="rt-from" placeholder="Toronto"></div>
@@ -52,6 +53,7 @@
         <button onclick="searchRoundTrip()">✈️ Search Flights & Hotels</button>
     </div>
 
+    <!-- One Way Form -->
     <div id="oneway-form" class="search-card" style="display:none">
         <div class="form-row">
             <div class="form-group"><label>From</label><input type="text" id="ow-from" placeholder="Toronto"></div>
@@ -65,48 +67,23 @@
         <button onclick="searchOneWay()">✈️ Search Flights & Hotels</button>
     </div>
 
-    <div id="multicity-form" class="city-builder" style="display:none">
-        <h3>Build your route</h3>
-        <div id="city-list"></div>
-        <button id="add-city-btn" style="margin-top:0.5rem;background:#2a2a2a;border:1px solid #00a86b;">+ Add destination</button>
-        <div class="form-row" style="margin-top:1rem;">
+    <!-- Multi-City Form (simplified) -->
+    <div id="multicity-form" class="search-card" style="display:none">
+        <div class="form-row"><div class="form-group"><label>Cities (comma separated)</label><input type="text" id="mc-cities" placeholder="Toronto, Bangkok, Phuket, Toronto"></div></div>
+        <div class="form-row"><div class="form-group"><label>Start Date</label><input type="date" id="mc-start" value="2027-01-15"></div></div>
+        <div class="form-row">
             <div class="form-group"><label>Travelers</label><input type="number" id="mc-travelers" value="2" min="1"></div>
             <div class="form-group"><label>Currency</label><select id="mc-currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
         </div>
-        <button onclick="searchMultiCity()" style="margin-top:1rem;">✈️ Search Multi-City Route</button>
+        <button onclick="searchMultiCity()">✈️ Search Multi-City Route</button>
     </div>
 
-    <div id="results"></div>
+    <div id="results" class="results-grid"></div>
     <div class="footer">TripSync — Built with DeepSeek AI | Just Me Media</div>
 </div>
 
 <script>
-    let cities = [
-        { from: "Toronto", to: "Bangkok", nights: 3 },
-        { from: "Bangkok", to: "Phuket", nights: 2 },
-        { from: "Phuket", to: "Toronto", nights: 0 }
-    ];
-
-    function renderCities() {
-        const container = document.getElementById('city-list');
-        if(!container) return;
-        container.innerHTML = cities.map((city, idx) => `
-            <div class="city-row">
-                <input type="text" value="${city.from}" style="flex:1" disabled>
-                <span>→</span>
-                <input type="text" value="${city.to}" style="flex:1" onchange="updateCity(${idx}, 'to', this.value)">
-                <input type="number" value="${city.nights}" style="width:70px" onchange="updateCity(${idx}, 'nights', this.value)" placeholder="nights">
-                ${idx > 0 && idx < cities.length-1 ? `<button onclick="removeCity(${idx})" style="background:#8b0000;padding:0.2rem 0.6rem;">✕</button>` : ''}
-            </div>
-        `).join('');
-    }
-
-    window.updateCity = function(idx, field, val) { cities[idx][field] = field === 'nights' ? parseInt(val) : val; if(field === 'to' && idx < cities.length-1) cities[idx+1].from = val; renderCities(); };
-    window.removeCity = function(idx) { cities.splice(idx,1); renderCities(); };
-    window.addCity = function() { const last = cities[cities.length-1]; cities.splice(cities.length-1, 0, { from: last.to, to: "", nights: 2 }); renderCities(); };
-    document.getElementById('add-city-btn')?.addEventListener('click', addCity);
-
-    const modes = ['roundtrip','oneway','multicity'];
+    // Mode switching
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -118,39 +95,84 @@
         };
     });
 
-    function searchRoundTrip() {
+    // Round Trip Search
+    async function searchRoundTrip() {
         const from = document.getElementById('rt-from').value;
         const to = document.getElementById('rt-to').value;
         const depart = document.getElementById('rt-depart').value;
         const ret = document.getElementById('rt-return').value;
-        const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}%20returning%20${ret}`;
-        const hotelUrl = `https://www.booking.com/searchresults.html?ss=${to}`;
-        document.getElementById('results').innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Round trip | Depart ${depart} | Return ${ret}</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights on Google</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${to}</a></p></div>`;
+        const travelers = document.getElementById('rt-travelers').value;
+        
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '<div class="loader">✈️ Finding destinations...</div>';
+        
+        // Call AI for destination recommendations
+        const query = `Trip from ${from} to ${to} from ${depart} to ${ret} for ${travelers} travelers`;
+        
+        try {
+            const res = await fetch('/api/tripsync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query, departure: from, currency: 'CAD' })
+            });
+            const data = await res.json();
+            
+            if(data.destinations && data.destinations.length > 0) {
+                displayDestinations(data.destinations, from, depart, ret);
+            } else {
+                resultsDiv.innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Depart: ${depart} | Return: ${ret}</p><p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}%26checkin%3D${depart}%26checkout%3D${ret}" target="_blank">🏨 Book hotels on Booking.com</a></p><p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}" target="_blank">✈️ Search flights on Google</a></p></div>`;
+            }
+        } catch(e) {
+            resultsDiv.innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Depart: ${depart} | Return: ${ret}</p><p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}%26checkin%3D${depart}%26checkout%3D${ret}" target="_blank">🏨 Book hotels on Booking.com</a></p><p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}" target="_blank">✈️ Search flights on Google</a></p></div>`;
+        }
     }
 
-    function searchOneWay() {
+    // One Way Search
+    async function searchOneWay() {
         const from = document.getElementById('ow-from').value;
         const to = document.getElementById('ow-to').value;
         const depart = document.getElementById('ow-depart').value;
-        const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}`;
-        const hotelUrl = `https://www.booking.com/searchresults.html?ss=${to}`;
-        document.getElementById('results').innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>One way | Depart ${depart}</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights on Google</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${to}</a></p></div>`;
+        
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Depart: ${depart}</p><p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}%26checkin%3D${depart}%26checkout%3D${depart}" target="_blank">🏨 Book hotels on Booking.com</a></p><p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}" target="_blank">✈️ Search flights on Google</a></p></div>`;
     }
 
-    function searchMultiCity() {
+    // Multi-City Search
+    async function searchMultiCity() {
+        const citiesStr = document.getElementById('mc-cities').value;
+        const cities = citiesStr.split(',').map(c => c.trim());
+        const startDate = document.getElementById('mc-start').value;
+        
         let html = '';
-        for(let leg of cities) {
-            const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${leg.from}%20to%20${leg.to}`;
-            const hotelUrl = `https://www.booking.com/searchresults.html?ss=${leg.to}`;
-            html += `<div class="result-card"><h3>${leg.from} → ${leg.to}</h3><p>Stay: ${leg.nights} nights</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${leg.to}</a></p></div>`;
+        for(let i = 0; i < cities.length - 1; i++) {
+            const fromCity = cities[i];
+            const toCity = cities[i+1];
+            html += `<div class="result-card">
+                <h3>${fromCity} → ${toCity}</h3>
+                <p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${toCity}%26checkin%3D${startDate}" target="_blank">🏨 Hotels in ${toCity}</a></p>
+                <p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${fromCity}%20to%20${toCity}" target="_blank">✈️ Flights from ${fromCity} to ${toCity}</a></p>
+            </div>`;
         }
         document.getElementById('results').innerHTML = html;
+    }
+
+    function displayDestinations(dests, from, depart, ret) {
+        const container = document.getElementById('results');
+        container.innerHTML = dests.map(d => `
+            <div class="result-card">
+                <h3>${d.city}, ${d.country}</h3>
+                <p>${d.description || ''}</p>
+                <p><strong>Budget:</strong> ${d.budget_per_day || 'N/A'}</p>
+                <p><strong>Best season:</strong> ${d.best_season || 'N/A'}</p>
+                <p><a href="https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2884913&ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${d.city}%26checkin%3D${depart}%26checkout%3D${ret}" target="_blank">🏨 Book hotels in ${d.city}</a></p>
+                <p><a href="https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${d.city}%20on%20${depart}" target="_blank">✈️ Flights to ${d.city}</a></p>
+            </div>
+        `).join('');
     }
 
     window.searchRoundTrip = searchRoundTrip;
     window.searchOneWay = searchOneWay;
     window.searchMultiCity = searchMultiCity;
-    renderCities();
 </script>
 </body>
 </html>
