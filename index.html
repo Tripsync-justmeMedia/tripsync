@@ -1,17 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3K845T64RP"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag("js", new Date());
-      gtag("config", "G-3K845T64RP");
-    </script>
     <meta name="agd-partner-manual-verification" />
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>TripSync — AI Travel Planner by Just Me Media</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -173,15 +165,21 @@ function renderMultiStop(route) {
     if (route.tips) { html += `<div style="margin-top:1rem;background:#0a2a1f;padding:1rem;border-radius:16px;"><strong>💡 Tips</strong><ul>`; for (let t of route.tips) { html += `<li>${t}</li>`; } html += `</ul></div>`; }
     html += `<button id="bookMultiStopBtn" style="margin-top:1rem;background:#00a86b;">📅 Book All Legs</button></div>`;
     document.getElementById('multiStopCard').innerHTML = html;
-    document.getElementById('bookMultiStopBtn')?.addEventListener('click', () => { if (route.legs) { window.open('https://www.skyscanner.com/transport/flights/' + route.legs.map(l => l.from + '-' + l.to).join(',') + '/', '_blank'); } });
+    document.getElementById('bookMultiStopBtn')?.addEventListener('click', () => { if (route.legs) { window.open('https://www.google.com/travel/flights?q=Flights%20from%20' + route.legs[0].from + '%20to%20' + route.legs[route.legs.length-1].to, '_blank'); } });
 }
 
 function renderDestinations(dests) {
     const grid = document.getElementById('resultsGrid');
     if (!dests || dests.length === 0) { grid.innerHTML = '<p>No results</p>'; return; }
-    const dep = document.getElementById('departureCity').value || 'anywhere';
-    const sd = document.getElementById('startDate').value || '';
-    grid.innerHTML = dests.map(d => `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;">${d.country}</span></h2><p>${d.description || ''}</p><p><strong>💰 Budget/day:</strong> ${d.budget_per_day || 'N/A'}</p><p><strong>✈️ Flight:</strong> ${d.flight_estimate || 'N/A'} · ${d.flight_duration || ''}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links"><a href="https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn">Booking.com</a><a href="https://www.agoda.com/search?city=${encodeURIComponent(d.city)}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn">Agoda</a><a href="https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn">Expedia</a><a href="https://www.skyscanner.com/transport/flights/${dep}/${d.city}/?adults=${travelers}" target="_blank" class="booking-btn">✈️ Flights</a></div><div class="share-buttons"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button></div></div>`).join('');
+    const dep = document.getElementById('departureCity').value;
+    const startDate = document.getElementById('startDate').value || '';
+    grid.innerHTML = dests.map(d => {
+        const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${encodeURIComponent(dep)}%20to%20${encodeURIComponent(d.city)}`;
+        const bookingUrl = `https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}`;
+        const agodaUrl = `https://www.agoda.com/search?city=${encodeURIComponent(d.city)}`;
+        const expediaUrl = `https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}`;
+        return `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;">${d.country}</span></h2><p>${d.description || ''}</p><p><strong>💰 Budget/day:</strong> ${d.budget_per_day || 'N/A'}</p><p><strong>✈️ Flight:</strong> ${d.flight_estimate || 'N/A'} · ${d.flight_duration || ''}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links"><a href="${bookingUrl}" target="_blank" class="booking-btn">Booking.com</a><a href="${agodaUrl}" target="_blank" class="booking-btn">Agoda</a><a href="${expediaUrl}" target="_blank" class="booking-btn">Expedia</a><a href="${googleFlightsUrl}" target="_blank" class="booking-btn">✈️ Search Flights</a></div><div class="share-buttons"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button></div></div>`;
+    }).join('');
     document.getElementById('multiStopCard').style.display = 'none';
 }
 
