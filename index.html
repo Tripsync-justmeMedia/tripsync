@@ -124,7 +124,7 @@
         const depart = document.getElementById('rt-depart').value;
         const ret = document.getElementById('rt-return').value;
         const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}%20returning%20${ret}`;
-        const hotelUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}`;
+        const hotelUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dawinaffid=2884913https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}`;
         document.getElementById('results').innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>Round trip | Depart ${depart} | Return ${ret}</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights on Google</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${to}</a></p></div>`;
     }
 
@@ -133,7 +133,7 @@
         const to = document.getElementById('ow-to').value;
         const depart = document.getElementById('ow-depart').value;
         const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${from}%20to%20${to}%20on%20${depart}`;
-        const hotelUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}`;
+        const hotelUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dawinaffid=2884913https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${to}`;
         document.getElementById('results').innerHTML = `<div class="result-card"><h3>${from} → ${to}</h3><p>One way | Depart ${depart}</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights on Google</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${to}</a></p></div>`;
     }
 
@@ -141,7 +141,7 @@
         let html = '';
         for(let leg of cities) {
             const flightUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${leg.from}%20to%20${leg.to}`;
-            const hotelUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${leg.to}`;
+            const hotelUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dawinaffid=2884913https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?ss=awinaffid=2884913https://www.booking.com/searchresults.html?ss=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3D${leg.to}`;
             html += `<div class="result-card"><h3>${leg.from} → ${leg.to}</h3><p>Stay: ${leg.nights} nights</p><p><a href="${flightUrl}" target="_blank">✈️ Search flights</a> | <a href="${hotelUrl}" target="_blank">🏨 Hotels in ${leg.to}</a></p></div>`;
         }
         document.getElementById('results').innerHTML = html;
