@@ -1,660 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="TripSync — AI-powered travel destination finder. Describe your dream trip and get 3 personalized destinations with real prices and booking links.">
-<meta name="theme-color" content="#0f0f0f">
-<meta property="og:title" content="TripSync — AI Travel Planner">
-<meta property="og:description" content="Describe your dream trip in plain English. Get 3 personalized destinations with real prices, flight estimates, and booking links.">
-<meta property="og:url" content="https://tripsync-ilao.onrender.com">
-<title>TripSync — AI Travel Planner</title>
-<link rel="manifest" href="/manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-:root{--ink:#0f0f0f;--paper:#f7f4ef;--cream:#ede9e1;--sand:#d4c9b4;--rust:#c4541a;--rust-light:#e8693a;--teal:#1a6b6b;--teal-light:#2a9090;--sky:#e8f4f4;--gold:#b8962e;--muted:#7a7468;--card-bg:#ffffff;--shadow:0 2px 20px rgba(15,15,15,0.08);--shadow-lg:0 8px 40px rgba(15,15,15,0.14)}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
-header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--rust)}
-.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;letter-spacing:-0.5px}
-.logo span{color:var(--rust-light)}
-.header-actions{display:flex;gap:0.75rem;align-items:center}
-.btn-ghost{background:transparent;border:1px solid rgba(247,244,239,0.3);color:var(--paper);padding:0.35rem 0.9rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px}
-.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:var(--rust-light);color:var(--rust-light)}
-.btn-install{background:var(--rust);border:none;color:white;padding:0.35rem 0.9rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;display:none;align-items:center;gap:0.35rem}
-.btn-install:hover{background:var(--rust-light)}
-.btn-install.visible{display:flex}
-.app-body{display:flex;flex:1;min-height:calc(100vh - 60px)}
-.sidebar{width:280px;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,0.06);flex-shrink:0}
-.sidebar-header{padding:1.25rem 1.25rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between}
-.sidebar-title{font-size:0.7rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--sand)}
-.btn-new-project{background:var(--rust);border:none;color:white;padding:0.3rem 0.7rem;border-radius:3px;font-size:0.75rem;font-weight:600;cursor:pointer;transition:background 0.2s;font-family:'DM Sans',sans-serif}
-.btn-new-project:hover{background:var(--rust-light)}
-.project-list{flex:1;overflow-y:auto;padding:0.5rem 0}
-.project-item{padding:0.65rem 1.25rem;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;display:flex;align-items:center;justify-content:space-between;gap:0.5rem}
-.project-item:hover{background:rgba(255,255,255,0.05);border-left-color:var(--sand)}
-.project-item.active{background:rgba(196,84,26,0.15);border-left-color:var(--rust-light)}
-.project-name{font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-.project-meta{font-size:0.7rem;color:var(--muted);white-space:nowrap}
-.btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 0.2rem;opacity:0;transition:opacity 0.15s,color 0.15s;flex-shrink:0}
-.project-item:hover .btn-del{opacity:1}
-.btn-del:hover{color:#e05555}
-.chat-history{border-top:1px solid rgba(255,255,255,0.06);padding:0.75rem 1.25rem;max-height:220px;overflow-y:auto}
-.chat-history-title{font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem}
-.chat-entry{padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.chat-entry:hover .ceq{color:var(--rust-light)}
-.ceq{font-size:0.78rem;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cet{font-size:0.65rem;color:var(--muted)}
-.sidebar-empty{padding:1.5rem 1.25rem;text-align:center;color:var(--muted);font-size:0.8rem;line-height:1.6}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.search-area{background:var(--cream);border-bottom:1px solid var(--sand);padding:1.5rem 2rem}
-.project-label{font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;font-weight:600}
-.project-heading{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:1rem}
-.params-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;align-items:center}
-.param-input{background:white;border:1.5px solid var(--sand);border-radius:4px;padding:0.35rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:var(--ink)}
-.param-input:focus{outline:none;border-color:var(--teal)}
-.depart-input{background:white;border:1.5px solid var(--teal);border-radius:4px;padding:0.35rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:var(--ink);width:180px}
-.depart-input:focus{outline:none;border-color:var(--teal-light);box-shadow:0 0 0 2px rgba(26,107,107,0.1)}
-.depart-label{font-size:0.7rem;color:var(--teal);font-weight:600;letter-spacing:0.5px;white-space:nowrap}
-.currency-select{background:white;border:1.5px solid var(--sand);border-radius:4px;padding:0.35rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:var(--ink);cursor:pointer}
-.currency-select:focus{outline:none;border-color:var(--teal)}
-.search-box{display:flex;gap:0.75rem;align-items:flex-start}
-textarea#tripInput{flex:1;background:white;border:1.5px solid var(--sand);border-radius:6px;padding:0.85rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--ink);resize:none;min-height:70px;line-height:1.5;transition:border-color 0.2s,box-shadow 0.2s}
-textarea#tripInput:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,107,107,0.1)}
-textarea#tripInput::placeholder{color:var(--muted)}
-.btn-search{background:var(--rust);border:none;color:white;padding:0.85rem 1.2rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
-.btn-search:hover:not(:disabled){background:var(--rust-light);transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,84,26,0.3)}
-.btn-search:disabled{opacity:0.55;cursor:not-allowed}
-.results-area{flex:1;overflow-y:auto;padding:1.75rem 2rem}
-.welcome-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;gap:1rem}
-.welcome-icon{font-size:3.5rem}
-.welcome-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--ink)}
-.welcome-sub{font-size:1rem;color:var(--muted);max-width:420px;line-height:1.6}
-.example-chips{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-top:0.5rem}
-.chip{background:white;border:1.5px solid var(--sand);padding:0.4rem 0.9rem;border-radius:20px;font-size:0.8rem;color:var(--teal);cursor:pointer;font-weight:500;transition:all 0.2s}
-.chip:hover{border-color:var(--teal);background:var(--sky);transform:translateY(-1px)}
-.loading-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:1.5rem}
-.spinner{width:60px;height:60px;border:3px solid var(--sand);border-top-color:var(--rust);border-radius:50%;animation:spin 0.9s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--muted);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}
-.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem}
-.results-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink)}
-.results-query{font-size:0.8rem;color:var(--muted);font-style:italic}
-.results-actions{display:flex;gap:0.5rem;flex-wrap:wrap}
-.btn-action{background:white;border:1.5px solid var(--sand);color:var(--ink);padding:0.35rem 0.8rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.35rem}
-.btn-action:hover{border-color:var(--teal);color:var(--teal);background:var(--sky)}
-.btn-action.pdf{border-color:var(--rust);color:var(--rust)}.btn-action.pdf:hover{background:#fff5f0}
-.destinations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.25rem}
-.dest-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;animation:cardIn 0.4s ease both;border:1px solid var(--cream)}
-.dest-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.dest-card:nth-child(2){animation-delay:0.1s}.dest-card:nth-child(3){animation-delay:0.2s}
-.card-header{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-light) 100%);padding:1.25rem;position:relative;color:white}
-.card-rank{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.2);color:white;font-size:0.7rem;font-weight:700;letter-spacing:1px;padding:0.2rem 0.5rem;border-radius:3px;text-transform:uppercase}
-.card-city{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:0.15rem}
-.card-country{font-size:0.8rem;opacity:0.85;font-weight:500}
-.card-match{margin-top:0.6rem;display:inline-flex;align-items:center;gap:0.3rem;background:rgba(255,255,255,0.15);padding:0.2rem 0.55rem;border-radius:12px;font-size:0.75rem;font-weight:600}
-.card-body{padding:1.25rem}
-.card-description{font-size:0.88rem;line-height:1.65;color:#3a3a3a;margin-bottom:1rem}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem}
-.info-block{background:var(--paper);border-radius:6px;padding:0.6rem 0.75rem;border:1px solid var(--cream)}
-.info-label{font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem;font-weight:600}
-.info-value{font-size:0.85rem;font-weight:600;color:var(--ink)}
-.info-value.price{color:var(--rust)}.info-value.hi{color:var(--teal)}
-.highlights-row{display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:1rem}
-.htag{background:var(--sky);color:var(--teal);font-size:0.72rem;padding:0.2rem 0.55rem;border-radius:12px;font-weight:500;border:1px solid rgba(26,107,107,0.2)}
-.flight-block{background:linear-gradient(to right,#fef9f0,#fff);border:1px solid #e8d9b0;border-radius:6px;padding:0.75rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem}
-.flight-icon{font-size:1.3rem;flex-shrink:0}
-.flight-info{flex:1}
-.flight-price{font-size:1rem;font-weight:700;color:var(--gold)}
-.flight-detail{font-size:0.75rem;color:var(--muted);margin-top:0.1rem}
-.flight-link{background:var(--gold);color:white;text-decoration:none;padding:0.35rem 0.7rem;border-radius:4px;font-size:0.75rem;font-weight:600;white-space:nowrap;transition:background 0.2s;flex-shrink:0}
-.flight-link:hover{background:#9a7c25}
-.card-footer{padding:0 1.25rem 1rem;display:flex;flex-direction:column;gap:0.5rem}
-.booking-label{font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
-.booking-links{display:flex;gap:0.5rem;margin-bottom:0.5rem}
-.booking-btn{flex:1;text-align:center;text-decoration:none;padding:0.55rem 0.5rem;border-radius:5px;font-size:0.78rem;font-weight:600;transition:all 0.2s;border:1.5px solid;font-family:'DM Sans',sans-serif;cursor:pointer}
-.btn-booking{background:#003580;color:white;border-color:#003580}.btn-booking:hover{background:#002d6b}
-.btn-agoda{background:#e3000b;color:white;border-color:#e3000b}.btn-agoda:hover{background:#c20009}
-.btn-expedia{background:#f5a623;color:white;border-color:#f5a623}.btn-expedia:hover{background:#e09010}
-.card-share-row{display:flex;gap:0.4rem;flex-wrap:wrap;padding-top:0.5rem;border-top:1px solid var(--cream)}
-.share-btn{background:none;border:1.5px solid var(--sand);border-radius:4px;padding:0.3rem 0.6rem;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:0.25rem}
-.share-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--sky)}
-.share-btn.whatsapp:hover{border-color:#25d366;color:#25d366;background:#f0fff4}
-.share-btn.twitter:hover{border-color:#000;color:#000;background:#f5f5f5}
-.share-btn.facebook:hover{border-color:#1877f2;color:#1877f2;background:#f0f4ff}
-.share-btn.email:hover{border-color:var(--rust);color:var(--rust);background:#fff5f0}
-.error-state{display:none;background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:1.25rem 1.5rem;color:#991b1b;font-size:0.9rem}
-/* Install banner */
-.install-banner{display:none;background:linear-gradient(to right,var(--teal),var(--teal-light));color:white;padding:0.75rem 2rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.install-banner.show{display:flex}
-.install-banner-text{font-size:0.85rem;font-weight:500}
-.install-banner-text strong{font-weight:700}
-.install-banner-actions{display:flex;gap:0.5rem}
-.btn-install-now{background:white;color:var(--teal);border:none;padding:0.4rem 1rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s}
-.btn-install-now:hover{background:var(--sky)}
-.btn-install-dismiss{background:rgba(255,255,255,0.2);color:white;border:none;padding:0.4rem 0.75rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer}
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:white;border-radius:10px;padding:2rem;width:400px;max-width:90vw;box-shadow:var(--shadow-lg)}
-.modal h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:1rem;color:var(--ink)}
-.modal input{width:100%;border:1.5px solid var(--sand);border-radius:6px;padding:0.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.95rem;margin-bottom:1rem;color:var(--ink)}
-.modal input:focus{outline:none;border-color:var(--teal)}
-.modal-actions{display:flex;gap:0.75rem;justify-content:flex-end}
-.btn-cancel{background:none;border:1.5px solid var(--sand);color:var(--muted);padding:0.5rem 1.1rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem}
-.btn-cancel:hover{border-color:var(--ink);color:var(--ink)}
-.btn-create{background:var(--rust);border:none;color:white;padding:0.5rem 1.3rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600}
-.btn-create:hover{background:var(--rust-light)}
-/* Footer */
-footer{background:var(--ink);color:var(--muted);text-align:center;padding:0.75rem 2rem;font-size:0.72rem;border-top:1px solid rgba(255,255,255,0.06)}
-footer a{color:var(--sand);text-decoration:none}
-footer a:hover{color:var(--rust-light)}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--sand);border-radius:3px}
-@media(max-width:768px){.sidebar{display:none}.sidebar.open{display:flex;position:fixed;left:0;top:60px;bottom:0;z-index:150;width:80vw;max-width:300px}.search-area{padding:1rem}.results-area{padding:1rem}.destinations-grid{grid-template-columns:1fr}.install-banner{padding:0.75rem 1rem}}
-.btn-sidebar-toggle{display:none;background:none;border:none;color:var(--paper);font-size:1.3rem;cursor:pointer;padding:0.2rem}
-@media(max-width:768px){.btn-sidebar-toggle{display:block}}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:0.75rem 1.5rem;border-radius:6px;font-size:0.85rem;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TripSync — AI Travel Planner by Just Me Media</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #0f0f0f; color: #f5f5f5; line-height: 1.5; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; }
+        .search-section { background: #1a1a1a; border-radius: 28px; padding: 2rem; margin-bottom: 2rem; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+        .input-group { flex: 1; min-width: 150px; }
+        label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; color: #aaa; }
+        input, select, textarea { width: 100%; padding: 0.75rem 1rem; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 16px; color: white; font-family: inherit; font-size: 0.9rem; }
+        textarea { min-height: 80px; resize: vertical; }
+        button { background: #00a86b; border: none; padding: 0.75rem 2rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        button:hover { background: #008c58; transform: scale(0.98); }
+        .destinations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .card { background: #1a1a1a; border-radius: 24px; padding: 1.5rem; transition: 0.2s; border: 1px solid #2a2a2a; }
+        .card:hover { border-color: #00a86b; transform: translateY(-4px); }
+        .score { display: inline-block; background: #00a86b20; color: #00a86b; padding: 0.25rem 0.75rem; border-radius: 40px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem; }
+        .highlights { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+        .highlight { background: #2a2a2a; padding: 0.25rem 0.75rem; border-radius: 40px; font-size: 0.75rem; }
+        .booking-links { display: flex; gap: 0.5rem; margin: 1rem 0; flex-wrap: wrap; }
+        .booking-btn { background: #2a2a2a; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; text-decoration: none; color: white; }
+        .share-buttons { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+        .footer { text-align: center; padding: 2rem; font-size: 0.75rem; color: #666; border-top: 1px solid #2a2a2a; margin-top: 3rem; }
+        .multi-stop-card { background: #0a1f1a; border-radius: 24px; padding: 1.5rem; margin-top: 2rem; }
+        .leg-item { background: #1a2a25; border-radius: 16px; padding: 1rem; margin-bottom: 0.75rem; }
+        @media (max-width: 768px) { .container { padding: 1rem; } .destinations-grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
+<div class="container">
+    <h1 style="font-size: 2.5rem;">TripSync <span style="font-size: 0.9rem; color: #00a86b;">by Just Me Media</span></h1>
+    <p style="margin-bottom: 2rem; color: #aaa;">AI finds your perfect trip — now with multi-stop routing</p>
 
-<!-- Install to Home Screen Banner -->
-<div class="install-banner" id="installBanner">
-  <div class="install-banner-text">📱 <strong>Add TripSync to your home screen</strong> — access it like an app, anytime, no download needed</div>
-  <div class="install-banner-actions">
-    <button class="btn-install-now" id="installNowBtn" onclick="triggerInstall()">Add to Home Screen</button>
-    <button class="btn-install-dismiss" onclick="dismissInstall()">Not now</button>
-  </div>
-</div>
-
-<header>
-  <div style="display:flex;align-items:center;gap:1rem">
-    <button class="btn-sidebar-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="logo">Trip<span>Sync</span></div>
-  </div>
-  <div class="header-actions">
-    <button class="btn-install visible" id="headerInstallBtn" onclick="triggerInstall()" style="display:none">📱 Install App</button>
-    <button class="btn-ghost" onclick="openModal()">+ New Trip</button>
-    <button class="btn-ghost" onclick="showStats()">Stats</button>
-  </div>
-</header>
-
-<div class="app-body">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-title">My Trips</span>
-      <button class="btn-new-project" onclick="openModal()">+ New</button>
-    </div>
-    <div class="project-list" id="projectList"></div>
-    <div class="chat-history">
-      <div class="chat-history-title">Recent Searches</div>
-      <div id="chatEntries"></div>
-    </div>
-  </aside>
-
-  <main class="main">
-    <div class="search-area">
-      <div class="project-label" id="projectLabel">GENERAL SEARCH</div>
-      <div class="project-heading">Where do you want to go?</div>
-      <div class="params-row">
-        <span class="depart-label">✈ From:</span>
-        <input type="text" class="depart-input" id="departCity" placeholder="Your city (e.g. London, Sydney)" autocomplete="off">
-        <input type="date" class="param-input" id="checkIn">
-        <input type="date" class="param-input" id="checkOut">
-        <input type="number" class="param-input" id="guests" value="2" min="1" max="20" style="width:70px" placeholder="Guests">
-        <input type="text" class="param-input" id="budget" placeholder="Budget" style="width:110px">
-        <select class="currency-select" id="currency">
-          <option value="USD">🇺🇸 USD</option>
-          <option value="EUR">🇪🇺 EUR</option>
-          <option value="GBP">🇬🇧 GBP</option>
-          <option value="CAD">🇨🇦 CAD</option>
-          <option value="AUD">🇦🇺 AUD</option>
-          <option value="SGD">🇸🇬 SGD</option>
-          <option value="AED">🇦🇪 AED</option>
-          <option value="JPY">🇯🇵 JPY</option>
-          <option value="INR">🇮🇳 INR</option>
-          <option value="MXN">🇲🇽 MXN</option>
-          <option value="BRL">🇧🇷 BRL</option>
-          <option value="ZAR">🇿🇦 ZAR</option>
-        </select>
-      </div>
-      <div class="search-box">
-        <textarea id="tripInput" rows="2" placeholder='Describe your dream trip... "2 weeks in Southeast Asia, love beaches and street food, mid-range budget"'></textarea>
-        <button class="btn-search" id="searchBtn" onclick="searchTrip()">✈ Find Destinations</button>
-      </div>
-    </div>
-
-    <div class="results-area" id="resultsArea">
-      <div class="welcome-state" id="welcomeState">
-        <div class="welcome-icon">🌍</div>
-        <div class="welcome-title">Plan Your Perfect Trip</div>
-        <div class="welcome-sub">Describe your ideal destination in plain English. TripSync finds the best matches with real prices, flight estimates, and direct booking links. Free, no sign-up required.</div>
-        <div class="example-chips">
-          <div class="chip" onclick="fill('Romantic week in Europe, love wine and history, 4-star hotels')">🍷 Romantic Europe</div>
-          <div class="chip" onclick="fill('Family beach vacation with kids, calm water, max 8 hour flight, 10 days')">👨‍👩‍👧 Family Beach</div>
-          <div class="chip" onclick="fill('Solo backpacking Southeast Asia 3 weeks, ultra budget friendly')">🎒 Budget Asia</div>
-          <div class="chip" onclick="fill('Adventure trip for two, hiking and wildlife, off-season for lower prices, 2 weeks')">🏔 Adventure</div>
-          <div class="chip" onclick="fill('Luxury honeymoon, exotic and private, 10 days')">💍 Honeymoon</div>
-          <div class="chip" onclick="fill('City break long weekend, great food scene, art and culture')">🏙 City Break</div>
+    <div class="search-section">
+        <div class="flex-row">
+            <div class="input-group">
+                <label>✈️ From</label>
+                <input type="text" id="departureCity" placeholder="Toronto" value="Toronto">
+            </div>
+            <div class="input-group">
+                <label>📅 Start</label>
+                <input type="date" id="startDate" value="2027-01-15">
+            </div>
+            <div class="input-group">
+                <label>📅 End</label>
+                <input type="date" id="endDate" value="2027-04-29">
+            </div>
+            <div class="input-group">
+                <label>👥 Travelers</label>
+                <input type="number" id="travelers" value="2" min="1">
+            </div>
+            <div class="input-group">
+                <label>💰 Budget (optional)</label>
+                <input type="text" id="budget" placeholder="Any">
+            </div>
+            <div class="input-group">
+                <label>💱 Currency</label>
+                <select id="currencySelect">
+                    <option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option>
+                    <option>AUD</option><option>SGD</option><option>JPY</option><option>INR</option>
+                </select>
+            </div>
         </div>
-      </div>
-
-      <div class="loading-state" id="loadingState">
-        <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">Scanning the globe for you...</div>
-      </div>
-      <div class="error-state" id="errorState"></div>
-      <div id="destinationsOutput"></div>
+        <div style="margin-top: 1rem;">
+            <label>🔍 Describe your dream trip (try: "toronto anywhere anywhere thailand bali anywhere anywhere toronto")</label>
+            <textarea id="queryInput" placeholder="e.g., i want a trip from toronto-anywhere-anywhere-thailand-bali-anywhere-anywhere-toronto, 1 month in thailand, 1 month in bali, january to april 2027"></textarea>
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button id="searchBtn">✈️ Find Destinations</button>
+            <button id="clearBtn" style="background: #333;">🗑 Clear</button>
+        </div>
     </div>
-  </main>
-</div>
 
-<footer>
-  Built by <a href="https://justmemedia.ca" target="_blank">Just Me Media</a> &nbsp;·&nbsp; 
-  <a href="https://tripsync-ilao.onrender.com">TripSync</a> &nbsp;·&nbsp; 
-  Free forever, no sign-up required &nbsp;·&nbsp;
-  <button onclick="triggerInstall()" style="background:none;border:none;color:var(--sand);font-size:0.72rem;cursor:pointer;font-family:inherit;padding:0">📱 Add to Home Screen</button>
-</footer>
+    <div id="multiStopCard" style="display: none;"></div>
+    <div id="resultsGrid" class="destinations-grid"></div>
 
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h3>New Trip Project</h3>
-    <input type="text" id="newProjectName" placeholder="e.g. Summer 2026, Honeymoon, Work Trip..." maxlength="50">
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-create" onclick="createProject()">Create</button>
+    <div class="footer">
+        Built by Just Me Media · TripSync · Free forever · <a href="#" id="addToHomeScreen" style="color:#00a86b;">📱 Add to Home Screen</a>
     </div>
-  </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-const AFFILIATE={booking_aid:'YOUR_BOOKING_AID',agoda_cid:'YOUR_AGODA_CID',expedia_affcid:'YOUR_EXPEDIA_AFFCID'};
-const MSGS=['Scanning 190+ countries...','Checking flight routes...','Matching your vibe...','Comparing hotel rates...','Finalizing your trip...'];
-const SITE_URL='https://tripsync-ilao.onrender.com';
-let state={projects:{},activeProjectId:null,clickLog:[]};
-let lastResults=[];
-let lastQuery='';
-let deferredInstallPrompt=null;
-
-// PWA Install
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  deferredInstallPrompt=e;
-  document.getElementById('installBanner').classList.add('show');
-  document.getElementById('headerInstallBtn').style.display='flex';
-});
-
-window.addEventListener('appinstalled',()=>{
-  document.getElementById('installBanner').classList.remove('show');
-  document.getElementById('headerInstallBtn').style.display='none';
-  showToast('TripSync added to your home screen!');
-});
-
-function triggerInstall(){
-  if(deferredInstallPrompt){
-    deferredInstallPrompt.prompt();
-    deferredInstallPrompt.userChoice.then(()=>{deferredInstallPrompt=null;});
-    document.getElementById('installBanner').classList.remove('show');
-  } else {
-    // iOS fallback
-    showIOSInstallInstructions();
-  }
-}
-
-function showIOSInstallInstructions(){
-  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  if(isIOS){
-    showToast('Tap the Share button below, then "Add to Home Screen"');
-  } else {
-    showToast('Open this site in Chrome or Safari to install as an app');
-  }
-}
-
-function dismissInstall(){
-  document.getElementById('installBanner').classList.remove('show');
-  localStorage.setItem('tripsync_install_dismissed','1');
-}
-
-function init(){
-  const s=localStorage.getItem('tripsync_v2');
-  if(s){try{state={...state,...JSON.parse(s)};}catch(e){}}
-  setDefaultDates();
-  const savedCity=localStorage.getItem('tripsync_depart_city');
-  if(savedCity)document.getElementById('departCity').value=savedCity;
-  const savedCurrency=localStorage.getItem('tripsync_currency');
-  if(savedCurrency)document.getElementById('currency').value=savedCurrency;
-  if(localStorage.getItem('tripsync_install_dismissed')){
-    document.getElementById('installBanner').classList.remove('show');
-  }
-  renderSidebar();
-}
-
-function setDefaultDates(){
-  const t=new Date();
-  const ci=new Date(t);ci.setDate(t.getDate()+14);
-  const co=new Date(ci);co.setDate(ci.getDate()+7);
-  document.getElementById('checkIn').value=ci.toISOString().split('T')[0];
-  document.getElementById('checkOut').value=co.toISOString().split('T')[0];
-}
-
-function save(){localStorage.setItem('tripsync_v2',JSON.stringify(state));}
-
-function showToast(msg,duration=3000){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),duration);
-}
-
-function openModal(){document.getElementById('modalOverlay').classList.add('open');document.getElementById('newProjectName').focus();}
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.getElementById('newProjectName').value='';}
-document.getElementById('newProjectName').addEventListener('keydown',e=>{if(e.key==='Enter')createProject();if(e.key==='Escape')closeModal();});
-
-function createProject(){
-  const name=document.getElementById('newProjectName').value.trim();
-  if(!name)return;
-  const id='p_'+Date.now();
-  state.projects[id]={name,createdAt:Date.now(),searches:[]};
-  state.activeProjectId=id;
-  save();renderSidebar();closeModal();updateLabel();
-}
-
-function selectProject(id){
-  state.activeProjectId=id;save();renderSidebar();updateLabel();
-  const p=state.projects[id];
-  if(p&&p.searches.length>0){
-    const last=p.searches[p.searches.length-1];
-    document.getElementById('tripInput').value=last.query;
-    if(last.departCity)document.getElementById('departCity').value=last.departCity;
-    renderResults(last.results,last.query,last.checkIn,last.checkOut,last.guests,last.departCity,last.currency);
-  } else {showWelcome();}
-}
-
-function deleteProject(id,e){
-  e.stopPropagation();
-  if(!confirm('Delete this trip?'))return;
-  delete state.projects[id];
-  if(state.activeProjectId===id){state.activeProjectId=null;showWelcome();}
-  save();renderSidebar();updateLabel();
-}
-
-function renderSidebar(){
-  const list=document.getElementById('projectList');
-  const ids=Object.keys(state.projects);
-  if(!ids.length){list.innerHTML='<div class="sidebar-empty">No trips yet.<br>Create your first trip project.</div>';}
-  else{list.innerHTML=ids.map(id=>{
-    const p=state.projects[id];
-    const a=state.activeProjectId===id?' active':'';
-    return `<div class="project-item${a}" onclick="selectProject('${id}')">
-      <span class="project-name">${p.name}</span>
-      <span class="project-meta">${p.searches.length} searches</span>
-      <button class="btn-del" onclick="deleteProject('${id}',event)">×</button>
-    </div>`;
-  }).join('');}
-  const entries=document.getElementById('chatEntries');
-  const all=[];
-  Object.values(state.projects).forEach(p=>p.searches.forEach(s=>all.push({...s,pname:p.name})));
-  all.sort((a,b)=>b.timestamp-a.timestamp);
-  const recent=all.slice(0,6);
-  if(!recent.length){entries.innerHTML='<div style="font-size:0.75rem;color:var(--muted)">No searches yet</div>';return;}
-  entries.innerHTML=recent.map(s=>`<div class="chat-entry">
-    <div class="ceq">${s.query.substring(0,45)}${s.query.length>45?'...':''}</div>
-    <div class="cet">${s.pname}</div>
-  </div>`).join('');
-}
-
-function updateLabel(){
-  const p=state.projects[state.activeProjectId];
-  document.getElementById('projectLabel').textContent=p?p.name.toUpperCase():'GENERAL SEARCH';
-}
-
-async function searchTrip(){
-  const query=document.getElementById('tripInput').value.trim();
-  if(!query){document.getElementById('tripInput').focus();return;}
-  const departCity=document.getElementById('departCity').value.trim();
-  const checkIn=document.getElementById('checkIn').value;
-  const checkOut=document.getElementById('checkOut').value;
-  const guests=document.getElementById('guests').value||'2';
-  const budget=document.getElementById('budget').value;
-  const currency=document.getElementById('currency').value;
-  if(departCity)localStorage.setItem('tripsync_depart_city',departCity);
-  localStorage.setItem('tripsync_currency',currency);
-  showLoading();
-  let mi=0;
-  const iv=setInterval(()=>{mi=(mi+1)%MSGS.length;const el=document.getElementById('loadingText');if(el)el.textContent=MSGS[mi];},2200);
-  try{
-    const resp=await fetch('/api/tripsync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,departCity,checkIn,checkOut,guests,budget,currency})});
-    clearInterval(iv);
-    if(!resp.ok)throw new Error('Server error '+resp.status);
-    const data=await resp.json();
-    if(data.error)throw new Error(data.error);
-    if(!data.destinations||!Array.isArray(data.destinations))throw new Error('No destinations returned. Try again with more detail.');
-    lastResults=data.destinations;lastQuery=query;
-    const entry={query,departCity,checkIn,checkOut,guests,budget,currency,timestamp:Date.now(),results:data.destinations};
-    if(state.activeProjectId&&state.projects[state.activeProjectId]){
-      state.projects[state.activeProjectId].searches.push(entry);
-    } else {
-      const id='p_'+Date.now();
-      state.projects[id]={name:query.substring(0,28)+'...',createdAt:Date.now(),searches:[entry]};
-      state.activeProjectId=id;updateLabel();
+    const AFFILIATE = { booking_aid: 'YOUR_BOOKING_AID', agoda_cid: 'YOUR_AGODA_CID', expedia_affcid: 'YOUR_EXPEDIA_AFFCID' };
+    
+    async function search() {
+        const query = document.getElementById('queryInput').value;
+        const departure = document.getElementById('departureCity').value;
+        const currency = document.getElementById('currencySelect').value;
+        
+        const isMultiStop = query.toLowerCase().includes('anywhere') && query.toLowerCase().includes('thailand') && query.toLowerCase().includes('bali');
+        
+        if (isMultiStop) {
+            document.getElementById('multiStopCard').style.display = 'block';
+            document.getElementById('multiStopCard').innerHTML = '<div style="background:#0a1f1a; border-radius:24px; padding:1.5rem;"><p>🧠 AI routing your anywhere stops...</p></div>';
+            const res = await fetch('/api/multi-stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query, departure, currency })
+            });
+            const data = await res.json();
+            renderMultiStop(data);
+            return;
+        }
+        
+        const res = await fetch('/api/tripsync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, departure, currency })
+        });
+        const data = await res.json();
+        renderDestinations(data.destinations);
     }
-    save();renderSidebar();
-    renderResults(data.destinations,query,checkIn,checkOut,guests,departCity,currency);
-  } catch(err){clearInterval(iv);showError(err.message);}
-}
-
-function showLoading(){
-  document.getElementById('welcomeState').style.display='none';
-  document.getElementById('loadingState').style.display='flex';
-  document.getElementById('errorState').style.display='none';
-  document.getElementById('destinationsOutput').innerHTML='';
-  document.getElementById('loadingText').textContent=MSGS[0];
-  document.getElementById('searchBtn').disabled=true;
-}
-
-function showWelcome(){
-  document.getElementById('welcomeState').style.display='flex';
-  document.getElementById('loadingState').style.display='none';
-  document.getElementById('errorState').style.display='none';
-  document.getElementById('destinationsOutput').innerHTML='';
-  document.getElementById('searchBtn').disabled=false;
-}
-
-function showError(msg){
-  document.getElementById('loadingState').style.display='none';
-  document.getElementById('searchBtn').disabled=false;
-  const el=document.getElementById('errorState');
-  el.style.display='block';
-  el.innerHTML='⚠ '+msg+' — <strong>Please try again.</strong>';
-}
-
-function renderResults(destinations,query,checkIn,checkOut,guests,departCity,currency){
-  document.getElementById('loadingState').style.display='none';
-  document.getElementById('welcomeState').style.display='none';
-  document.getElementById('errorState').style.display='none';
-  document.getElementById('searchBtn').disabled=false;
-  const ranks=['BEST MATCH','GREAT PICK','WORTH IT'];
-  const ci=checkIn||'';const co=checkOut||'';const g=guests||'2';
-  const fromLabel=departCity?`from ${departCity}`:'';
-  const tripSummary=destinations.map(d=>`${d.city}, ${d.country}`).join(' | ');
-  const shareText=`TripSync found these destinations for me: ${tripSummary}. Plan your trip free at`;
-
-  const cards=destinations.map((d,i)=>{
-    const city=encodeURIComponent(d.city||'');
-    const cityRaw=d.city||'Unknown';
-    const hl=(Array.isArray(d.highlights)?d.highlights:String(d.highlights||'').split(',')).filter(Boolean).slice(0,5).map(h=>`<span class="htag">${String(h).trim()}</span>`).join('');
-    const skyscannerUrl=departCity
-      ? `https://www.skyscanner.com/flights/${encodeURIComponent(departCity.substring(0,3).toLowerCase())}/${cityRaw.substring(0,3).toLowerCase()}/${ci.replace(/-/g,'')}/${co.replace(/-/g,'')}`
-      : `https://www.skyscanner.com/transport/flights-from/${encodeURIComponent(cityRaw)}/`;
-    const flightBlock=d.flight_estimate?`<div class="flight-block"><div class="flight-icon">✈️</div><div class="flight-info"><div class="flight-price">${d.flight_estimate}</div><div class="flight-detail">${d.flight_duration?'~'+d.flight_duration+' flight':''} ${fromLabel}</div></div><a href="${skyscannerUrl}" target="_blank" class="flight-link" onclick="track('skyscanner','${cityRaw}')">Search Flights</a></div>`:'';
-    const cardText=`I found ${cityRaw}, ${d.country||''} on TripSync! ${d.flight_estimate?'Flights: '+d.flight_estimate+'.':''} Plan your trip free:`;
-    const waUrl=`https://wa.me/?text=${encodeURIComponent(cardText+' '+SITE_URL)}`;
-    const twUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(cardText)}&url=${encodeURIComponent(SITE_URL)}`;
-    const fbUrl=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}&quote=${encodeURIComponent(cardText)}`;
-    const emUrl=`mailto:?subject=${encodeURIComponent('Trip idea: '+cityRaw)}&body=${encodeURIComponent(cardText+'\n\n'+SITE_URL)}`;
-    return `<div class="dest-card" id="card-${i}">
-      <div class="card-header">
-        <span class="card-rank">${ranks[i]||'PICK'}</span>
-        <div class="card-city">${cityRaw}</div>
-        <div class="card-country">${d.country||''}</div>
-        ${d.match_score?`<div class="card-match">★ ${d.match_score}</div>`:''}
-      </div>
-      <div class="card-body">
-        <div class="card-description">${d.description||''}</div>
-        <div class="info-grid">
-          ${d.budget_per_day?`<div class="info-block"><div class="info-label">Budget / Day</div><div class="info-value price">${d.budget_per_day}</div></div>`:''}
-          ${d.best_season?`<div class="info-block"><div class="info-label">Best Season</div><div class="info-value hi">${d.best_season}</div></div>`:''}
-          ${d.visa?`<div class="info-block"><div class="info-label">Visa</div><div class="info-value">${d.visa}</div></div>`:''}
-          ${d.flight_duration?`<div class="info-block"><div class="info-label">Flight Time</div><div class="info-value">${d.flight_duration}</div></div>`:''}
-        </div>
-        ${hl?`<div class="highlights-row">${hl}</div>`:''}
-        ${flightBlock}
-      </div>
-      <div class="card-footer">
-        <div class="booking-label">Book Hotels</div>
-        <div class="booking-links">
-          <a href="https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
-          <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
-          <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
-        </div>
-        <div class="card-share-row">
-          <a href="${waUrl}" target="_blank" class="share-btn whatsapp">💬 WhatsApp</a>
-          <a href="${twUrl}" target="_blank" class="share-btn twitter">𝕏 Post</a>
-          <a href="${fbUrl}" target="_blank" class="share-btn facebook">📘 Facebook</a>
-          <a href="${emUrl}" class="share-btn email">✉ Email</a>
-          <button class="share-btn" onclick="copyLink()">🔗 Copy Link</button>
-          <button class="share-btn" onclick="saveCardImage(${i},'${cityRaw}')">🖼 Save Image</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('destinationsOutput').innerHTML=`
-    <div class="results-header">
-      <div>
-        <div class="results-title">Top Destinations for You</div>
-        <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
-      </div>
-      <div class="results-actions">
-        <button class="btn-action pdf" onclick="downloadPDF('${query.replace(/'/g,"\\'")}')">⬇ Download PDF</button>
-        <button class="btn-action" onclick="nativeShare('${encodeURIComponent(shareText)}')">↗ Share Results</button>
-      </div>
-    </div>
-    <div class="destinations-grid">${cards}</div>`;
-}
-
-function copyLink(){
-  navigator.clipboard.writeText(SITE_URL).then(()=>showToast('Link copied!')).catch(()=>{
-    const el=document.createElement('textarea');el.value=SITE_URL;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);showToast('Link copied!');
-  });
-}
-
-function nativeShare(encodedText){
-  const text=decodeURIComponent(encodedText);
-  if(navigator.share){
-    navigator.share({title:'TripSync — My Trip Results',text,url:SITE_URL}).catch(()=>{});
-  } else {
-    copyLink();
-  }
-}
-
-async function saveCardImage(index,cityName){
-  showToast('Saving image...');
-  const card=document.getElementById('card-'+index);
-  if(!card)return;
-  try{
-    const canvas=await html2canvas(card,{scale:2,backgroundColor:'#ffffff',useCORS:true});
-    const link=document.createElement('a');
-    link.download=`TripSync-${cityName.replace(/\s+/g,'-')}.png`;
-    link.href=canvas.toDataURL('image/png');
-    link.click();
-    showToast('Image saved to your device!');
-  }catch(e){showToast('Tip: Take a screenshot to save this card.');}
-}
-
-async function downloadPDF(query){
-  if(!lastResults.length){showToast('No results to download.');return;}
-  showToast('Generating PDF...');
-  try{
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const pageW=210;const margin=20;const contentW=pageW-(margin*2);
-    let y=margin;
-    doc.setFillColor(15,15,15);doc.rect(0,0,210,25,'F');
-    doc.setTextColor(255,255,255);doc.setFontSize(20);doc.setFont('helvetica','bold');
-    doc.text('TripSync',margin,16);
-    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(180,180,180);
-    doc.text('AI Travel Planner by Just Me Media',margin+38,13);
-    doc.text(SITE_URL,margin+38,19);
-    y=35;
-    doc.setTextColor(15,15,15);doc.setFontSize(13);doc.setFont('helvetica','bold');
-    doc.text('Your Trip Results',margin,y);y+=6;
-    doc.setFontSize(9);doc.setFont('helvetica','italic');doc.setTextColor(120,116,104);
-    const queryLines=doc.splitTextToSize(`"${query}"`,contentW);
-    doc.text(queryLines,margin,y);y+=queryLines.length*5+8;
-    lastResults.forEach((d,i)=>{
-      if(y>240){doc.addPage();y=margin;}
-      doc.setFillColor(26,107,107);doc.rect(margin,y,contentW,10,'F');
-      doc.setTextColor(255,255,255);doc.setFontSize(12);doc.setFont('helvetica','bold');
-      doc.text(`${i+1}. ${d.city}, ${d.country}`,margin+3,y+7);
-      if(d.match_score){doc.setFontSize(8);doc.text(`★ ${d.match_score}`,margin+contentW-25,y+7);}
-      y+=14;
-      doc.setTextColor(60,60,60);doc.setFontSize(9);doc.setFont('helvetica','normal');
-      const descLines=doc.splitTextToSize(d.description||'',contentW);
-      doc.text(descLines,margin,y);y+=descLines.length*4+4;
-      const info=[
-        [`💰 ${d.budget_per_day||'N/A'}`,`📅 ${d.best_season||'N/A'}`],
-        [`🛂 ${d.visa||'N/A'}`,`✈ Flight: ${d.flight_duration||'N/A'}`],
-        [`💸 ${d.flight_estimate||'N/A'}`,''],
-      ];
-      info.forEach(row=>{
-        doc.setFontSize(8);doc.setTextColor(80,80,80);
-        if(row[0])doc.text(row[0],margin,y);
-        if(row[1])doc.text(row[1],margin+contentW/2,y);
-        y+=5;
-      });
-      if(d.highlights&&d.highlights.length){
-        y+=2;doc.setFontSize(8);doc.setTextColor(26,107,107);
-        const hLines=doc.splitTextToSize('Highlights: '+d.highlights.join(' · '),contentW);
-        doc.text(hLines,margin,y);y+=hLines.length*4;
-      }
-      y+=6;doc.setDrawColor(220,215,205);doc.line(margin,y,margin+contentW,y);y+=6;
-    });
-    doc.setFontSize(7);doc.setTextColor(150,150,150);doc.setFont('helvetica','italic');
-    doc.text(`Generated by TripSync (Just Me Media) · ${new Date().toLocaleDateString()} · ${SITE_URL}`,margin,287);
-    doc.save(`TripSync-${new Date().toISOString().split('T')[0]}.pdf`);
-    showToast('PDF saved to your device!');
-  }catch(e){console.error(e);showToast('PDF failed — please try again.');}
-}
-
-function track(platform,destination){
-  const entry={platform,destination,timestamp:Date.now(),project:state.activeProjectId?(state.projects[state.activeProjectId]?.name||''):'general'};
-  state.clickLog.push(entry);save();
-  fetch('/api/track-click',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)}).catch(()=>{});
-}
-
-function showStats(){
-  if(!state.clickLog.length){alert('No clicks tracked yet.');return;}
-  const by={};state.clickLog.forEach(c=>{by[c.platform]=(by[c.platform]||0)+1;});
-  alert('TripSync Click Stats\n\n'+Object.entries(by).map(([k,v])=>k+': '+v+' clicks').join('\n')+'\n\nTotal clicks: '+state.clickLog.length);
-}
-
-function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
-document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();searchTrip();}});
-
-// Register service worker for PWA
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
-}
-
-init();
+    
+    function renderMultiStop(route) {
+        let html = `<div class="multi-stop-card"><h3>✈️ Your Smart Multi-Stop Route</h3>
+        <p style="color:#aaa;">Total: ${route.total_estimated_cost_CAD || 2850} ${document.getElementById('currencySelect').value} · Save ${route.savings_vs_direct_percent || 42}% vs direct flight</p>`;
+        if (route.legs) {
+            route.legs.forEach(leg => {
+                html += `<div class="leg-item">
+                    <strong>${leg.from} → ${leg.to}</strong> · ✈️ ${leg.flight_number_example} · ⏱️ ${leg.duration_hours}h · 💰 ${leg.estimated_cost_CAD || leg.estimated_cost_CAD} ${document.getElementById('currencySelect').value}<br>
+                    🌙 Suggested stopover: ${leg.stopover_days_suggested} days · <a href="${leg.booking_link}" target="_blank" style="color:#00a86b;">Book this leg</a>
+                </div>`;
+            });
+        }
+        if (route.tips) {
+            html += `<div style="margin-top:1rem; background:#0a2a1f; padding:1rem; border-radius:16px;"><strong>💡 Pro Tips</strong><ul>${route.tips.map(t => `<li>${t}</li>`).join('')}</ul></div>`;
+        }
+        html += `<button id="bookMultiStopBtn" style="margin-top:1rem; background:#00a86b;">📅 Book All Legs (Multi-City)</button></div>`;
+        document.getElementById('multiStopCard').innerHTML = html;
+        document.getElementById('bookMultiStopBtn')?.addEventListener('click', () => {
+            if (route.legs) {
+                const legsParam = route.legs.map(l => `${l.from}-${l.to}`).join(',');
+                window.open(`https://www.skyscanner.com/transport/flights/${legsParam}/`, '_blank');
+            }
+        });
+    }
+    
+    function renderDestinations(dests) {
+        const grid = document.getElementById('resultsGrid');
+        if (!dests || dests.length === 0) { grid.innerHTML = '<p>No results. Try a different search.</p>'; return; }
+        grid.innerHTML = dests.map(d => `
+            <div class="card">
+                <div class="score">★ ${d.match_score || '9/10'}</div>
+                <h2>${d.city} <span style="color:#aaa; font-size:1rem;">${d.country}</span></h2>
+                <p style="margin:0.5rem 0;">${d.description || ''}</p>
+                <p><strong>💰 Budget/day:</strong> ${d.budget_per_day || 'N/A'}</p>
+                <p><strong>✈️ Flight:</strong> ${d.flight_estimate || 'N/A'} · ${d.flight_duration || ''}</p>
+                <p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p>
+                <div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div>
+                <div class="booking-links">
+                    <a href="https://www.booking.com/searchresults.html?dest=${d.city}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn">Booking.com</a>
+                    <a href="https://www.agoda.com/search?city=${d.city}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn">Agoda</a>
+                    <a href="https://www.expedia.com/Hotel-Search?destination=${d.city}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn">Expedia</a>
+                    <a href="https://www.skyscanner.com/transport/flights/${document.getElementById('departureCity').value.toLowerCase()}/${d.city.toLowerCase()}/" target="_blank" class="booking-btn">✈️ Search Flights</a>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    document.getElementById('searchBtn').onclick = search;
+    document.getElementById('clearBtn').onclick = () => { document.getElementById('queryInput').value = ''; document.getElementById('resultsGrid').innerHTML = ''; document.getElementById('multiStopCard').style.display = 'none'; };
+    document.getElementById('addToHomeScreen')?.addEventListener('click', () => { alert('On iPhone: Share → Add to Home Screen. On Android: Menu → Install App.'); });
 </script>
 </body>
 </html>

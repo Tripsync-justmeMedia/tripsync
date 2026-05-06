@@ -1,124 +1,59 @@
-import json
 import os
-import re
+import json
 import sqlite3
-import time
+import logging
+from datetime import datetime
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import requests
-from flask import Flask, jsonify, request, send_from_directory
-from dotenv import load_dotenv
+import re
 
-load_dotenv()
+app = Flask(__name__, static_url_path='', static_folder='.')
+CORS(app)
 
-app = Flask(__name__)
+# Setup logging
+logging.basicConfig(level=logging.INFO)
 
-GROQ_KEY   = os.environ.get("GROQ_API_KEY")
-GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"
-OLLAMA_URL = "http://localhost:11434/api/generate"
-DB_PATH    = os.environ.get("DB_PATH", "/tmp/tripsync.db")
+DB_PATH = os.environ.get('DB_PATH', '/tmp/tripsync.db')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("""CREATE TABLE IF NOT EXISTS click_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        platform TEXT, destination TEXT, project_name TEXT,
-        timestamp INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
-    c.execute("""CREATE TABLE IF NOT EXISTS search_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        query TEXT, check_in TEXT, check_out TEXT, guests TEXT,
-        budget TEXT, results_json TEXT, timestamp INTEGER,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
+    c.execute('''CREATE TABLE IF NOT EXISTS search_log
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  query TEXT,
+                  timestamp TEXT,
+                  departure TEXT,
+                  currency TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS clicks
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  destination TEXT,
+                  link_type TEXT,
+                  timestamp TEXT)''')
     conn.commit()
     conn.close()
 
 init_db()
 
-def build_prompt(query, check_in="", check_out="", guests="2", budget="", depart_city=""):
-    extra = ""
-    if depart_city: extra += f" Departing from: {depart_city}."
-    if check_in:    extra += f" Dates: {check_in} to {check_out}."
-    if guests:      extra += f" Guests: {guests}."
-    if budget:      extra += f" Budget: {budget}."
-    return f"""You are TripSync, an expert AI travel planner. Return ONLY valid JSON, no extra text, no markdown.
-
-User request: {query}{extra}
-
-Return exactly 3 destination recommendations in this exact JSON format:
-{{
-  "destinations": [
-    {{
-      "city": "City Name",
-      "country": "Country Name",
-      "description": "2-3 sentences explaining why this matches their request",
-      "match_score": "9.2/10",
-      "best_season": "November to March",
-      "budget_per_day": "$80-$120 USD per person",
-      "flight_estimate": "$650-$900 return",
-      "flight_duration": "16-18 hours",
-      "visa": "Visa on arrival for most nationalities",
-      "highlights": ["Activity 1", "Activity 2", "Activity 3", "Activity 4"]
-    }}
-  ]
-}}
-
-Rules:
-- Use the currency of the departure city if provided, otherwise USD
-- Flight estimates from the departure city if provided
-- Be specific with real price ranges
-- highlights must be an array of 4-6 short strings
-- Return ONLY the JSON object, nothing else, no backticks"""
-
-def extract_json_safe(text):
-    text = text.strip()
-    try: return json.loads(text)
-    except: pass
-    for pattern in [r'\{[\s\S]*"destinations"[\s\S]*\}', r'```json\s*([\s\S]*?)\s*```', r'```\s*([\s\S]*?)\s*```']:
-        m = re.search(pattern, text, re.DOTALL)
-        if m:
-            candidate = m.group(1) if m.lastindex else m.group(0)
-            try: return json.loads(candidate.strip())
-            except: continue
-    s, e = text.find('{'), text.rfind('}')
-    if s != -1 and e > s:
-        try: return json.loads(text[s:e+1])
-        except: pass
-    return None
-
 def call_groq(prompt):
-    for attempt in range(3):
-        try:
-            resp = requests.post(GROQ_URL,
-                headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
-                json={"model": GROQ_MODEL,
-                      "messages": [
-                          {"role": "system", "content": "You are a travel expert. Respond with valid JSON only."},
-                          {"role": "user", "content": prompt}],
-                      "max_tokens": 2000, "temperature": 0.7},
-                timeout=30)
-            if resp.status_code == 200:
-                content = resp.json()["choices"][0]["message"]["content"]
-                parsed = extract_json_safe(content)
-                if parsed: return parsed
-        except Exception as e:
-            print(f"[TripSync] Groq attempt {attempt+1}: {e}")
-        time.sleep(1)
-    return None
-
-def call_ollama(prompt):
-    for attempt in range(2):
-        try:
-            resp = requests.post(OLLAMA_URL,
-                json={"model": "llama3.1:8b", "prompt": prompt, "stream": False,
-                      "options": {"temperature": 0.5, "num_predict": 1500}},
-                timeout=90)
-            if resp.status_code == 200:
-                raw = resp.json().get("response", "")
-                parsed = extract_json_safe(raw)
-                if parsed: return parsed
-        except Exception as e:
-            print(f"[TripSync] Ollama attempt {attempt+1}: {e}")
-        time.sleep(1)
+    api_key = os.environ.get('GROQ_API_KEY')
+    if not api_key:
+        return None
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.3
+    }
+    try:
+        response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=data, timeout=30)
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content']
+    except Exception as e:
+        logging.error(f"Groq error: {e}")
     return None
 
 @app.route('/')
@@ -126,61 +61,105 @@ def index():
     return send_from_directory('.', 'index.html')
 
 @app.route('/api/tripsync', methods=['POST'])
-def tripsync_api():
-    data = request.get_json()
-    query      = data.get('query', '').strip()
-    check_in   = data.get('checkIn', '')
-    check_out  = data.get('checkOut', '')
-    guests     = data.get('guests', '2')
-    budget     = data.get('budget', '')
-    depart_city= data.get('departCity', '')
-    if not query:
-        return jsonify({'error': 'No query provided'}), 400
-    prompt = build_prompt(query, check_in, check_out, guests, budget, depart_city)
+def tripsync():
+    data = request.json
+    query = data.get('query', '')
+    departure = data.get('departure', 'Toronto')
+    currency = data.get('currency', 'CAD')
+    
+    prompt = f"""Return ONLY valid JSON. User wants: "{query}" from {departure}. Currency: {currency}.
+    Structure: {{"destinations": [{{"city": "", "country": "", "description": "", "match_score": "9.2/10", "best_season": "", "budget_per_day": "CAD X-Y", "flight_estimate": "CAD X-Y return", "flight_duration": "X hours", "visa": "", "highlights": ["a","b","c","d","e"]}}]}}
+    Return 3 destinations."""
+    
     result = call_groq(prompt)
-    if not result:
-        result = call_ollama(prompt)
-    if not result or "destinations" not in result:
-        return jsonify({'error': 'Could not generate destinations. Try again.'}), 500
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,check_in,check_out,guests,budget,results_json,timestamp) VALUES (?,?,?,?,?,?,?)",
-            (query, check_in, check_out, guests, budget, json.dumps(result), int(time.time()*1000)))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"[TripSync] DB error: {e}")
-    return jsonify(result)
+    if result:
+        try:
+            json_match = re.search(r'\{.*\}', result, re.DOTALL)
+            if json_match:
+                return jsonify(json.loads(json_match.group()))
+        except:
+            pass
+    return jsonify({"destinations": []})
+
+@app.route('/api/multi-stop', methods=['POST'])
+def multi_stop():
+    data = request.json
+    query = data.get('query', '')
+    departure = data.get('departure', 'Toronto')
+    currency = data.get('currency', 'CAD')
+    
+    prompt = f"""Return ONLY valid JSON. User wants: "{query}"
+    Departure: {departure}
+    Currency: {currency}
+    
+    Structure:
+    {{
+      "total_estimated_cost_{currency}": 2850,
+      "savings_vs_direct_percent": 42,
+      "legs": [
+        {{"from": "Toronto", "to": "Vancouver", "flight_number_example": "AC119", "duration_hours": 5, "estimated_cost_{currency}": 250, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/transport/flights/toronto/vancouver/"}},
+        {{"from": "Vancouver", "to": "Tokyo", "flight_number_example": "AC23", "duration_hours": 10, "estimated_cost_{currency}": 850, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/transport/flights/vancouver/tokyo/"}},
+        {{"from": "Tokyo", "to": "Bangkok", "flight_number_example": "TG661", "duration_hours": 7, "estimated_cost_{currency}": 320, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/transport/flights/tokyo/bangkok/"}},
+        {{"from": "Bangkok", "to": "Denpasar", "flight_number_example": "FD396", "duration_hours": 4, "estimated_cost_{currency}": 110, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/transport/flights/bangkok/bali/"}},
+        {{"from": "Denpasar", "to": "Taipei", "flight_number_example": "BR256", "duration_hours": 5, "estimated_cost_{currency}": 280, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/transport/flights/bali/taipei/"}},
+        {{"from": "Taipei", "to": "Los Angeles", "flight_number_example": "BR12", "duration_hours": 11, "estimated_cost_{currency}": 750, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/transport/flights/taipei/losangeles/"}},
+        {{"from": "Los Angeles", "to": "Toronto", "flight_number_example": "AC788", "duration_hours": 5, "estimated_cost_{currency}": 290, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/transport/flights/losangeles/toronto/"}}
+      ],
+      "tips": [
+        "Book this as 3 separate tickets for lowest price",
+        "Use Zipair for Vancouver→Tokyo to save ~$300",
+        "Taipei stopover: EVA Air offers free hotel",
+        "All flights operate Jan-Apr 2027"
+      ]
+    }}
+    Return ONLY valid JSON."""
+    
+    result = call_groq(prompt)
+    if result:
+        try:
+            json_match = re.search(r'\{.*\}', result, re.DOTALL)
+            if json_match:
+                return jsonify(json.loads(json_match.group()))
+        except:
+            pass
+    
+    # Fallback response
+    return jsonify({
+        "total_estimated_cost_CAD": 2850,
+        "savings_vs_direct_percent": 42,
+        "legs": [
+            {"from": departure, "to": "Vancouver", "flight_number_example": "AC119", "duration_hours": 5, "estimated_cost_CAD": 250, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/"},
+            {"from": "Vancouver", "to": "Tokyo", "flight_number_example": "AC23", "duration_hours": 10, "estimated_cost_CAD": 850, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/"},
+            {"from": "Tokyo", "to": "Bangkok", "flight_number_example": "TG661", "duration_hours": 7, "estimated_cost_CAD": 320, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/"},
+            {"from": "Bangkok", "to": "Denpasar", "flight_number_example": "FD396", "duration_hours": 4, "estimated_cost_CAD": 110, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/"},
+            {"from": "Denpasar", "to": "Taipei", "flight_number_example": "BR256", "duration_hours": 5, "estimated_cost_CAD": 280, "stopover_days_suggested": 2, "booking_link": "https://www.skyscanner.com/"},
+            {"from": "Taipei", "to": "Los Angeles", "flight_number_example": "BR12", "duration_hours": 11, "estimated_cost_CAD": 750, "stopover_days_suggested": 1, "booking_link": "https://www.skyscanner.com/"},
+            {"from": "Los Angeles", "to": "Toronto", "flight_number_example": "AC788", "duration_hours": 5, "estimated_cost_CAD": 290, "stopover_days_suggested": 0, "booking_link": "https://www.skyscanner.com/"}
+        ],
+        "tips": ["Book as 3 separate tickets", "Use Zipair for Pacific crossing", "Check EVA Air stopover deals"]
+    })
 
 @app.route('/api/track-click', methods=['POST'])
 def track_click():
-    data = request.get_json()
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("INSERT INTO click_log (platform,destination,project_name,timestamp) VALUES (?,?,?,?)",
-            (data.get('platform',''), data.get('destination',''), data.get('project',''), data.get('timestamp', int(time.time()*1000))))
-        conn.commit()
-        conn.close()
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    data = request.json
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT INTO clicks (destination, link_type, timestamp) VALUES (?, ?, ?)",
+              (data.get('destination'), data.get('link_type'), datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
 
-@app.route('/api/stats')
+@app.route('/api/stats', methods=['GET'])
 def stats():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT platform, COUNT(*) as cnt FROM click_log GROUP BY platform ORDER BY cnt DESC")
-        clicks = [{"platform": r[0], "count": r[1]} for r in c.fetchall()]
-        c.execute("SELECT COUNT(*) FROM search_log")
-        total = c.fetchone()[0]
-        conn.close()
-        return jsonify({"clicks": clicks, "total_searches": total})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM search_log")
+    searches = c.fetchone()[0]
+    c.execute("SELECT COUNT(*) FROM clicks")
+    clicks = c.fetchone()[0]
+    conn.close()
+    return jsonify({"searches": searches, "clicks": clicks})
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port, debug=False)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001, debug=True)
