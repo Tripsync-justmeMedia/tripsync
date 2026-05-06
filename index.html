@@ -240,7 +240,7 @@ function renderMultiStop(route) {
     if (route.legs) { 
         for (let leg of route.legs) { 
             const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${encodeURIComponent(leg.from)}%20to%20${encodeURIComponent(leg.to)}`;
-            const bookingUrl = `https://www.booking.com/searchresults.html?dest=${encodeURIComponent(leg.to)}`;
+            const bookingUrl = `https://www.awin1.com/cread.php?awinmid=6776https://www.booking.com/searchresults.html?dest=awinaffid=2884913https://www.booking.com/searchresults.html?dest=ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fdest%3D${encodeURIComponent(leg.to)}`;
             const agodaUrl = `https://www.agoda.com/search?city=${encodeURIComponent(leg.to)}`;
             html += `<div class="leg-item">
                 <strong>${leg.from} → ${leg.to}</strong> · ✈️ ${leg.flight_number_example} · ⏱️ ${leg.duration_hours}h · 💰 ${leg.estimated_cost_CAD || 0} ${cur}<br>
