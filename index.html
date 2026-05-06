@@ -12,41 +12,45 @@
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#f5f5f5;}
         .container{max-width:1400px;margin:0 auto;padding:2rem;}
-        h1{font-family:'Playfair Display',serif;font-size:2.5rem;}
-        .search-section{background:#1a1a1a;border-radius:28px;padding:2rem;margin-bottom:2rem;}
+        h1{font-family:'Playfair Display',serif;font-size:2rem;}
+        .search-section{background:#1a1a1a;border-radius:28px;padding:1.5rem;margin-bottom:2rem;}
         .flex-row{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;}
-        .input-group{flex:1;min-width:150px;}
-        label{display:block;font-size:0.75rem;text-transform:uppercase;margin-bottom:0.5rem;color:#aaa;}
-        input,select,textarea{width:100%;padding:0.75rem 1rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:16px;color:white;font-family:inherit;}
-        textarea{min-height:80px;}
-        button{background:#00a86b;border:none;padding:0.75rem 2rem;border-radius:40px;color:white;font-weight:600;cursor:pointer;}
+        .input-group{flex:1;min-width:140px;}
+        label{display:block;font-size:0.7rem;text-transform:uppercase;margin-bottom:0.3rem;color:#aaa;}
+        input,select,textarea{width:100%;padding:0.6rem 1rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:16px;color:white;font-family:inherit;font-size:0.9rem;}
+        textarea{min-height:70px;}
+        button{background:#00a86b;border:none;padding:0.6rem 1.5rem;border-radius:40px;color:white;font-weight:600;cursor:pointer;transition:0.2s;}
         button:hover{background:#008c58;}
-        .destinations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:1.5rem;margin-top:2rem;}
-        .card{background:#1a1a1a;border-radius:24px;padding:1.5rem;border:1px solid #2a2a2a;}
+        .destinations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1.5rem;margin-top:2rem;}
+        .card{background:#1a1a1a;border-radius:24px;padding:1.2rem;border:1px solid #2a2a2a;}
         .card:hover{border-color:#00a86b;}
-        .score{background:#00a86b20;color:#00a86b;padding:0.25rem 0.75rem;border-radius:40px;font-size:0.8rem;display:inline-block;margin-bottom:1rem;}
-        .highlights{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0;}
-        .highlight{background:#2a2a2a;padding:0.25rem 0.75rem;border-radius:40px;font-size:0.75rem;}
-        .booking-links{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0;}
-        .booking-btn{background:#2a2a2a;padding:0.4rem 0.8rem;border-radius:20px;font-size:0.7rem;text-decoration:none;color:white;display:inline-block;}
+        .score{background:#00a86b20;color:#00a86b;padding:0.2rem 0.7rem;border-radius:40px;font-size:0.75rem;display:inline-block;margin-bottom:0.8rem;}
+        .highlights{display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.8rem 0;}
+        .highlight{background:#2a2a2a;padding:0.2rem 0.6rem;border-radius:40px;font-size:0.7rem;}
+        .booking-links{display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.8rem 0;}
+        .booking-btn{background:#2a2a2a;padding:0.3rem 0.7rem;border-radius:20px;font-size:0.7rem;text-decoration:none;color:white;display:inline-block;}
         .booking-btn:hover{background:#00a86b;}
-        .flight-group{display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.5rem;}
-        .flight-btn{background:#1a2a2a;padding:0.3rem 0.6rem;border-radius:16px;font-size:0.65rem;text-decoration:none;color:#aaa;}
+        .flight-group{display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.5rem;align-items:center;}
+        .flight-btn{background:#1a2a2a;padding:0.2rem 0.5rem;border-radius:16px;font-size:0.65rem;text-decoration:none;color:#aaa;}
         .flight-btn:hover{background:#00a86b;color:white;}
-        .action-buttons{display:flex;gap:0.75rem;margin:1rem 0;flex-wrap:wrap;}
-        .action-btn{background:#2a2a2a;padding:0.5rem 1rem;border-radius:30px;font-size:0.8rem;border:none;color:white;cursor:pointer;}
-        .footer{text-align:center;padding:2rem;font-size:0.75rem;color:#666;border-top:1px solid #2a2a2a;margin-top:3rem;}
-        .multi-stop-card{background:#0a1f1a;border-radius:24px;padding:1.5rem;margin-top:2rem;}
-        .leg-item{background:#1a2a25;border-radius:16px;padding:1rem;margin-bottom:0.75rem;}
+        .action-buttons{display:flex;gap:0.5rem;margin:0.8rem 0;flex-wrap:wrap;}
+        .action-btn{background:#2a2a2a;padding:0.4rem 0.8rem;border-radius:30px;font-size:0.7rem;border:none;color:white;cursor:pointer;}
+        .footer{text-align:center;padding:1.5rem;font-size:0.7rem;color:#666;border-top:1px solid #2a2a2a;margin-top:2rem;}
+        .multi-stop-card{background:#0a1f1a;border-radius:24px;padding:1.2rem;margin-top:2rem;}
+        .leg-item{background:#1a2a25;border-radius:16px;padding:0.8rem;margin-bottom:0.8rem;}
         .leg-links{margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;}
         .leg-link{background:#2a3a2a;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.7rem;text-decoration:none;color:#aaa;}
         .leg-link:hover{background:#00a86b;color:white;}
-        .sidebar{position:fixed;left:0;top:0;width:320px;height:100vh;background:#0a0a0a;border-right:1px solid #2a2a2a;padding:1.5rem;overflow-y:auto;transform:translateX(-100%);transition:transform 0.3s ease;z-index:1000;}
+        .sidebar{position:fixed;left:0;top:0;width:300px;height:100vh;background:#0a0a0a;border-right:1px solid #2a2a2a;padding:1.2rem;overflow-y:auto;transform:translateX(-100%);transition:transform 0.3s ease;z-index:1000;}
         .sidebar.open{transform:translateX(0);}
-        .sidebar-toggle{position:fixed;left:1rem;top:1rem;background:#00a86b;border:none;border-radius:40px;padding:0.5rem 1rem;z-index:1001;cursor:pointer;}
-        .sidebar-close{position:absolute;top:1rem;right:1rem;background:#333;border:none;border-radius:30px;padding:0.3rem 0.8rem;cursor:pointer;color:white;}
+        .sidebar-toggle{position:fixed;left:0.8rem;top:0.8rem;background:#00a86b;border:none;border-radius:40px;padding:0.4rem 0.8rem;z-index:1001;cursor:pointer;font-size:0.8rem;}
+        .sidebar-close{position:absolute;top:0.8rem;right:0.8rem;background:#333;border:none;border-radius:30px;padding:0.2rem 0.6rem;cursor:pointer;color:white;}
         .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999;display:none;}
         .overlay.show{display:block;}
+        .loader{border:3px solid #2a2a2a;border-top:3px solid #00a86b;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:2rem auto;}
+        @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+        .example-btn{background:#1a2a1a;border:1px solid #2a3a2a;border-radius:40px;padding:0.3rem 0.8rem;font-size:0.7rem;color:#aaa;cursor:pointer;transition:0.2s;}
+        .example-btn:hover{background:#00a86b;color:white;border-color:#00a86b;}
         @media(max-width:768px){.container{padding:1rem;}.destinations-grid{grid-template-columns:1fr;}.sidebar{width:85%;}}
     </style>
 </head>
@@ -64,20 +68,29 @@
     <button id="clearStorageBtn" style="background:#8b0000;margin-top:1rem;width:100%;">🗑 Clear All Saved</button>
 </div>
 <div class="container">
-    <h1>TripSync <span style="font-size:0.9rem;color:#00a86b;">by Just Me Media</span></h1>
-    <p style="margin-bottom:2rem;color:#aaa;">AI finds your perfect trip — with multiple booking options</p>
+    <h1>TripSync <span style="font-size:0.8rem;color:#00a86b;">by Just Me Media</span></h1>
+    <p style="margin-bottom:1.5rem;color:#aaa;">AI plans your multi-stop trip with real booking links</p>
+    
+    <div style="text-align:center; margin-bottom:1rem;">
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center;">
+            <button class="example-btn" data-query="toronto anywhere anywhere thailand bali anywhere anywhere toronto, 1 month each">🌏 Asia Multi-Stop</button>
+            <button class="example-btn" data-query="beach, street food, budget, southeast asia, 2 weeks">🏖️ Beach + Street Food</button>
+            <button class="example-btn" data-query="europe 3 weeks, museums, nightlife, budget">🇪🇺 Europe Explorer</button>
+        </div>
+    </div>
+    
     <div class="search-section">
         <div class="flex-row">
-            <div class="input-group"><label>✈️ From</label><input type="text" id="departureCity" placeholder="e.g., London, New York, Tokyo" value=""></div>
+            <div class="input-group"><label>✈️ From</label><input type="text" id="departureCity" placeholder="e.g., London, New York" value=""></div>
             <div class="input-group"><label>📅 Start</label><input type="date" id="startDate" value="2027-01-15"></div>
             <div class="input-group"><label>📅 End</label><input type="date" id="endDate" value="2027-04-29"></div>
             <div class="input-group"><label>👥 Travelers</label><input type="number" id="travelers" value="2" min="1"></div>
-            <div class="input-group"><label>💰 Budget</label><input type="text" id="budget" placeholder="Any"></div>
             <div class="input-group"><label>💱 Currency</label><select id="currencySelect"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>AUD</option><option>SGD</option><option>JPY</option><option>INR</option></select></div>
         </div>
-        <div style="margin-top:1rem;"><label>🔍 Describe your dream trip</label><textarea id="queryInput" placeholder="e.g., toronto anywhere anywhere thailand bali anywhere anywhere toronto, 1 month each"></textarea></div>
-        <div style="margin-top:1rem;display:flex;gap:1rem;"><button id="searchBtn">✈️ Find Destinations</button><button id="clearBtn" style="background:#333;">🗑 Clear</button></div>
+        <div style="margin-top:0.8rem;"><label>🔍 Describe your dream trip</label><textarea id="queryInput" placeholder="e.g., toronto anywhere anywhere thailand bali anywhere anywhere toronto, 1 month each"></textarea></div>
+        <div style="margin-top:0.8rem;display:flex;gap:0.8rem;"><button id="searchBtn">✈️ Find Destinations</button><button id="clearBtn" style="background:#333;">🗑 Clear</button></div>
     </div>
+    
     <div id="multiStopCard" style="display:none;"></div>
     <div id="resultsGrid" class="destinations-grid"></div>
     <div class="footer">Built by Just Me Media · TripSync · Free forever · <a href="#" id="addToHomeScreen" style="color:#00a86b;">📱 Add to Home Screen</a></div>
@@ -96,7 +109,7 @@ function renderSavedTripsList() {
     const c = document.getElementById('savedTripsList');
     if (!c) return;
     if (trips.length === 0) { c.innerHTML = '<p style="color:#666;">No saved trips yet</p>'; return; }
-    c.innerHTML = trips.map((trip, idx) => `<div style="background:#1a1a1a;padding:0.75rem;border-radius:12px;margin-bottom:0.75rem;"><div style="font-weight:600;">${trip.name || 'Trip '+(idx+1)}</div><div style="font-size:0.7rem;color:#aaa;">${(trip.query || '').substring(0,50)}...</div><div style="margin-top:0.5rem;display:flex;gap:0.5rem;"><button onclick="loadTrip(${idx})" style="font-size:0.7rem;padding:0.25rem 0.5rem;">📂 Load</button><button onclick="deleteTrip(${idx})" style="font-size:0.7rem;padding:0.25rem 0.5rem;background:#8b0000;">🗑</button></div></div>`).join('');
+    c.innerHTML = trips.map((trip, idx) => `<div style="background:#1a1a1a;padding:0.6rem;border-radius:12px;margin-bottom:0.6rem;"><div style="font-weight:600;">${trip.name || 'Trip '+(idx+1)}</div><div style="font-size:0.65rem;color:#aaa;">${(trip.query || '').substring(0,50)}...</div><div style="margin-top:0.4rem;display:flex;gap:0.4rem;"><button onclick="loadTrip(${idx})" style="font-size:0.65rem;padding:0.2rem 0.4rem;">📂 Load</button><button onclick="deleteTrip(${idx})" style="font-size:0.65rem;padding:0.2rem 0.4rem;background:#8b0000;">🗑</button></div></div>`).join('');
 }
 
 function saveCurrentTrip() {
@@ -146,16 +159,17 @@ async function search() {
     const isMulti = query.toLowerCase().includes('anywhere');
     if (isMulti) {
         document.getElementById('multiStopCard').style.display = 'block';
-        document.getElementById('multiStopCard').innerHTML = '<div style="background:#0a1f1a;padding:1.5rem;border-radius:24px;"><p>🧠 AI routing...</p></div>';
+        document.getElementById('multiStopCard').innerHTML = '<div class="loader"></div><p style="text-align:center;">✨ AI planning your multi-stop route...</p>';
         document.getElementById('resultsGrid').innerHTML = '';
         try {
             const res = await fetch('/api/multi-stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, departure, currency }) });
             const data = await res.json();
-            if (data.error) document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000;padding:1.5rem;border-radius:24px;"><p>❌ ' + data.error + '</p></div>';
+            if (data.error) document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000;padding:1rem;border-radius:24px;"><p>❌ ' + data.error + '</p></div>';
             else { currentRouteData = data; renderMultiStop(data); }
-        } catch(e) { document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000;padding:1.5rem;border-radius:24px;"><p>❌ Network error</p></div>'; }
+        } catch(e) { document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000;padding:1rem;border-radius:24px;"><p>❌ Network error</p></div>'; }
         return;
     }
+    document.getElementById('resultsGrid').innerHTML = '<div class="loader"></div><p style="text-align:center;">✨ Finding your perfect destinations...</p>';
     try {
         const res = await fetch('/api/tripsync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, departure, currency }) });
         const data = await res.json();
@@ -174,17 +188,17 @@ function renderMultiStop(route) {
             const agodaUrl = `https://www.agoda.com/search?city=${encodeURIComponent(leg.to)}`;
             html += `<div class="leg-item">
                 <strong>${leg.from} → ${leg.to}</strong> · ✈️ ${leg.flight_number_example} · ⏱️ ${leg.duration_hours}h · 💰 ${leg.estimated_cost_CAD || 0} ${cur}<br>
-                🌙 Suggested stopover: ${leg.stopover_days_suggested} days
+                🌙 Stay: ${leg.stopover_days_suggested} days
                 <div class="leg-links">
-                    <a href="${googleFlightsUrl}" target="_blank" class="leg-link">✈️ Search Flights</a>
-                    <a href="${bookingUrl}" target="_blank" class="leg-link">🏨 Book Hotel</a>
+                    <a href="${googleFlightsUrl}" target="_blank" class="leg-link">✈️ Flights</a>
+                    <a href="${bookingUrl}" target="_blank" class="leg-link">🏨 Hotels</a>
                     <a href="${agodaUrl}" target="_blank" class="leg-link">🏯 Agoda</a>
                 </div>
             </div>`;
         }
     }
-    if (route.tips) { html += `<div style="margin-top:1rem;background:#0a2a1f;padding:1rem;border-radius:16px;"><strong>💡 Tips</strong><ul>`; for (let t of route.tips) { html += `<li>${t}</li>`; } html += `</ul></div>`; }
-    html += `<button id="bookMultiStopBtn" style="margin-top:1rem;background:#00a86b;">📅 Book All Legs</button></div>`;
+    if (route.tips) { html += `<div style="margin-top:1rem;background:#0a2a1f;padding:0.8rem;border-radius:16px;"><strong>💡 Tips</strong><ul style="margin-left:1rem;">`; for (let t of route.tips) { html += `<li style="margin:0.3rem 0;">${t}</li>`; } html += `</ul></div>`; }
+    html += `<button id="bookMultiStopBtn" style="margin-top:1rem;background:#00a86b;">📅 Book Full Trip</button></div>`;
     document.getElementById('multiStopCard').innerHTML = html;
     document.getElementById('bookMultiStopBtn')?.addEventListener('click', () => { 
         if (route.legs && route.legs.length > 0) {
@@ -207,15 +221,13 @@ function renderDestinations(dests) {
         `;
         const flightLinks = `
             <div class="flight-group">
-                <span style="font-size:0.7rem;color:#aaa;">✈️ Flights:</span>
+                <span style="font-size:0.65rem;">✈️</span>
                 <a href="https://www.google.com/travel/flights?q=Flights%20from%20${encodeURIComponent(dep)}%20to%20${encodeURIComponent(d.city)}" target="_blank" class="flight-btn">Google</a>
                 <a href="https://www.kayak.com/flights/${dep}-${d.city}" target="_blank" class="flight-btn">Kayak</a>
                 <a href="https://www.skyscanner.com/transport/flights/${dep}/${d.city}/" target="_blank" class="flight-btn">Skyscanner</a>
-                <a href="https://www.momondo.com/flights/${dep}/${d.city}" target="_blank" class="flight-btn">Momondo</a>
-                <a href="https://www.cheapoair.com/flights/results?destination=${d.city}" target="_blank" class="flight-btn">CheapOair</a>
             </div>
         `;
-        return `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;">${d.country}</span></h2><p>${d.description || ''}</p><p><strong>💰 Budget/day:</strong> ${d.budget_per_day || 'N/A'}</p><p><strong>✈️ Flight:</strong> ${d.flight_estimate || 'N/A'} · ${d.flight_duration || ''}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links">${hotelLinks}</div>${flightLinks}<div class="share-buttons" style="margin-top:0.5rem;"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button></div></div>`;
+        return `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;font-size:0.9rem;">${d.country}</span></h2><p style="font-size:0.85rem;margin:0.4rem 0;">${d.description || ''}</p><p><strong>💰 Day:</strong> ${d.budget_per_day || 'N/A'} · <strong>✈️:</strong> ${d.flight_estimate || 'N/A'}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links">${hotelLinks}</div>${flightLinks}<div style="margin-top:0.5rem;"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button></div></div>`;
     }).join('');
     document.getElementById('multiStopCard').style.display = 'none';
 }
@@ -230,6 +242,13 @@ document.getElementById('overlay').onclick = closeSidebar;
 document.getElementById('saveCurrentTripBtn').onclick = saveCurrentTrip;
 document.getElementById('clearStorageBtn').onclick = () => { localStorage.removeItem('tripsync_saved_trips'); renderSavedTripsList(); alert('Cleared'); };
 document.getElementById('addToHomeScreen')?.addEventListener('click', () => alert('On iPhone: Share → Add to Home Screen. On Android: Menu → Install App.'));
+
+document.querySelectorAll('.example-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.getElementById('queryInput').value = btn.dataset.query;
+        search();
+    };
+});
 
 renderSavedTripsList();
 loadStats();
