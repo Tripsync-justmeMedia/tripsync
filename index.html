@@ -36,27 +36,20 @@
         .footer { text-align: center; padding: 2rem; font-size: 0.75rem; color: #666; border-top: 1px solid #2a2a2a; margin-top: 3rem; }
         .multi-stop-card { background: #0a1f1a; border-radius: 24px; padding: 1.5rem; margin-top: 2rem; }
         .leg-item { background: #1a2a25; border-radius: 16px; padding: 1rem; margin-bottom: 0.75rem; }
-        
-        /* Sidebar styles */
         .sidebar { position: fixed; left: 0; top: 0; width: 320px; height: 100vh; background: #0a0a0a; border-right: 1px solid #2a2a2a; padding: 1.5rem; overflow-y: auto; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1000; }
         .sidebar.open { transform: translateX(0); }
         .sidebar-toggle { position: fixed; left: 1rem; top: 1rem; background: #00a86b; border: none; border-radius: 40px; padding: 0.5rem 1rem; z-index: 1001; cursor: pointer; font-size: 0.9rem; }
         .sidebar-close { position: absolute; top: 1rem; right: 1rem; background: #333; border: none; border-radius: 30px; padding: 0.3rem 0.8rem; cursor: pointer; color: white; font-size: 0.8rem; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; display: none; }
         .overlay.show { display: block; }
-        
         @media (max-width: 768px) { .container { padding: 1rem; } .destinations-grid { grid-template-columns: 1fr; } .sidebar { width: 85%; } }
     </style>
 </head>
 <body>
 
-<!-- Overlay -->
 <div class="overlay" id="overlay"></div>
-
-<!-- Sidebar Toggle Button -->
 <button class="sidebar-toggle" id="sidebarToggle">📋 My Trips</button>
 
-<!-- Sidebar -->
 <div class="sidebar" id="sidebar">
     <button class="sidebar-close" id="sidebarClose">✕ Close</button>
     <h3 style="margin-bottom: 1rem; margin-top: 2rem;">📁 Saved Trips</h3>
@@ -76,7 +69,7 @@
         <div class="flex-row">
             <div class="input-group">
                 <label>✈️ From</label>
-                <input type="text" id="departureCity" placeholder="" value="">
+                <input type="text" id="departureCity" placeholder="e.g., London, New York, Tokyo" value="">
             </div>
             <div class="input-group">
                 <label>📅 Start</label>
@@ -104,7 +97,7 @@
         </div>
         <div style="margin-top: 1rem;">
             <label>🔍 Describe your dream trip</label>
-            <textarea id="queryInput" placeholder="e.g., i want a trip from toronto-anywhere-anywhere-thailand-bali-anywhere-anywhere-toronto, 1 month in thailand, 1 month in bali"></textarea>
+            <textarea id="queryInput" placeholder="e.g., toronto anywhere anywhere thailand bali anywhere anywhere toronto, 1 month each"></textarea>
         </div>
         <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
             <button id="searchBtn">✈️ Find Destinations</button>
@@ -125,7 +118,6 @@
     let currentRouteData = null;
     let currentDestinationsData = null;
     
-    // Sidebar functions
     function openSidebar() {
         document.getElementById('sidebar').classList.add('open');
         document.getElementById('overlay').classList.add('show');
@@ -193,7 +185,7 @@
         const trip = trips[idx];
         if (!trip) return;
         document.getElementById('queryInput').value = trip.query;
-        document.getElementById('departureCity').value = trip.departure || 'Toronto';
+        document.getElementById('departureCity').value = trip.departure || '';
         document.getElementById('currencySelect').value = trip.currency || 'CAD';
         if (trip.startDate) document.getElementById('startDate').value = trip.startDate;
         if (trip.endDate) document.getElementById('endDate').value = trip.endDate;
@@ -205,7 +197,7 @@
             renderDestinations(trip.destinationsData);
         }
         closeSidebar();
-    }
+    };
     
     window.deleteTrip = function(idx) {
         if (confirm('Delete this saved trip?')) {
@@ -213,7 +205,7 @@
             trips.splice(idx, 1);
             saveTrips(trips);
         }
-    }
+    };
     
     function downloadPDF() {
         const element = document.getElementById('multiStopCard').style.display !== 'none' ? 
@@ -233,22 +225,22 @@
     function shareViaEmail() {
         const query = document.getElementById('queryInput').value;
         const subject = encodeURIComponent('My TripSync Travel Plan');
-        const body = encodeURIComponent(`Check out my AI-generated trip plan:\n\n${query}\n\nView it here: ${window.location.href}`);
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        const body = encodeURIComponent('Check out my AI-generated trip plan:\n\n' + query + '\n\nView it here: ' + window.location.href);
+        window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
     }
     
     function shareWhatsApp() {
-        const text = encodeURIComponent(`Check out my TripSync travel plan: ${document.getElementById('queryInput').value}\n\n${window.location.href}`);
-        window.open(`https://wa.me/?text=${text}`, '_blank');
+        const text = encodeURIComponent('Check out my TripSync travel plan: ' + document.getElementById('queryInput').value + '\n\n' + window.location.href);
+        window.open('https://wa.me/?text=' + text, '_blank');
     }
     
     function shareTwitter() {
-        const text = encodeURIComponent(`My AI travel plan from TripSync: ${document.getElementById('queryInput').value.substring(0, 100)}`);
-        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${window.location.href}`, '_blank');
+        const text = encodeURIComponent('My AI travel plan from TripSync: ' + document.getElementById('queryInput').value.substring(0, 100));
+        window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + encodeURIComponent(window.location.href), '_blank');
     }
     
     function shareFacebook() {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href), '_blank');
     }
     
     function copyLink() {
@@ -261,39 +253,57 @@
         const departure = document.getElementById('departureCity').value;
         const currency = document.getElementById('currencySelect').value;
         
-        const isMultiStop = query.toLowerCase().includes('anywhere') && 
-                           (query.toLowerCase().includes('thailand') || query.toLowerCase().includes('bali') || 
-                            query.match(/anywhere.*anywhere/));
+        if (!query) { alert('Please describe your dream trip'); return; }
+        
+        const isMultiStop = query.toLowerCase().includes('anywhere') || query.match(/anywhere.*anywhere/);
         
         if (isMultiStop) {
             document.getElementById('multiStopCard').style.display = 'block';
             document.getElementById('multiStopCard').innerHTML = '<div style="background:#0a1f1a; border-radius:24px; padding:1.5rem;"><p>🧠 AI routing your anywhere stops...</p></div>';
-            const res = await fetch('/api/multi-stop', {
+            document.getElementById('resultsGrid').innerHTML = '';
+            
+            try {
+                const res = await fetch('/api/multi-stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, departure, currency })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000; border-radius:24px; padding:1.5rem;"><p>❌ ' + data.error + '</p></div>';
+                } else {
+                    currentRouteData = data;
+                    currentDestinationsData = null;
+                    renderMultiStop(data);
+                }
+            } catch(err) {
+                document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000; border-radius:24px; padding:1.5rem;"><p>❌ Network error. Please try again.</p></div>';
+            }
+            return;
+        }
+        
+        try {
+            const res = await fetch('/api/tripsync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query, departure, currency })
             });
             const data = await res.json();
-            currentRouteData = data;
-            currentDestinationsData = null;
-            renderMultiStop(data);
-            return;
+            if (data.destinations) {
+                currentDestinationsData = data.destinations;
+                currentRouteData = null;
+                renderDestinations(data.destinations);
+            } else {
+                document.getElementById('resultsGrid').innerHTML = '<p>No results found. Try a different search.</p>';
+            }
+        } catch(err) {
+            document.getElementById('resultsGrid').innerHTML = '<p>Error connecting to server. Please try again.</p>';
         }
-        
-        const res = await fetch('/api/tripsync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, departure, currency })
-        });
-        const data = await res.json();
-        currentDestinationsData = data.destinations;
-        currentRouteData = null;
-        renderDestinations(data.destinations);
     }
     
     function renderMultiStop(route) {
         const currency = document.getElementById('currencySelect').value;
-        let html = `<div class="multi-stop-card">
+        let html = '<div class="multi-stop-card">
             <div class="action-buttons">
                 <button class="action-btn" onclick="downloadPDF()">📄 Download PDF</button>
                 <button class="action-btn" onclick="shareViaEmail()">✉️ Email</button>
@@ -304,38 +314,44 @@
                 <button class="action-btn" onclick="saveCurrentTrip()">💾 Save Trip</button>
             </div>
             <h3>✈️ Your Smart Multi-Stop Route</h3>
-            <p style="color:#aaa;">Total: ${route.total_estimated_cost_CAD || "?"} ${currency} · Save ${route.savings_vs_direct_percent || "?"}% vs direct flight</p>`;
+            <p style="color:#aaa;">Total: ' + (route.total_estimated_cost_CAD || '?') + ' ' + currency + ' · Save ' + (route.savings_vs_direct_percent || '?') + '% vs direct flight</p>';
+        
         if (route.legs) {
             route.legs.forEach(leg => {
-                const cost = leg.estimated_cost_CAD || leg[`estimated_cost_${currency}`] || 0;
-                html += `<div class="leg-item">
-                    <strong>${leg.from} → ${leg.to}</strong> · ✈️ ${leg.flight_number_example} · ⏱️ ${leg.duration_hours}h · 💰 ${cost} ${currency}<br>
-                    🌙 Suggested stopover: ${leg.stopover_days_suggested} days · <a href="${leg.booking_link}" target="_blank" style="color:#00a86b;">Book this leg</a>
-                </div>`;
+                const cost = leg.estimated_cost_CAD || 0;
+                html += '<div class="leg-item">
+                    <strong>' + leg.from + ' → ' + leg.to + '</strong> · ✈️ ' + leg.flight_number_example + ' · ⏱️ ' + leg.duration_hours + 'h · 💰 ' + cost + ' ' + currency + '<br>
+                    🌙 Suggested stopover: ' + leg.stopover_days_suggested + ' days · <a href="' + leg.booking_link + '" target="_blank" style="color:#00a86b;">Book this leg</a>
+                </div>';
             });
         }
+        
         if (route.tips) {
-            html += `<div style="margin-top:1rem; background:#0a2a1f; padding:1rem; border-radius:16px;"><strong>💡 Pro Tips</strong><ul>${route.tips.map(t => `<li>${t}</li>`).join('')}</ul></div>`;
+            html += '<div style="margin-top:1rem; background:#0a2a1f; padding:1rem; border-radius:16px;"><strong>💡 Pro Tips</strong><ul>';
+            route.tips.forEach(t => { html += '<li>' + t + '</li>'; });
+            html += '</ul></div>';
         }
-        html += `<button id="bookMultiStopBtn" style="margin-top:1rem; background:#00a86b;">📅 Book All Legs (Multi-City)</button></div>`;
+        
+        html += '<button id="bookMultiStopBtn" style="margin-top:1rem; background:#00a86b;">📅 Book All Legs (Multi-City)</button></div>';
         document.getElementById('multiStopCard').innerHTML = html;
+        
         document.getElementById('bookMultiStopBtn')?.addEventListener('click', () => {
             if (route.legs) {
-                const legsParam = route.legs.map(l => `${l.from}-${l.to}`).join(',');
-                window.open(`https://www.skyscanner.com/transport/flights/${legsParam}/`, '_blank');
+                const legsParam = route.legs.map(l => l.from + '-' + l.to).join(',');
+                window.open('https://www.skyscanner.com/transport/flights/' + legsParam + '/', '_blank');
             }
         });
-        document.getElementById('resultsGrid').innerHTML = '';
     }
     
     function renderDestinations(dests) {
         const grid = document.getElementById('resultsGrid');
         if (!dests || dests.length === 0) { grid.innerHTML = '<p>No results. Try a different search.</p>'; return; }
+        
+        const departure = document.getElementById('departureCity').value || 'anywhere';
+        const startDate = document.getElementById('startDate').value || '';
+        
         grid.innerHTML = dests.map(d => `
             <div class="card">
-                <div class="action-buttons">
-                    <button class="action-btn" onclick="saveCurrentTrip()">💾 Save Trip</button>
-                </div>
                 <div class="score">★ ${d.match_score || '9/10'}</div>
                 <h2>${d.city} <span style="color:#aaa; font-size:1rem;">${d.country}</span></h2>
                 <p style="margin:0.5rem 0;">${d.description || ''}</p>
@@ -344,10 +360,10 @@
                 <p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p>
                 <div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div>
                 <div class="booking-links">
-                    <a href="`https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}https://www.booking.com/searchresults.html?dest=${d.city}&aid=${AFFILIATE.booking_aid}aid=${AFFILIATE.booking_aid}`" target="_blank" class="booking-btn">Booking.com</a>
-                    <a href="https://www.agoda.com/search?city=${d.city}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn">Agoda</a>
-                    <a href="https://www.expedia.com/Hotel-Search?destination=${d.city}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn">Expedia</a>
-                    <a href="`https://www.skyscanner.com/transport/flights/${departure}/${d.city.toLowerCase()}/${startDate}/`" target="_blank" class="booking-btn">✈️ Search Flights</a>
+                    <a href="https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn">Booking.com</a>
+                    <a href="https://www.agoda.com/search?city=${encodeURIComponent(d.city)}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn">Agoda</a>
+                    <a href="https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn">Expedia</a>
+                    <a href="https://www.skyscanner.com/transport/flights/${departure.toLowerCase()}/${d.city.toLowerCase()}/${startDate}" target="_blank" class="booking-btn">✈️ Search Flights</a>
                 </div>
                 <div class="share-buttons">
                     <button class="action-btn" onclick="shareWhatsApp()">💬 WhatsApp</button>
@@ -364,13 +380,12 @@
         try {
             const res = await fetch('/api/stats');
             const stats = await res.json();
-            document.getElementById('statsDisplay').innerHTML = `🔍 ${stats.searches || 0} searches<br>🖱️ ${stats.clicks || 0} clicks`;
+            document.getElementById('statsDisplay').innerHTML = '🔍 ' + (stats.searches || 0) + ' searches<br>🖱️ ' + (stats.clicks || 0) + ' clicks';
         } catch(e) { document.getElementById('statsDisplay').innerHTML = 'Stats unavailable'; }
     }
     
-    // Event listeners
     document.getElementById('searchBtn').onclick = search;
-    document.getElementById('clearBtn').onclick = () => { 
+    document.getElementById('clearBtn').onclick = function() { 
         document.getElementById('queryInput').value = ''; 
         document.getElementById('resultsGrid').innerHTML = ''; 
         document.getElementById('multiStopCard').style.display = 'none';
@@ -381,8 +396,8 @@
     document.getElementById('sidebarClose').onclick = closeSidebar;
     document.getElementById('overlay').onclick = closeSidebar;
     document.getElementById('saveCurrentTripBtn').onclick = saveCurrentTrip;
-    document.getElementById('clearStorageBtn').onclick = () => { localStorage.removeItem('tripsync_saved_trips'); renderSavedTripsList(); alert('Cleared'); };
-    document.getElementById('addToHomeScreen')?.addEventListener('click', () => { alert('On iPhone: Share → Add to Home Screen. On Android: Menu → Install App.'); });
+    document.getElementById('clearStorageBtn').onclick = function() { localStorage.removeItem('tripsync_saved_trips'); renderSavedTripsList(); alert('Cleared'); };
+    document.getElementById('addToHomeScreen')?.addEventListener('click', function() { alert('On iPhone: Share → Add to Home Screen. On Android: Menu → Install App.'); });
     
     renderSavedTripsList();
     loadStats();
