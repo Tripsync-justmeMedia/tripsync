@@ -75,7 +75,7 @@
         <div class="flex-row">
             <div class="input-group">
                 <label>✈️ From</label>
-                <input type="text" id="departureCity" placeholder="Toronto" value="Toronto">
+                <input type="text" id="departureCity" placeholder="" value="">
             </div>
             <div class="input-group">
                 <label>📅 Start</label>
@@ -303,7 +303,7 @@
                 <button class="action-btn" onclick="saveCurrentTrip()">💾 Save Trip</button>
             </div>
             <h3>✈️ Your Smart Multi-Stop Route</h3>
-            <p style="color:#aaa;">Total: ${route.total_estimated_cost_CAD || 2850} ${currency} · Save ${route.savings_vs_direct_percent || 42}% vs direct flight</p>`;
+            <p style="color:#aaa;">Total: ${route.total_estimated_cost_CAD || "?"} ${currency} · Save ${route.savings_vs_direct_percent || "?"}% vs direct flight</p>`;
         if (route.legs) {
             route.legs.forEach(leg => {
                 const cost = leg.estimated_cost_CAD || leg[`estimated_cost_${currency}`] || 0;
