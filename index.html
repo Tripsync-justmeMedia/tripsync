@@ -271,9 +271,9 @@ function renderDestinations(dests) {
     const dep = document.getElementById('departureCity').value;
     grid.innerHTML = dests.map(d => {
         const hotelLinks = `
-            <a href="https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}" target="_blank" class="booking-btn">🏨 Booking</a>
-            <a href="https://www.agoda.com/search?city=${encodeURIComponent(d.city)}" target="_blank" class="booking-btn">🏯 Agoda</a>
-            <a href="https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}" target="_blank" class="booking-btn">🏢 Expedia</a>
+            <a href="https://www.booking.com/searchresults.html?ss=${encodeURIComponent(d.city)}" target="_blank" class="booking-btn">🏨 Booking</a>
+            <a href="https://www.agoda.com/search?city=${encodeURIComponent(d.city)}https://www.agoda.com/search?city=${encodeURIComponent(d.city)}checkIn=${startDate}https://www.agoda.com/search?city=${encodeURIComponent(d.city)}checkOut=${endDate}" target="_blank" class="booking-btn">🏯 Agoda</a>
+            <a href="https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}startDate=${startDate}https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}endDate=${endDate}" target="_blank" class="booking-btn">🏢 Expedia</a>
         `;
         const flightLinks = `
             <div class="flight-group">
