@@ -743,7 +743,11 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         ${flightBlock}
       </div>
       <div class="card-footer">
-        <a href="${googleFlightsUrl}" target="_blank" class="btn-google-flights" onclick="track('google_flights','${cityRaw}')">✈ Search on Google Flights</a>
+        <div class="booking-links" style="margin-bottom:1rem">
+          <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+          <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1" onclick="track('google_flights','${cityRaw}')">Google Flights</a>
+          <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
+        </div>
         <div class="booking-label">Book Hotels</div>
         <div class="booking-links">
           <a href="https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>

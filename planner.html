@@ -115,7 +115,10 @@
       <div class="sidebar-widget" id="flightWidget">
         <div class="widget-title">✈️ Book Flights</div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Secure your travel dates before finalizing hotels.</div>
-        <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:var(--ink);color:white">Search on Google Flights</a>
+        <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+          <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1">Google Flights</a>
+          <a id="skyscannerLink" href="#" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1">Skyscanner</a>
+        </div>
         <div style="margin-top:1rem;display:flex;align-items:center;gap:0.5rem;font-size:0.75rem">
           <input type="checkbox" id="flightsBooked" onchange="toggleFlights()">
           <label for="flightsBooked">I've already booked my flights</label>
@@ -275,8 +278,10 @@
     const co = params.get('co') || '';
     if(from && ci){
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
+       document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(from)}/to/${encodedDest}/`;
     } else {
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
+       document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/anywhere/to/${encodedDest}/`;
     }
   }
 
