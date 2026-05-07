@@ -18,8 +18,10 @@ https://tripsync-ilao.onrender.com
 - PDF export (Branded)
 - Save trips & Interactive History (localStorage - Local First)
 - Privacy Policy & Terms of Service (Compliant)
-- Example search buttons
-- Mobile responsive
+- **NEW: Master Reset (Danger Zone)** — Complete device wipe option.
+- **NEW: Legacy Data Repair** — Auto-fixes old trip data on load.
+- Mobile responsive & High-End Glassmorphism UI.
+- Just Me Media footer branding.
 
 ## Affiliate Programs (In Progress)
 - Agoda: Manual review (this week)

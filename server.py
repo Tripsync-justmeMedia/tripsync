@@ -286,6 +286,18 @@ Return ONLY valid JSON:
         return jsonify({"error": "Could not parse itinerary."}), 500
     return jsonify(result)
 
+@app.route('/api/refine-itinerary', methods=['POST'])
+def refine_itinerary():
+    data = request.get_json()
+    destination = data.get('destination', '')
+    days = data.get('days', 5)
+    currency = data.get('currency', 'USD')
+    instruction = data.get('instruction', '')
+    prompt = f"Refine the {days}-day travel itinerary for {destination} based on this instruction: '{instruction}'. Return ONLY valid JSON."
+    result_text = call_groq(prompt, max_tokens=4000)
+    result = extract_json_safe(result_text)
+    return jsonify(result)
+
 # --- Click tracking ---
 @app.route('/api/track-click', methods=['POST'])
 def track_click():

@@ -73,6 +73,11 @@
       .container{grid-template-columns:1fr}
       .hero-title{font-size:2.5rem}
     }
+    .btn-mini-del{background:none;border:none;color:var(--rust);cursor:pointer;font-size:1.2rem;line-height:1;opacity:0.3;transition:all 0.2s}
+    .btn-mini-del:hover{opacity:1}
+    .input-mini{flex:1;padding:0.5rem;border:1px solid var(--cream);border-radius:6px;font-family:inherit;font-size:0.85rem}
+    .btn-mini-add{background:var(--teal);color:white;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer}
+    .btn-mini-add:hover{background:var(--teal-light)}
   </style>
 </head>
 <body>
@@ -147,7 +152,7 @@
     const days = params.get('days') || 5;
 
     if(!destination){
-      window.location.href = 'index.html';
+      showEmptyState();
       return;
     }
 
@@ -188,12 +193,20 @@
     // Itinerary
     const section = document.getElementById('itinerarySection');
     section.innerHTML = (data.itinerary || []).map(day => `
-      <div class="day-card">
+      <div class="day-card" data-day="${day.day}">
         <span class="day-num">Day ${day.day}</span>
         <h2 class="day-title">${day.title}</h2>
-        <ul class="activity-list">
-          ${(day.activities || []).map(a => `<li class="activity-item">${a}</li>`).join('')}
+        <ul class="activity-list" id="list-day-${day.day}">
+          ${(day.activities || []).map((a,idx) => `
+            <li class="activity-item">
+              <span style="flex:1">${a}</span>
+              <button class="btn-mini-del" onclick="removeActivity(${day.day}, ${idx})">×</button>
+            </li>`).join('')}
         </ul>
+        <div style="display:flex;gap:0.5rem;margin-bottom:2rem">
+           <input type="text" id="add-day-${day.day}" class="input-mini" placeholder="Add custom activity...">
+           <button class="btn-mini-add" onclick="addActivity(${day.day})">Add</button>
+        </div>
         <div class="meals-box">
           <div class="meal-item">
             <span class="meal-label">Breakfast</span>
@@ -208,14 +221,95 @@
             ${day.meals?.dinner || 'Traditional Dining'}
           </div>
         </div>
-        ${day.tips ? `<div style="margin-top:1.5rem;font-size:0.9rem;font-style:italic;color:var(--muted)">💡 <strong>Pro Tip:</strong> ${day.tips[0]}</div>` : ''}
       </div>
     `).join('');
+    
+    // Add Refine Box
+    const refineDiv = document.createElement('div');
+    refineDiv.className = 'day-card';
+    refineDiv.style.background = 'var(--ink)';
+    refineDiv.style.color = 'white';
+    refineDiv.innerHTML = `
+      <h3 style="font-family:'Playfair Display';margin-bottom:0.5rem">✨ Refine this Itinerary</h3>
+      <p style="font-size:0.85rem;opacity:0.8;margin-bottom:1.5rem">Ask AI to adjust this plan (e.g. "Add more budget-friendly options" or "Make it more adventurous")</p>
+      <div style="display:flex;gap:0.5rem">
+        <input type="text" id="refineInput" class="input-mini" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white" placeholder="Type your adjustment here...">
+        <button class="btn-primary" onclick="refineItinerary()" id="refineBtn" style="margin:0;width:auto">Refine</button>
+      </div>
+    `;
+    section.appendChild(refineDiv);
 
     // Links
     const encodedDest = encodeURIComponent(destination);
     document.getElementById('bookingLink').href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=2884913`;
     document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
+  }
+
+  function showEmptyState(){
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('hero').style.padding = '8rem 2rem';
+    document.getElementById('heroTitle').textContent = "The TripSync Planner";
+    document.getElementById('heroSub').textContent = "Step-by-Step Magic";
+    
+    document.getElementById('itinerarySection').innerHTML = `
+      <div class="day-card" style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1.5rem">📂</div>
+        <h2 class="day-title">Your Planner is Ready</h2>
+        <p style="color:var(--muted);margin-bottom:2rem">The Planner builds deep, day-by-day itineraries with meal and hotel suggestions. To get started:</p>
+        <div style="display:flex;flex-direction:column;gap:1rem;max-width:400px;margin:0 auto">
+          <a href="index.html" class="btn-primary" style="text-decoration:none">1. Search for a destination</a>
+          <div style="font-size:0.9rem;color:var(--teal);font-weight:700">2. Click "View Detailed Planner" on any result</div>
+          <div style="font-size:0.85rem;color:var(--muted)">3. Edit, print, or share your perfect trip.</div>
+        </div>
+      </div>
+    `;
+    document.querySelector('.sidebar').style.display = 'none';
+    document.querySelector('.container').style.gridTemplateColumns = '1fr';
+  }
+
+  function removeActivity(day, idx){
+    const list = document.getElementById(`list-day-${day}`);
+    const items = list.querySelectorAll('.activity-item');
+    if(items[idx]) items[idx].remove();
+  }
+
+  function addActivity(day){
+    const input = document.getElementById(`add-day-${day}`);
+    const val = input.value.trim();
+    if(!val) return;
+    const list = document.getElementById(`list-day-${day}`);
+    const li = document.createElement('li');
+    li.className = 'activity-item';
+    li.innerHTML = `<span style="flex:1">${val}</span><button class="btn-mini-del" onclick="this.parentElement.remove()">×</button>`;
+    list.appendChild(li);
+    input.value = '';
+  }
+
+  async function refineItinerary(){
+    const prompt = document.getElementById('refineInput').value.trim();
+    if(!prompt) return;
+    const btn = document.getElementById('refineBtn');
+    btn.disabled = true; btn.textContent = 'Refining...';
+    
+    const params = new URLSearchParams(window.location.search);
+    const destination = params.get('destination');
+    const currency = params.get('currency') || 'USD';
+    const days = params.get('days') || 5;
+
+    try {
+      const resp = await fetch('/api/refine-itinerary', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ destination, days, currency, instruction: prompt })
+      });
+      const data = await resp.json();
+      render(data, destination, currency);
+    } catch(e) {
+      alert("AI was unable to refine this time. Please try again.");
+    } finally {
+      btn.disabled = false; btn.textContent = 'Refine';
+    }
   }
 
   init();
