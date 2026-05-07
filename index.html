@@ -372,6 +372,16 @@ footer a:hover{color:var(--rust-light)}
   </div>
 </div>
 
+<div class="modal-overlay" id="statsModalOverlay">
+  <div class="modal">
+    <h3>TripSync Click Stats</h3>
+    <div id="statsBody" style="margin-bottom:1.5rem"></div>
+    <div class="modal-actions">
+      <button class="btn-create" onclick="closeStatsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="modal-overlay" id="itinModalOverlay">
@@ -802,10 +812,27 @@ function track(platform,destination){
   fetch('/api/track-click',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)}).catch(()=>{});
 }
 function showStats(){
-  if(!state.clickLog.length){alert('No clicks tracked yet.');return;}
-  const by={};state.clickLog.forEach(c=>{by[c.platform]=(by[c.platform]||0)+1;});
-  alert('TripSync Click Stats\n\n'+Object.entries(by).map(([k,v])=>k+': '+v+' clicks').join('\n')+'\n\nTotal: '+state.clickLog.length);
+  const body=document.getElementById('statsBody');
+  if(!state.clickLog.length){
+    body.innerHTML='<div style="font-size:0.9rem;color:var(--muted);text-align:center">No clicks tracked yet. Start planning to see stats!</div>';
+  } else {
+    const by={};
+    state.clickLog.forEach(c=>{by[c.platform]=(by[c.platform]||0)+1;});
+    const rows=Object.entries(by).map(([k,v])=>`
+      <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--cream)">
+        <div style="font-weight:600;text-transform:capitalize">${k.replace('_',' ')}</div>
+        <div style="color:var(--teal);font-weight:700">${v} clicks</div>
+      </div>
+    `).join('');
+    body.innerHTML=`
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Tracking conversions and engagement across all platforms:</div>
+      ${rows}
+      <div style="margin-top:1rem;font-weight:700;text-align:right">Total Interactions: ${state.clickLog.length}</div>
+    `;
+  }
+  document.getElementById('statsModalOverlay').classList.add('open');
 }
+function closeStatsModal(){document.getElementById('statsModalOverlay').classList.remove('open');}
 function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
 async function getItinerary(destination){
   showToast(`Generating itinerary for ${destination}...`);
