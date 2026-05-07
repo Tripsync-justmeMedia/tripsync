@@ -183,6 +183,19 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .modal-actions{display:flex;gap:0.75rem;justify-content:flex-end}
 .btn-cancel{background:none;border:1.5px solid var(--sand);color:var(--muted);padding:0.5rem 1.1rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem}
 .btn-create{background:var(--rust);border:none;color:white;padding:0.5rem 1.3rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600}
+/* Itinerary Modal */
+.itin-modal{width:600px;max-height:85vh;overflow-y:auto;padding:0;background:var(--paper)}
+.itin-header{padding:1.5rem 2rem;background:var(--ink);color:white;position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center}
+.itin-body{padding:2rem}
+.itin-day{margin-bottom:2rem;position:relative;padding-left:1.5rem;border-left:2px solid var(--teal)}
+.itin-day-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;color:var(--teal)}
+.itin-activities{margin-bottom:1rem;list-style:none}
+.itin-activities li{font-size:0.9rem;margin-bottom:0.5rem;display:flex;gap:0.5rem}
+.itin-activities li::before{content:'📍'}
+.itin-meals{background:rgba(26,107,107,0.05);padding:1rem;border-radius:8px;font-size:0.85rem}
+.itin-tips{margin-top:1rem;font-size:0.85rem;font-style:italic;color:var(--muted)}
+.btn-itin{background:var(--teal);color:white;border:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;margin-top:0.5rem}
+.btn-itin:hover{background:var(--teal-light)}
 /* Footer */
 footer{background:var(--ink);color:var(--muted);text-align:center;padding:0.65rem 2rem;font-size:0.72rem;border-top:1px solid rgba(255,255,255,0.06)}
 footer a{color:var(--sand);text-decoration:none}
@@ -360,6 +373,16 @@ footer a:hover{color:var(--rust-light)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="itinModalOverlay">
+  <div class="modal itin-modal">
+    <div class="itin-header">
+      <h3 id="itinTitle" style="margin:0">Trip Itinerary</h3>
+      <button class="btn-ghost" onclick="closeItinModal()">×</button>
+    </div>
+    <div class="itin-body" id="itinBody"></div>
+  </div>
+</div>
 
 <script>
 const AFFILIATE={booking_aid:'2884913',agoda_cid:'YOUR_AGODA_CID',expedia_affcid:'YOUR_EXPEDIA_AFFCID'};
@@ -671,6 +694,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
           <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
           <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
         </div>
+        <button class="btn-itin" onclick="getItinerary('${cityRaw}')">🗺️ View Detailed Itinerary</button>
         <div class="card-share-row">
           <a href="${waUrl}" target="_blank" class="share-btn wa">💬 WhatsApp</a>
           <a href="${twUrl}" target="_blank" class="share-btn tw">𝕏 Post</a>
@@ -782,6 +806,37 @@ function showStats(){
   alert('TripSync Click Stats\n\n'+Object.entries(by).map(([k,v])=>k+': '+v+' clicks').join('\n')+'\n\nTotal: '+state.clickLog.length);
 }
 function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
+async function getItinerary(destination){
+  showToast(`Generating itinerary for ${destination}...`);
+  try{
+    const resp=await fetch('/api/generate-itinerary',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({destination,days:5,currency:document.getElementById('currency').value})
+    });
+    if(!resp.ok)throw new Error('Failed to generate itinerary');
+    const data=await resp.json();
+    renderItinerary(data);
+  }catch(e){showToast('Could not load itinerary. Try again.');}
+}
+function renderItinerary(data){
+  document.getElementById('itinTitle').textContent=`${data.days} Days in ${data.destination}`;
+  const html=data.itinerary.map(day=>`
+    <div class="itin-day">
+      <div class="itin-day-title">Day ${day.day}: ${day.title}</div>
+      <ul class="itin-activities">
+        ${day.activities.map(a=>`<li>${a}</li>`).join('')}
+      </ul>
+      <div class="itin-meals">
+        <strong>🍽 Suggested Meals:</strong> ${day.meals.join(', ')}
+      </div>
+      ${day.tips?`<div class="itin-tips">💡 Tip: ${day.tips[0]}</div>`:''}
+    </div>
+  `).join('');
+  document.getElementById('itinBody').innerHTML=html;
+  document.getElementById('itinModalOverlay').classList.add('open');
+}
+function closeItinModal(){document.getElementById('itinModalOverlay').classList.remove('open');}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();searchTrip();}});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
