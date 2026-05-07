@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3K845T64RP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "G-3K845T64RP");
+    </script>
+    <meta name="agd-partner-manual-verification" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripSync — AI Travel Planner by Just Me Media</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#f5f5f5;}
+        .container{max-width:1400px;margin:0 auto;padding:2rem;}
+        h1{font-family:'Playfair Display',serif;font-size:2.5rem;}
+        .search-section{background:#1a1a1a;border-radius:28px;padding:2rem;margin-bottom:2rem;}
+        .flex-row{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;}
+        .input-group{flex:1;min-width:150px;}
+        label{display:block;font-size:0.75rem;text-transform:uppercase;margin-bottom:0.5rem;color:#aaa;}
+        input,select,textarea{width:100%;padding:0.75rem 1rem;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:16px;color:white;font-family:inherit;}
+        textarea{min-height:80px;}
+        button{background:#00a86b;border:none;padding:0.75rem 2rem;border-radius:40px;color:white;font-weight:600;cursor:pointer;}
+        button:hover{background:#008c58;}
+        .destinations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1.5rem;margin-top:2rem;}
+        .card{background:#1a1a1a;border-radius:24px;padding:1.5rem;border:1px solid #2a2a2a;}
+        .card:hover{border-color:#00a86b;}
+        .score{background:#00a86b20;color:#00a86b;padding:0.25rem 0.75rem;border-radius:40px;font-size:0.8rem;display:inline-block;margin-bottom:1rem;}
+        .highlights{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0;}
+        .highlight{background:#2a2a2a;padding:0.25rem 0.75rem;border-radius:40px;font-size:0.75rem;}
+        .booking-links{display:flex;gap:0.5rem;margin:1rem 0;flex-wrap:wrap;}
+        .booking-btn{background:#2a2a2a;padding:0.4rem 0.8rem;border-radius:20px;font-size:0.75rem;text-decoration:none;color:white;}
+        .action-buttons{display:flex;gap:0.75rem;margin:1rem 0;flex-wrap:wrap;}
+        .action-btn{background:#2a2a2a;padding:0.5rem 1rem;border-radius:30px;font-size:0.8rem;border:none;color:white;cursor:pointer;}
+        .footer{text-align:center;padding:2rem;font-size:0.75rem;color:#666;border-top:1px solid #2a2a2a;margin-top:3rem;}
+        .multi-stop-card{background:#0a1f1a;border-radius:24px;padding:1.5rem;margin-top:2rem;}
+        .leg-item{background:#1a2a25;border-radius:16px;padding:1rem;margin-bottom:0.75rem;}
+        .sidebar{position:fixed;left:0;top:0;width:320px;height:100vh;background:#0a0a0a;border-right:1px solid #2a2a2a;padding:1.5rem;overflow-y:auto;transform:translateX(-100%);transition:transform 0.3s ease;z-index:1000;}
+        .sidebar.open{transform:translateX(0);}
+        .sidebar-toggle{position:fixed;left:1rem;top:1rem;background:#00a86b;border:none;border-radius:40px;padding:0.5rem 1rem;z-index:1001;cursor:pointer;}
+        .sidebar-close{position:absolute;top:1rem;right:1rem;background:#333;border:none;border-radius:30px;padding:0.3rem 0.8rem;cursor:pointer;color:white;}
+        .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999;display:none;}
+        .overlay.show{display:block;}
+        @media(max-width:768px){.container{padding:1rem;}.destinations-grid{grid-template-columns:1fr;}.sidebar{width:85%;}}
+    </style>
+</head>
+<body>
+<div class="overlay" id="overlay"></div>
+<button class="sidebar-toggle" id="sidebarToggle">📋 My Trips</button>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-close" id="sidebarClose">✕ Close</button>
+    <h3 style="margin-bottom:1rem;margin-top:2rem;">📁 Saved Trips</h3>
+    <button id="saveCurrentTripBtn" style="width:100%;margin-bottom:1rem;background:#00a86b;">💾 Save Current Trip</button>
+    <div id="savedTripsList"></div>
+    <hr style="margin:1rem 0;border-color:#2a2a2a;">
+    <h4>📊 Stats</h4>
+    <p id="statsDisplay">Loading...</p>
+    <button id="clearStorageBtn" style="background:#8b0000;margin-top:1rem;width:100%;">🗑 Clear All Saved</button>
+</div>
+<div class="container">
+    <h1>TripSync <span style="font-size:0.9rem;color:#00a86b;">by Just Me Media</span></h1>
+    <p style="margin-bottom:2rem;color:#aaa;">AI finds your perfect trip — now with multi-stop routing</p>
+    <div class="search-section">
+        <div class="flex-row">
+            <div class="input-group"><label>✈️ From</label><input type="text" id="departureCity" placeholder="e.g., London, New York, Tokyo" value=""></div>
+            <div class="input-group"><label>📅 Start</label><input type="date" id="startDate" value="2027-01-15"></div>
+            <div class="input-group"><label>📅 End</label><input type="date" id="endDate" value="2027-04-29"></div>
+            <div class="input-group"><label>👥 Travelers</label><input type="number" id="travelers" value="2" min="1"></div>
+            <div class="input-group"><label>💰 Budget</label><input type="text" id="budget" placeholder="Any"></div>
+            <div class="input-group"><label>💱 Currency</label><select id="currencySelect"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>AUD</option><option>SGD</option><option>JPY</option><option>INR</option></select></div>
+        </div>
+        <div style="margin-top:1rem;"><label>🔍 Describe your dream trip</label><textarea id="queryInput" placeholder="e.g., toronto anywhere anywhere thailand bali anywhere anywhere toronto, 1 month each"></textarea></div>
+        <div style="margin-top:1rem;display:flex;gap:1rem;"><button id="searchBtn">✈️ Find Destinations</button><button id="clearBtn" style="background:#333;">🗑 Clear</button></div>
+    </div>
+    <div id="multiStopCard" style="display:none;"></div>
+    <div id="resultsGrid" class="destinations-grid"></div>
+    <div class="footer">Built by Just Me Media · TripSync · Free forever · <a href="#" id="addToHomeScreen" style="color:#00a86b;">📱 Add to Home Screen</a></div>
+</div>
+<script>
+const AFFILIATE = { booking_aid: 'YOUR_BOOKING_AID', agoda_cid: 'YOUR_AGODA_CID', expedia_affcid: 'YOUR_EXPEDIA_AFFCID' };
+let currentRouteData = null;
+let currentDestinationsData = null;
+
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+function loadSavedTrips() { const s = localStorage.getItem('tripsync_saved_trips'); return s ? JSON.parse(s) : []; }
+function saveTrips(t) { localStorage.setItem('tripsync_saved_trips', JSON.stringify(t)); renderSavedTripsList(); }
+
+function renderSavedTripsList() {
+    const trips = loadSavedTrips();
+    const c = document.getElementById('savedTripsList');
+    if (!c) return;
+    if (trips.length === 0) { c.innerHTML = '<p style="color:#666;">No saved trips yet</p>'; return; }
+    c.innerHTML = trips.map((trip, idx) => `<div style="background:#1a1a1a;padding:0.75rem;border-radius:12px;margin-bottom:0.75rem;"><div style="font-weight:600;">${trip.name || 'Trip '+(idx+1)}</div><div style="font-size:0.7rem;color:#aaa;">${(trip.query || '').substring(0,50)}...</div><div style="margin-top:0.5rem;display:flex;gap:0.5rem;"><button onclick="loadTrip(${idx})" style="font-size:0.7rem;padding:0.25rem 0.5rem;">📂 Load</button><button onclick="deleteTrip(${idx})" style="font-size:0.7rem;padding:0.25rem 0.5rem;background:#8b0000;">🗑</button></div></div>`).join('');
+}
+
+function saveCurrentTrip() {
+    const q = document.getElementById('queryInput').value;
+    if (!q) { alert('No trip to save'); return; }
+    const trips = loadSavedTrips();
+    const name = prompt('Name this trip:', q.substring(0,40));
+    if (!name) return;
+    trips.push({ name: name, query: q, departure: document.getElementById('departureCity').value, currency: document.getElementById('currencySelect').value, startDate: document.getElementById('startDate').value, endDate: document.getElementById('endDate').value, routeData: currentRouteData, destinationsData: currentDestinationsData, savedAt: new Date().toISOString() });
+    saveTrips(trips);
+    alert('Trip saved!');
+    closeSidebar();
+}
+
+window.loadTrip = function(idx) {
+    const trips = loadSavedTrips();
+    const trip = trips[idx];
+    if (!trip) return;
+    document.getElementById('queryInput').value = trip.query;
+    document.getElementById('departureCity').value = trip.departure || '';
+    document.getElementById('currencySelect').value = trip.currency || 'CAD';
+    if (trip.startDate) document.getElementById('startDate').value = trip.startDate;
+    if (trip.endDate) document.getElementById('endDate').value = trip.endDate;
+    if (trip.routeData) { currentRouteData = trip.routeData; renderMultiStop(trip.routeData); }
+    else if (trip.destinationsData) { currentDestinationsData = trip.destinationsData; renderDestinations(trip.destinationsData); }
+    closeSidebar();
+};
+
+window.deleteTrip = function(idx) { if (confirm('Delete?')) { const trips = loadSavedTrips(); trips.splice(idx,1); saveTrips(trips); } };
+
+function downloadPDF() {
+    const el = document.getElementById('multiStopCard').style.display !== 'none' ? document.getElementById('multiStopCard') : document.getElementById('resultsGrid');
+    if (!el || !el.innerHTML) { alert('No results'); return; }
+    html2canvas(el, { scale: 2 }).then(canvas => { const img = canvas.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF('p','mm','a4'); const w = 190; const h = canvas.height * w / canvas.width; pdf.addImage(img,'PNG',10,10,w,h); pdf.save('tripsync.pdf'); });
+}
+function shareViaEmail() { const q = document.getElementById('queryInput').value; window.location.href = 'mailto:?subject=My%20TripSync%20Plan&body=' + encodeURIComponent(q + '\n\n' + window.location.href); }
+function shareWhatsApp() { window.open('https://wa.me/?text=' + encodeURIComponent('TripSync: ' + document.getElementById('queryInput').value + '\n' + window.location.href), '_blank'); }
+function shareTwitter() { window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('My TripSync plan: ' + document.getElementById('queryInput').value.substring(0,80)) + '&url=' + encodeURIComponent(window.location.href), '_blank'); }
+function shareFacebook() { window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href), '_blank'); }
+function copyLink() { navigator.clipboard.writeText(window.location.href); alert('Link copied!'); }
+
+async function search() {
+    const query = document.getElementById('queryInput').value;
+    const departure = document.getElementById('departureCity').value;
+    const currency = document.getElementById('currencySelect').value;
+    if (!query) { alert('Please describe your trip'); return; }
+    const isMulti = query.toLowerCase().includes('anywhere');
+    if (isMulti) {
+        document.getElementById('multiStopCard').style.display = 'block';
+        document.getElementById('multiStopCard').innerHTML = '<div style="background:#0a1f1a;padding:1.5rem;border-radius:24px;"><p>🧠 AI routing...</p></div>';
+        document.getElementById('resultsGrid').innerHTML = '';
+        try {
+            const res = await fetch('/api/multi-stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, departure, currency }) });
+            const data = await res.json();
+            if (data.error) document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000;padding:1.5rem;border-radius:24px;"><p>❌ ' + data.error + '</p></div>';
+            else { currentRouteData = data; renderMultiStop(data); }
+        } catch(e) { document.getElementById('multiStopCard').innerHTML = '<div style="background:#8b0000;padding:1.5rem;border-radius:24px;"><p>❌ Network error</p></div>'; }
+        return;
+    }
+    try {
+        const res = await fetch('/api/tripsync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, departure, currency }) });
+        const data = await res.json();
+        if (data.destinations) { currentDestinationsData = data.destinations; renderDestinations(data.destinations); }
+        else document.getElementById('resultsGrid').innerHTML = '<p>No results</p>';
+    } catch(e) { document.getElementById('resultsGrid').innerHTML = '<p>Error</p>'; }
+}
+
+function renderMultiStop(route) {
+    const cur = document.getElementById('currencySelect').value;
+    let html = `<div class="multi-stop-card"><div class="action-buttons"><button class="action-btn" onclick="downloadPDF()">📄 PDF</button><button class="action-btn" onclick="shareViaEmail()">✉️ Email</button><button class="action-btn" onclick="shareWhatsApp()">💬 WhatsApp</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button><button class="action-btn" onclick="saveCurrentTrip()">💾 Save</button></div><h3>✈️ Your Multi-Stop Route</h3><p>Total: ${route.total_estimated_cost_CAD || '?'} ${cur} · Save ${route.savings_vs_direct_percent || '?'}%</p>`;
+    if (route.legs) { for (let leg of route.legs) { html += `<div class="leg-item"><strong>${leg.from} → ${leg.to}</strong> · ✈️ ${leg.flight_number_example} · ⏱️ ${leg.duration_hours}h · 💰 ${leg.estimated_cost_CAD || 0} ${cur}<br>🌙 Stopover: ${leg.stopover_days_suggested} days · <a href="${leg.booking_link}" target="_blank" style="color:#00a86b;">Book</a></div>`; } }
+    if (route.tips) { html += `<div style="margin-top:1rem;background:#0a2a1f;padding:1rem;border-radius:16px;"><strong>💡 Tips</strong><ul>`; for (let t of route.tips) { html += `<li>${t}</li>`; } html += `</ul></div>`; }
+    html += `<button id="bookMultiStopBtn" style="margin-top:1rem;background:#00a86b;">📅 Book All Legs</button></div>`;
+    document.getElementById('multiStopCard').innerHTML = html;
+    document.getElementById('bookMultiStopBtn')?.addEventListener('click', () => { if (route.legs) { window.open('https://www.skyscanner.com/transport/flights/' + route.legs.map(l => l.from + '-' + l.to).join(',') + '/', '_blank'); } });
+}
+
+function renderDestinations(dests) {
+    const grid = document.getElementById('resultsGrid');
+    if (!dests || dests.length === 0) { grid.innerHTML = '<p>No results</p>'; return; }
+    const dep = document.getElementById('departureCity').value || 'anywhere';
+    const sd = document.getElementById('startDate').value || '';
+    grid.innerHTML = dests.map(d => `<div class="card"><div class="score">★ ${d.match_score || '9/10'}</div><h2>${d.city} <span style="color:#aaa;">${d.country}</span></h2><p>${d.description || ''}</p><p><strong>💰 Budget/day:</strong> ${d.budget_per_day || 'N/A'}</p><p><strong>✈️ Flight:</strong> ${d.flight_estimate || 'N/A'} · ${d.flight_duration || ''}</p><p><strong>🛂 Visa:</strong> ${d.visa || 'Check embassy'}</p><div class="highlights">${(d.highlights || []).map(h => `<span class="highlight">${h}</span>`).join('')}</div><div class="booking-links"><a href="https://www.booking.com/searchresults.html?dest=${encodeURIComponent(d.city)}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn">Booking.com</a><a href="https://www.agoda.com/search?city=${encodeURIComponent(d.city)}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn">Agoda</a><a href="https://www.expedia.com/Hotel-Search?destination=${encodeURIComponent(d.city)}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn">Expedia</a><a href="https://www.skyscanner.com/transport/flights/${dep}/${d.city}/?adults=${travelers}" target="_blank" class="booking-btn">✈️ Flights</a></div><div class="share-buttons"><button class="action-btn" onclick="shareWhatsApp()">💬</button><button class="action-btn" onclick="shareTwitter()">𝕏</button><button class="action-btn" onclick="shareFacebook()">📘</button><button class="action-btn" onclick="copyLink()">🔗</button></div></div>`).join('');
+    document.getElementById('multiStopCard').style.display = 'none';
+}
+
+async function loadStats() { try { const r = await fetch('/api/stats'); const s = await r.json(); document.getElementById('statsDisplay').innerHTML = '🔍 ' + (s.searches||0) + ' searches<br>🖱️ ' + (s.clicks||0) + ' clicks'; } catch(e) { document.getElementById('statsDisplay').innerHTML = 'Stats unavailable'; } }
+
+document.getElementById('searchBtn').onclick = search;
+document.getElementById('clearBtn').onclick = () => { document.getElementById('queryInput').value = ''; document.getElementById('resultsGrid').innerHTML = ''; document.getElementById('multiStopCard').style.display = 'none'; currentRouteData = null; currentDestinationsData = null; };
+document.getElementById('sidebarToggle').onclick = openSidebar;
+document.getElementById('sidebarClose').onclick = closeSidebar;
+document.getElementById('overlay').onclick = closeSidebar;
+document.getElementById('saveCurrentTripBtn').onclick = saveCurrentTrip;
+document.getElementById('clearStorageBtn').onclick = () => { localStorage.removeItem('tripsync_saved_trips'); renderSavedTripsList(); alert('Cleared'); };
+document.getElementById('addToHomeScreen')?.addEventListener('click', () => alert('On iPhone: Share → Add to Home Screen. On Android: Menu → Install App.'));
+
+renderSavedTripsList();
+loadStats();
+</script>
+</body>
+</html>

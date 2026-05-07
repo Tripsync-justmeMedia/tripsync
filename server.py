@@ -111,7 +111,8 @@ def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="
     if car_type and car_type != "none":
         extra += f" Car rental needed: {car_type}."
 
-    return f"""You are TripSync, an expert AI travel planner. Return ONLY valid JSON, no extra text, no markdown.
+    return f"""You are TripSync, a world-class AI travel curator. Your goal is to inspire and provide high-accuracy travel planning.
+Return ONLY valid JSON, no extra text, no markdown.
 
 User request: {query}{extra}
 
@@ -121,14 +122,15 @@ Return exactly 3 destination recommendations in this exact JSON format:
     {{
       "city": "City Name",
       "country": "Country Name",
-      "description": "2-3 sentences explaining why this matches their request",
+      "description": "A compelling 3-4 sentence narrative on why this is the perfect match. Focus on the 'vibe' and specific experiences.",
+      "vibe_tags": ["#Tag1", "#Tag2", "#Tag3"],
       "match_score": "9.2/10",
       "best_season": "November to March",
       "budget_per_day": "X-Y {currency} per person",
       "flight_estimate": "X-Y {currency} return{' from ' + depart_city if depart_city else ''}",
       "flight_duration": "X-Y hours",
       "visa": "Visa requirements for most nationalities",
-      "highlights": ["Activity 1", "Activity 2", "Activity 3", "Activity 4"],
+      "highlights": ["Iconic Activity", "Local Secret", "Food Experience", "Must-see Spot"],
       "flight_class": "{flight_class}",
       "hotel_rating": "{hotel_rating}"
     }}
@@ -139,7 +141,8 @@ Rules:
 - All prices in {currency}
 - {('Flights from ' + depart_city) if depart_city else 'Include realistic flight estimates'}
 - Be specific with real price ranges
-- highlights must be an array of 4-6 short strings
+- highlights must be an array of exactly 4 short, evocative strings
+- vibe_tags must be an array of 3 hashtags starting with #
 - Return ONLY the JSON object, nothing else"""
 
 # --- Routes ---

@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 2026  
+**Last Updated:** May 7, 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
 **Developer Contact:** wcommu@gmail.com  
@@ -146,19 +146,21 @@ GET  /sw.js         → service worker (needs adding)
 ## Frontend Features (Current)
 
 - ✅ Departure city field (remembers between sessions)
-- ✅ Currency selector (USD, EUR, GBP, CAD, AUD, SGD, AED, JPY, INR, MXN, BRL, ZAR)
+- ✅ Currency selector (12 currencies)
 - ✅ Date pickers + guest count + budget field
-- ✅ 3 destination cards with full data
+- ✅ 3 destination cards with Premium Glassmorphism UI
+- ✅ Dynamic Vibe Tags (#Beach, #History, etc.)
 - ✅ Booking links: Booking.com, Agoda, Expedia
-- ✅ Flight search: Skyscanner (dynamic from departure city)
+- ✅ Flight search: Google Flights (Robust deep-linking)
 - ✅ PDF download (jsPDF) with Just Me Media branding
 - ✅ Save card as image (html2canvas)
 - ✅ Share buttons: WhatsApp, X/Twitter, Facebook, Email, Copy Link
 - ✅ Native share API (mobile)
 - ✅ PWA install banner (Add to Home Screen)
 - ✅ Service worker registration (needs sw.js + manifest.json added)
-- ✅ Left sidebar: named trip projects saved to localStorage
-- ✅ Recent searches history
+- ✅ Left sidebar: Named trip projects + Interactive History (Local-First)
+- ✅ Clickable Recent Searches history
+- ✅ Auto-reset fields for new projects
 - ✅ Example chips (no location hardcoding)
 - ✅ Mobile responsive
 - ✅ Just Me Media footer branding
