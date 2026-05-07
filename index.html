@@ -387,6 +387,17 @@ footer a:hover{color:var(--rust-light)}
   </div>
 </div>
 
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal">
+    <h3>Delete Trip?</h3>
+    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1.5rem">This will permanently remove this trip project and all its saved searches. This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn-create" style="background:var(--rust)" onclick="executeDelete()">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
@@ -522,12 +533,20 @@ function selectProject(id){
   }
 }
 
+let pendingDeleteId=null;
 function deleteProject(id,e){
   e.stopPropagation();
-  if(!confirm('Delete this trip?'))return;
-  delete state.projects[id];
-  if(state.activeProjectId===id){state.activeProjectId=null;showWelcome();}
-  save();renderSidebar();updateLabel();
+  pendingDeleteId=id;
+  document.getElementById('confirmModalOverlay').classList.add('open');
+}
+function closeConfirmModal(){document.getElementById('confirmModalOverlay').classList.remove('open');pendingDeleteId=null;}
+function executeDelete(){
+  if(pendingDeleteId){
+    delete state.projects[pendingDeleteId];
+    if(state.activeProjectId===pendingDeleteId){state.activeProjectId=null;showWelcome();}
+    save();renderSidebar();updateLabel();
+  }
+  closeConfirmModal();
 }
 
 function renderSidebar(){
