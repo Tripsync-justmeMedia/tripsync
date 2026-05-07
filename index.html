@@ -151,6 +151,28 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .share-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--sky)}
 /* Error */
 .error-state{display:none;background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:1.25rem 1.5rem;color:#991b1b;font-size:0.9rem}
+/* Multi-stop */
+.multistop-container{max-width:800px;margin:0 auto}
+.itinerary-card{background:white;border-radius:12px;padding:2rem;box-shadow:var(--shadow);margin-bottom:2rem;border:1px solid var(--cream)}
+.itinerary-summary{display:flex;gap:2rem;margin-bottom:2rem;padding:1.5rem;background:var(--sky);border-radius:10px;border:1px solid rgba(26,107,107,0.1)}
+.summary-stat{flex:1}
+.summary-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:0.3rem;font-weight:700}
+.summary-value{font-size:1.5rem;font-weight:900;color:var(--ink)}
+.leg-list{position:relative;padding-left:1.5rem;border-left:2px dashed var(--sand)}
+.leg-item{position:relative;margin-bottom:2rem;padding-left:1.5rem}
+.leg-item::before{content:'';position:absolute;left:-24px;top:6px;width:14px;height:14px;background:white;border:3px solid var(--teal);border-radius:50%;z-index:2}
+.leg-cities{font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem}
+.leg-arrow{color:var(--sand);font-size:0.9rem}
+.leg-details{display:flex;flex-wrap:wrap;gap:1.5rem;font-size:0.88rem;color:#555}
+.leg-meta{display:flex;align-items:center;gap:0.4rem}
+.leg-cost{font-weight:700;color:var(--rust)}
+.leg-link{display:inline-block;margin-top:0.75rem;color:var(--teal);text-decoration:none;font-weight:700;font-size:0.85rem;border-bottom:1.5px solid transparent;transition:all 0.2s}
+.leg-link:hover{border-bottom-color:var(--teal)}
+.tips-box{background:var(--paper);padding:1.5rem;border-radius:10px;border:1px solid var(--cream)}
+.tips-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem;color:var(--ink)}
+.tips-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.tip-item{font-size:0.85rem;color:#444;display:flex;gap:0.5rem;align-items:flex-start}
+.tip-item::before{content:'💡';font-size:0.9rem}
 /* Modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
@@ -219,6 +241,11 @@ footer a:hover{color:var(--rust-light)}
 
       <!-- Row 1: Departure + Dates + Guests + Budget + Currency -->
       <div class="prefs-row">
+        <select class="param-select" id="tripType" onchange="updateTripType()" style="background:var(--teal);color:white;border-color:var(--teal)">
+          <option value="roundtrip">🔄 Round Trip</option>
+          <option value="oneway">➡️ One Way</option>
+          <option value="multicity">🗺️ Multi-city</option>
+        </select>
         <span class="depart-label">✈ From:</span>
         <input type="text" class="depart-input" id="departCity" placeholder="Your city (e.g. London)" autocomplete="off">
         <input type="date" class="param-input" id="checkIn">
@@ -403,6 +430,8 @@ function setDefaultDates(){
 }
 
 function resetFields(){
+  document.getElementById('tripType').value='roundtrip';
+  document.getElementById('checkOut').style.display='inline-block';
   document.getElementById('tripInput').value='';
   document.getElementById('budget').value='';
   document.getElementById('guests').value='2';
@@ -414,6 +443,16 @@ function resetFields(){
   document.querySelectorAll('.amenity-tag').forEach(tag=>tag.classList.remove('active'));
   setDefaultDates();
   showWelcome();
+}
+
+function updateTripType(){
+  const type=document.getElementById('tripType').value;
+  const co=document.getElementById('checkOut');
+  if(type==='oneway'){
+    co.style.display='none';
+  } else {
+    co.style.display='inline-block';
+  }
 }
 
 function save(){localStorage.setItem('tripsync_v2',JSON.stringify(state));}
@@ -519,18 +558,24 @@ async function searchTrip(){
   const flightPriority=document.getElementById('flightPriority').value;
   const hotelRating=document.getElementById('hotelRating').value;
   const carType=document.getElementById('carType').value;
+  const tripType=document.getElementById('tripType').value;
   if(departCity)localStorage.setItem('tripsync_depart_city',departCity);
   localStorage.setItem('tripsync_currency',currency);
   showLoading();
   let mi=0;
   const iv=setInterval(()=>{mi=(mi+1)%MSGS.length;const el=document.getElementById('loadingText');if(el)el.textContent=MSGS[mi];},2200);
   try{
-    const resp=await fetch('/api/tripsync',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType})});
+    const endpoint=tripType==='multicity'?'/api/multi-stop':'/api/tripsync';
+    const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType};
+    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     clearInterval(iv);
     if(!resp.ok)throw new Error('Server error '+resp.status);
     const data=await resp.json();
     if(data.error)throw new Error(data.error);
+    if(tripType==='multicity'){
+      renderMultiStopResults(data,query,currency);
+      return;
+    }
     if(!data.destinations||!Array.isArray(data.destinations))throw new Error('No destinations returned. Try again.');
     lastResults=data.destinations;lastQuery=query;
     const entry={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,hotelRating,timestamp:Date.now(),results:data.destinations};
@@ -582,7 +627,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     const city=encodeURIComponent(d.city||'');
     const cityRaw=d.city||'Unknown';
     const hl=(Array.isArray(d.highlights)?d.highlights:String(d.highlights||'').split(',')).filter(Boolean).slice(0,5).map(h=>`<span class="htag">${String(h).trim()}</span>`).join('');
-    const googleFlightsUrl=`https://www.google.com/travel/flights?q=Flights+${departCity?'from+'+encodeURIComponent(departCity)+'+':''}to+${encodeURIComponent(cityRaw)}${ci?'+on+'+ci:''}`;
+    const tripType=document.getElementById('tripType').value;
+    const isOneWay=tripType==='oneway';
+    const googleFlightsUrl=`https://www.google.com/travel/flights?q=Flights+${departCity?'from+'+encodeURIComponent(departCity)+'+':''}to+${encodeURIComponent(cityRaw)}${ci?'+on+'+ci:''}${isOneWay?'':'+returning+'+co}`;
     const flightBlock=d.flight_estimate?`<div class="flight-block">
       <div class="flight-icon">✈️</div>
       <div class="flight-info">
@@ -738,6 +785,64 @@ function fill(text){document.getElementById('tripInput').value=text;document.get
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();searchTrip();}});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
+function renderMultiStopResults(data,query,currency){
+  document.getElementById('loadingState').style.display='none';
+  document.getElementById('welcomeState').style.display='none';
+  document.getElementById('errorState').style.display='none';
+  document.getElementById('searchBtn').disabled=false;
+  
+  const legs=(data.legs||[]).map(l=>`
+    <div class="leg-item">
+      <div class="leg-cities">
+        <span>${l.from}</span>
+        <span class="leg-arrow">✈</span>
+        <span>${l.to}</span>
+      </div>
+      <div class="leg-details">
+        <div class="leg-meta"><strong>Flight:</strong> ${l.flight_number_example||'TBD'}</div>
+        <div class="leg-meta"><strong>Duration:</strong> ${l.duration_hours||'?'}h</div>
+        <div class="leg-meta"><strong>Stay:</strong> ${l.stopover_days_suggested||'0'} days</div>
+        <div class="leg-cost">${currency} ${l['estimated_cost_'+currency]||l.estimated_cost||'0'}</div>
+      </div>
+      <a href="${l.booking_link}" target="_blank" class="leg-link">View Flight &rarr;</a>
+    </div>
+  `).join('');
+
+  const tips=(data.tips||[]).map(t=>`<li class="tip-item">${t}</li>`).join('');
+
+  document.getElementById('destinationsOutput').innerHTML=`
+    <div class="results-header">
+      <div>
+        <div class="results-title">Your Multi-City Itinerary</div>
+        <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
+      </div>
+    </div>
+    <div class="multistop-container">
+      <div class="itinerary-card">
+        <div class="itinerary-summary">
+          <div class="summary-stat">
+            <div class="summary-label">Total Estimated Cost</div>
+            <div class="summary-value">${currency} ${data['total_estimated_cost_'+currency]||data.total_estimated_cost||'0'}</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-label">Route Savings</div>
+            <div class="summary-value">${data.savings_vs_direct_percent||'15'}%</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-label">Legs</div>
+            <div class="summary-value">${data.legs ? data.legs.length : 0}</div>
+          </div>
+        </div>
+        <div class="leg-list">${legs}</div>
+      </div>
+      <div class="tips-box">
+        <div class="tips-title">Expert Planning Tips</div>
+        <ul class="tips-list">${tips}</ul>
+      </div>
+    </div>
+  `;
+}
+
 init();
 </script>
 </body>

@@ -150,6 +150,7 @@ GET  /sw.js         → service worker (needs adding)
 - ✅ Date pickers + guest count + budget field
 - ✅ 3 destination cards with Premium Glassmorphism UI
 - ✅ Dynamic Vibe Tags (#Beach, #History, etc.)
+- ✅ Trip Type selector (Round Trip, One Way, Multi-city)
 - ✅ Booking links: Booking.com, Agoda, Expedia
 - ✅ Flight search: Google Flights (Robust deep-linking)
 - ✅ PDF download (jsPDF) with Just Me Media branding

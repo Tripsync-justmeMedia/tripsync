@@ -8,18 +8,14 @@ https://tripsync-ilao.onrender.com
 
 ## Working Features
 - AI destination search (Premium Narrative + Vibe Tags)
-- AI multi-stop routing (Backend ready)
-- Google Flights links (Robust deep-linking)
-- Booking.com hotel links
-- Agoda hotel links
-- Expedia hotel links
+- AI multi-stop routing (Interactive Itinerary)
+- ✅ 3 destination cards with Premium Glassmorphism UI
+- ✅ Dynamic Vibe Tags (#Beach, #History, etc.)
+- ✅ Trip Type selector (Round Trip, One Way, Multi-city)
+- ✅ Booking links: Booking.com, Agoda, Expedia
+- ✅ Flight search: Google Flights (Robust deep-linking)
 - PDF export (Branded)
 - Save trips & Interactive History (localStorage - Local First)
-- Premium Glassmorphism UI
-- Dynamic Vibe Chips
-- Auto-reset fields for New Trips
-- Share buttons & Native Mobile Share
-- Loading spinner
 - Example search buttons
 - Mobile responsive
 
