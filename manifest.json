@@ -1,0 +1,17 @@
+{
+  "name": "TripSync",
+  "short_name": "TripSync",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#faf9f6",
+  "theme_color": "#1a6b6b",
+  "description": "AI-powered travel planner for destinations and itineraries.",
+  "icons": [
+    {
+      "src": "https://tripsync-ilao.onrender.com/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
