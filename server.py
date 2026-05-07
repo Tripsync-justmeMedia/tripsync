@@ -254,24 +254,28 @@ def generate_itinerary():
     currency    = data.get('currency', 'USD')
     flight_class= data.get('flightClass', 'economy')
 
-    prompt = f"""Create a {days}-day travel itinerary for {destination}.
+    prompt = f"""Create a highly detailed {days}-day travel itinerary for {destination}.
 Preferences: {preferences}. Currency: {currency}. Flight class: {flight_class}.
 
 Return ONLY valid JSON:
 {{
   "destination": "{destination}",
   "days": {days},
+  "total_budget_estimate": "X-Y {currency}",
+  "suggested_accommodation": [
+    {{ "name": "Hotel Name", "type": "Luxury/Mid-range/Boutique", "reason": "Why this hotel?" }},
+    {{ "name": "Hotel Name 2", "type": "Budget/Hostel", "reason": "Why this one?" }}
+  ],
   "itinerary": [
     {{
       "day": 1,
-      "title": "Arrival and Exploration",
-      "activities": ["Activity 1", "Activity 2", "Activity 3"],
-      "meals": ["Breakfast spot", "Lunch spot", "Dinner spot"],
-      "tips": ["Local tip here"]
+      "title": "Arrival & City Vibe",
+      "activities": ["Specific Activity 1", "Specific Activity 2", "Evening Experience"],
+      "meals": {{ "breakfast": "Place Name", "lunch": "Place Name", "dinner": "Place Name" }},
+      "daily_budget": "X-Y {currency}",
+      "tips": ["Pro travel tip for this day"]
     }}
-  ],
-  "budget_estimate": "X-Y {currency} per day",
-  "best_time_to_visit": "Months"
+  ]
 }}"""
 
     result_text = call_groq(prompt, max_tokens=4000)

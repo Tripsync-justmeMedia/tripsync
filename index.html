@@ -710,8 +710,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   document.getElementById('destinationsOutput').innerHTML=`
     <div class="results-header">
       <div>
-        <div class="results-title">Top Destinations for You</div>
+        <div class="results-title">AI Match Results</div>
         <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">💡 Prices are estimates. Click booking links for live availability and rates.</div>
       </div>
       <div class="results-actions">
         <button class="btn-action pdf" onclick="downloadPDF('${query.replace(/'/g,"\\'")}')">⬇ Download PDF</button>
@@ -821,19 +822,40 @@ async function getItinerary(destination){
 }
 function renderItinerary(data){
   document.getElementById('itinTitle').textContent=`${data.days} Days in ${data.destination}`;
-  const html=data.itinerary.map(day=>`
-    <div class="itin-day">
-      <div class="itin-day-title">Day ${day.day}: ${day.title}</div>
-      <ul class="itin-activities">
-        ${day.activities.map(a=>`<li>${a}</li>`).join('')}
-      </ul>
-      <div class="itin-meals">
-        <strong>🍽 Suggested Meals:</strong> ${day.meals.join(', ')}
-      </div>
-      ${day.tips?`<div class="itin-tips">💡 Tip: ${day.tips[0]}</div>`:''}
+  const hotels=(data.suggested_accommodation||[]).map(h=>`
+    <div style="background:white;padding:1rem;border-radius:8px;border:1px solid var(--cream);margin-bottom:0.75rem">
+      <div style="font-weight:700;color:var(--ink)">${h.name} <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(${h.type})</span></div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">${h.reason}</div>
     </div>
   `).join('');
-  document.getElementById('itinBody').innerHTML=html;
+
+  const html=data.itinerary.map(day=>`
+    <div class="itin-day">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+        <div class="itin-day-title">Day ${day.day}: ${day.title}</div>
+        <div style="font-size:0.75rem;font-weight:700;color:var(--rust)">Est. ${day.daily_budget||''}</div>
+      </div>
+      <ul class="itin-activities">
+        ${(day.activities||[]).map(a=>`<li>${a}</li>`).join('')}
+      </ul>
+      <div class="itin-meals">
+        <strong>🍴 Meals:</strong> 
+        B: ${day.meals?.breakfast||'Local spot'} &middot; 
+        L: ${day.meals?.lunch||'Local spot'} &middot; 
+        D: ${day.meals?.dinner||'Local spot'}
+      </div>
+      ${day.tips?`<div class="itin-tips">💡 ${day.tips[0]}</div>`:''}
+    </div>
+  `).join('');
+
+  document.getElementById('itinBody').innerHTML=`
+    <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--cream)">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:1rem;font-weight:700">🏨 Suggested Stays</div>
+      ${hotels||'<div style="font-size:0.8rem;color:var(--muted)">Loading suggestions...</div>'}
+      <div style="margin-top:1rem;font-size:0.8rem;font-weight:700;color:var(--ink)">Total Est. Budget: <span style="color:var(--rust)">${data.total_budget_estimate||'N/A'}</span></div>
+    </div>
+    ${html}
+  `;
   document.getElementById('itinModalOverlay').classList.add('open');
 }
 function closeItinModal(){document.getElementById('itinModalOverlay').classList.remove('open');}
