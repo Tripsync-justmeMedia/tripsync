@@ -440,7 +440,19 @@ document.querySelectorAll('.amenity-tag').forEach(tag=>{
 
 function init(){
   const s=localStorage.getItem('tripsync_v2');
-  if(s){try{state={...state,...JSON.parse(s)};}catch(e){}}
+  if(s){
+    try{
+      state={...state,...JSON.parse(s)};
+      // Data Sanitizer: Fix legacy/old searches so they are deletable
+      Object.entries(state.projects).forEach(([pid,p])=>{
+        if(!p.searches)p.searches=[];
+        p.searches.forEach(s=>{
+          if(!s.pid)s.pid=pid;
+          if(!s.timestamp)s.timestamp=Date.now();
+        });
+      });
+    }catch(e){}
+  }
   setDefaultDates();
   const savedCity=localStorage.getItem('tripsync_depart_city');
   if(savedCity)document.getElementById('departCity').value=savedCity;
