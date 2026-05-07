@@ -78,6 +78,11 @@
     .input-mini{flex:1;padding:0.5rem;border:1px solid var(--cream);border-radius:6px;font-family:inherit;font-size:0.85rem}
     .btn-mini-add{background:var(--teal);color:white;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer}
     .btn-mini-add:hover{background:var(--teal-light)}
+    .share-btn{padding:0.6rem;border-radius:6px;border:1px solid var(--cream);background:white;font-size:0.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;transition:all 0.2s}
+    .share-btn:hover{background:var(--sky);transform:translateY(-2px)}
+    .share-btn.wa{background:#25D366;color:white;border:none}
+    .share-btn.tw{background:#000;color:white;border:none}
+    .share-btn.fb{background:#1877F2;color:white;border:none}
   </style>
 </head>
 <body>
@@ -138,6 +143,16 @@
         <div class="widget-title">🎭 Tours & Activities</div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Skip the lines and book local experiences ahead of time.</div>
         <a id="viatorLink" href="#" target="_blank" class="btn-viator">Browse Tours on Viator</a>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">↗️ Share this Itinerary</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+          <button class="share-btn wa" style="flex:1" onclick="shareItin('wa')">WhatsApp</button>
+          <button class="share-btn tw" style="flex:1" onclick="shareItin('tw')">X / Twitter</button>
+          <button class="share-btn fb" style="flex:1" onclick="shareItin('fb')">Facebook</button>
+        </div>
+        <button class="share-btn" style="width:100%;margin-top:0.5rem" onclick="shareItin('copy')">🔗 Copy Link to Planner</button>
       </div>
     </aside>
   </div>
@@ -344,6 +359,20 @@
       alert("AI was unable to refine this time. Please try again.");
     } finally {
       btn.disabled = false; btn.textContent = 'Refine';
+    }
+  }
+
+  function shareItin(type){
+    const url = window.location.href;
+    const dest = new URLSearchParams(window.location.search).get('destination');
+    const text = `Check out my detailed ${dest} itinerary on TripSync! ✈️🌍`;
+    
+    if(type==='wa') window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`);
+    else if(type==='tw') window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
+    else if(type==='fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+    else if(type==='copy') {
+      navigator.clipboard.writeText(url);
+      showToast("Link copied to clipboard!");
     }
   }
 
