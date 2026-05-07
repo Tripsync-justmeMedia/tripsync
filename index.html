@@ -566,6 +566,10 @@ function executeDelete(){
   } else if(pendingDeleteType==='search'){
     const p=state.projects[pendingDeleteId];
     if(p)p.searches=p.searches.filter(s=>String(s.timestamp)!==String(pendingSearchTs));
+  } else if(pendingDeleteType==='reset'){
+    localStorage.clear();
+    window.location.reload();
+    return;
   }
   save();renderSidebar();updateLabel();
   closeConfirmModal();
@@ -882,10 +886,10 @@ function showStats(){
 }
 function closeStatsModal(){document.getElementById('statsModalOverlay').classList.remove('open');}
 function masterReset(){
-  if(confirm('🚨 WARNING: This will permanently delete ALL your saved trips and history on this device. Continue?')){
-    localStorage.clear();
-    window.location.reload();
-  }
+  pendingDeleteType='reset';
+  document.getElementById('confirmTitle').textContent='🚨 FULL RESET?';
+  document.getElementById('confirmDesc').textContent='WARNING: This will permanently delete ALL your saved trips, projects, and settings. This cannot be undone.';
+  document.getElementById('confirmModalOverlay').classList.add('open');
 }
 function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
