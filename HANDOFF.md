@@ -38,8 +38,9 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 ### On William's Mac (Local)
 ```
 ~/tripsync/
-  server.py        — standalone Flask backend (TripSync only)
-  index.html       — full frontend
+ ├── index.html        # Main Search/Inspiration UI
+├── planner.html      # NEW: Detailed Day-by-Day Planner UI
+├── server.py          # Flask API (Groq + SQLite)
   requirements.txt — clean Python dependencies
   .gitignore       — protects .env and .db files
   .env             — API keys (NEVER commit this)
@@ -151,6 +152,10 @@ GET  /sw.js         → service worker (needs adding)
 - ✅ 3 destination cards with Premium Glassmorphism UI
 - ✅ Dynamic Vibe Tags (#Beach, #History, etc.)
 - ✅ Trip Type selector (Round Trip, One Way, Multi-city)
+- ✅ **New: Dedicated Planner Page (`planner.html`)**
+- ✅ Day-by-day itineraries with budgets & meals
+- ✅ Hotel suggestions with direct booking
+- ✅ **New: Viator integration for activities/tours**
 - ✅ Booking links: Booking.com, Agoda, Expedia
 - ✅ Flight search: Google Flights (Robust deep-linking)
 - ✅ PDF download (jsPDF) with Just Me Media branding
