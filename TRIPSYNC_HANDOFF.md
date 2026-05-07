@@ -7,10 +7,9 @@
 https://tripsync-ilao.onrender.com
 
 ## Working Features
-- AI destination search (Premium Narrative + Vibe Tags)
-- AI multi-stop routing (Interactive Itinerary)
-- Trip Type Selection (Round Trip, One Way, Multi-city)
-- **NEW: Dedicated Trip Planner Page (`planner.html`)**
+- **NEW: Full PWA Support (Store Ready)**
+- **NEW: App Icon & Manifest (`manifest.json`)**
+- **NEW: Offline Caching (`sw.js`)**
 - Google Flights links (Robust deep-linking)
 - Booking.com hotel links
 - Agoda hotel links
@@ -18,6 +17,7 @@ https://tripsync-ilao.onrender.com
 - **NEW: Viator Tour Booking links**
 - PDF export (Branded)
 - Save trips & Interactive History (localStorage - Local First)
+- Privacy Policy & Terms of Service (Compliant)
 - Example search buttons
 - Mobile responsive
 
@@ -26,6 +26,10 @@ https://tripsync-ilao.onrender.com
 - Booking.com: Applied via Awin (3-7 days)
 - Expedia: Payment setup (this week)
 - Skyscanner: Form submitted (1-2 weeks)
+
+## Production Advice
+- **Domain**: While `onrender.com` works, a custom domain (e.g., `.com`, `.io`) is recommended for App Store approval and affiliate trust.
+- **Hosting**: Ensure Render is on the **Starter ($7/mo)** plan to avoid "cold starts" which can frustrate app users.
 
 ## Commands
 Local dev: cd ~/tripsync && python3 server.py

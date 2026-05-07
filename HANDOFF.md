@@ -40,6 +40,11 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 ~/tripsync/
  ├── index.html        # Main Search/Inspiration UI
 ├── planner.html      # NEW: Detailed Day-by-Day Planner UI
+├── privacy.html      # Legal: Privacy Policy
+├── terms.html        # Legal: Terms of Service
+├── manifest.json     # PWA: App metadata for Store readiness
+├── sw.js             # PWA: Service worker for offline caching
+├── icon.png          # PWA: App icon
 ├── server.py          # Flask API (Groq + SQLite)
   requirements.txt — clean Python dependencies
   .gitignore       — protects .env and .db files
@@ -349,6 +354,20 @@ def sw():
 - .env file is gitignored — never commit it
 - SQLite db is ephemeral on Render free tier — data resets on redeploy (acceptable for now)
 - For production scale: migrate to PostgreSQL (Render has free tier)
+
+---
+
+## App Store Submission (Apple & Google)
+
+TripSync is now a fully qualified **PWA (Progressive Web App)**. To submit it to the stores:
+
+1.  **Preparation**: Ensure you have an icon (done) and manifest (done).
+2.  **Tooling**: Use [PWABuilder.com](https://www.pwabuilder.com/).
+3.  **Process**:
+    *   Enter `https://tripsync-ilao.onrender.com` (or your custom domain).
+    *   Download the "Android Wrapper" (`.apk` / `.aab`).
+    *   Download the "iOS Wrapper" (requires a Mac and Xcode).
+4.  **Hosting**: **CRITICAL** — Upgrade Render to the **Starter Plan ($7/mo)**. On the free plan, the app will "sleep," and Apple will likely reject it for taking too long to load.
 
 ---
 
