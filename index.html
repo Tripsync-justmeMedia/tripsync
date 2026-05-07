@@ -156,6 +156,12 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .itinerary-card{background:white;border-radius:12px;padding:2rem;box-shadow:var(--shadow);margin-bottom:2rem;border:1px solid var(--cream)}
 .itinerary-summary{display:flex;gap:2rem;margin-bottom:2rem;padding:1.5rem;background:var(--sky);border-radius:10px;border:1px solid rgba(26,107,107,0.1)}
 .summary-stat{flex:1}
+.chat-entry{padding:0.75rem;border-radius:8px;background:rgba(255,255,255,0.03);margin-bottom:0.5rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.75rem}
+.chat-entry:hover{background:rgba(255,255,255,0.08);transform:translateX(4px)}
+.ceq{font-size:0.8rem;font-weight:600;color:var(--sand);margin-bottom:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.cet{font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px}
+.btn-del-search{background:none;border:none;color:rgba(255,255,255,0.2);font-size:1.1rem;cursor:pointer;padding:0.2rem 0.5rem;border-radius:4px;transition:all 0.2s}
+.btn-del-search:hover{color:var(--rust);background:rgba(194,94,77,0.1)}
 .summary-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:0.3rem;font-weight:700}
 .summary-value{font-size:1.5rem;font-weight:900;color:var(--ink)}
 .leg-list{position:relative;padding-left:1.5rem;border-left:2px dashed var(--sand)}
@@ -389,8 +395,8 @@ footer a:hover{color:var(--rust-light)}
 
 <div class="modal-overlay" id="confirmModalOverlay">
   <div class="modal">
-    <h3>Delete Trip?</h3>
-    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1.5rem">This will permanently remove this trip project and all its saved searches. This action cannot be undone.</p>
+    <h3 id="confirmTitle">Delete Trip?</h3>
+    <p id="confirmDesc" style="font-size:0.9rem;color:var(--muted);margin-bottom:1.5rem">This action cannot be undone.</p>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeConfirmModal()">Cancel</button>
       <button class="btn-create" style="background:var(--rust)" onclick="executeDelete()">Delete Permanently</button>
@@ -534,22 +540,39 @@ function selectProject(id){
 }
 
 let pendingDeleteId=null;
+let pendingDeleteType=null; // 'project' or 'search'
+let pendingSearchTs=null;
+
 function deleteProject(id,e){
-  if(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-  }
+  if(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
   pendingDeleteId=id;
+  pendingDeleteType='project';
+  document.getElementById('confirmTitle').textContent='Delete Trip Project?';
+  document.getElementById('confirmDesc').textContent='This will permanently remove this trip project and ALL its saved searches.';
   document.getElementById('confirmModalOverlay').classList.add('open');
 }
-function closeConfirmModal(){document.getElementById('confirmModalOverlay').classList.remove('open');pendingDeleteId=null;}
+
+function deleteSearch(pid,ts,e){
+  if(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
+  pendingDeleteId=pid;
+  pendingSearchTs=ts;
+  pendingDeleteType='search';
+  document.getElementById('confirmTitle').textContent='Delete Search Entry?';
+  document.getElementById('confirmDesc').textContent='This will remove this specific search from your history.';
+  document.getElementById('confirmModalOverlay').classList.add('open');
+}
+
+function closeConfirmModal(){document.getElementById('confirmModalOverlay').classList.remove('open');pendingDeleteId=null;pendingDeleteType=null;pendingSearchTs=null;}
+
 function executeDelete(){
-  if(pendingDeleteId){
+  if(pendingDeleteType==='project'){
     delete state.projects[pendingDeleteId];
     if(state.activeProjectId===pendingDeleteId){state.activeProjectId=null;showWelcome();}
-    save();renderSidebar();updateLabel();
+  } else if(pendingDeleteType==='search'){
+    const p=state.projects[pendingDeleteId];
+    if(p)p.searches=p.searches.filter(s=>s.timestamp!=pendingSearchTs);
   }
+  save();renderSidebar();updateLabel();
   closeConfirmModal();
 }
 
@@ -572,8 +595,11 @@ function renderSidebar(){
   const recent=all.slice(0,10);
   if(!recent.length){entries.innerHTML='<div style="font-size:0.75rem;color:var(--muted)">No searches yet</div>';return;}
   entries.innerHTML=recent.map((s,i)=>`<div class="chat-entry" onclick="restoreSearch('${s.pid}','${s.query.replace(/'/g,"\\'")}','${s.timestamp}')">
-    <div class="ceq">${s.query.substring(0,45)}${s.query.length>45?'...':''}</div>
-    <div class="cet">${s.pname} &middot; ${new Date(s.timestamp).toLocaleDateString()}</div>
+    <div style="flex:1">
+      <div class="ceq">${s.query.substring(0,45)}${s.query.length>45?'...':''}</div>
+      <div class="cet">${s.pname} &middot; ${new Date(s.timestamp).toLocaleDateString()}</div>
+    </div>
+    <button type="button" class="btn-del-search" onclick="deleteSearch('${s.pid}','${s.timestamp}',event)">×</button>
   </div>`).join('');
 }
 
