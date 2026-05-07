@@ -384,15 +384,6 @@ footer a:hover{color:var(--rust-light)}
 
 <div class="toast" id="toast"></div>
 
-<div class="modal-overlay" id="itinModalOverlay">
-  <div class="modal itin-modal">
-    <div class="itin-header">
-      <h3 id="itinTitle" style="margin:0">Trip Itinerary</h3>
-      <button class="btn-ghost" onclick="closeItinModal()">×</button>
-    </div>
-    <div class="itin-body" id="itinBody"></div>
-  </div>
-</div>
 
 <script>
 const AFFILIATE={booking_aid:'2884913',agoda_cid:'YOUR_AGODA_CID',expedia_affcid:'YOUR_EXPEDIA_AFFCID'};
@@ -704,7 +695,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
           <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
           <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
         </div>
-        <button class="btn-itin" onclick="getItinerary('${cityRaw}')">🗺️ View Detailed Itinerary</button>
+        <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=5" target="_blank" class="btn-itin">🗺️ View Detailed Planner</a>
         <div class="card-share-row">
           <a href="${waUrl}" target="_blank" class="share-btn wa">💬 WhatsApp</a>
           <a href="${twUrl}" target="_blank" class="share-btn tw">𝕏 Post</a>
@@ -834,58 +825,6 @@ function showStats(){
 }
 function closeStatsModal(){document.getElementById('statsModalOverlay').classList.remove('open');}
 function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
-async function getItinerary(destination){
-  showToast(`Generating itinerary for ${destination}...`);
-  try{
-    const resp=await fetch('/api/generate-itinerary',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({destination,days:5,currency:document.getElementById('currency').value})
-    });
-    if(!resp.ok)throw new Error('Failed to generate itinerary');
-    const data=await resp.json();
-    renderItinerary(data);
-  }catch(e){showToast('Could not load itinerary. Try again.');}
-}
-function renderItinerary(data){
-  document.getElementById('itinTitle').textContent=`${data.days} Days in ${data.destination}`;
-  const hotels=(data.suggested_accommodation||[]).map(h=>`
-    <div style="background:white;padding:1rem;border-radius:8px;border:1px solid var(--cream);margin-bottom:0.75rem">
-      <div style="font-weight:700;color:var(--ink)">${h.name} <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(${h.type})</span></div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">${h.reason}</div>
-    </div>
-  `).join('');
-
-  const html=data.itinerary.map(day=>`
-    <div class="itin-day">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-        <div class="itin-day-title">Day ${day.day}: ${day.title}</div>
-        <div style="font-size:0.75rem;font-weight:700;color:var(--rust)">Est. ${day.daily_budget||''}</div>
-      </div>
-      <ul class="itin-activities">
-        ${(day.activities||[]).map(a=>`<li>${a}</li>`).join('')}
-      </ul>
-      <div class="itin-meals">
-        <strong>🍴 Meals:</strong> 
-        B: ${day.meals?.breakfast||'Local spot'} &middot; 
-        L: ${day.meals?.lunch||'Local spot'} &middot; 
-        D: ${day.meals?.dinner||'Local spot'}
-      </div>
-      ${day.tips?`<div class="itin-tips">💡 ${day.tips[0]}</div>`:''}
-    </div>
-  `).join('');
-
-  document.getElementById('itinBody').innerHTML=`
-    <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--cream)">
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:1rem;font-weight:700">🏨 Suggested Stays</div>
-      ${hotels||'<div style="font-size:0.8rem;color:var(--muted)">Loading suggestions...</div>'}
-      <div style="margin-top:1rem;font-size:0.8rem;font-weight:700;color:var(--ink)">Total Est. Budget: <span style="color:var(--rust)">${data.total_budget_estimate||'N/A'}</span></div>
-    </div>
-    ${html}
-  `;
-  document.getElementById('itinModalOverlay').classList.add('open');
-}
-function closeItinModal(){document.getElementById('itinModalOverlay').classList.remove('open');}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();searchTrip();}});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
