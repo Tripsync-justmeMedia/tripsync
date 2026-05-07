@@ -750,7 +750,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
           <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
           <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
         </div>
-        <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=5" target="_blank" class="btn-itin">🗺️ View Detailed Planner</a>
+        <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=5&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}" target="_blank" class="btn-itin">🗺️ View Detailed Planner</a>
         <div class="card-share-row">
           <a href="${waUrl}" target="_blank" class="share-btn wa">💬 WhatsApp</a>
           <a href="${twUrl}" target="_blank" class="share-btn tw">𝕏 Post</a>

@@ -107,6 +107,16 @@
     </main>
 
     <aside class="sidebar">
+      <div class="sidebar-widget" id="flightWidget">
+        <div class="widget-title">✈️ Book Flights</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Secure your travel dates before finalizing hotels.</div>
+        <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:var(--ink);color:white">Search on Google Flights</a>
+        <div style="margin-top:1rem;display:flex;align-items:center;gap:0.5rem;font-size:0.75rem">
+          <input type="checkbox" id="flightsBooked" onchange="toggleFlights()">
+          <label for="flightsBooked">I've already booked my flights</label>
+        </div>
+      </div>
+
       <div class="sidebar-widget">
         <div class="widget-title">💰 Budget Overview</div>
         <div class="stat-row">
@@ -243,6 +253,31 @@
     const encodedDest = encodeURIComponent(destination);
     document.getElementById('bookingLink').href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=2884913`;
     document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
+    
+    // Flight link
+    const from = params.get('from') || '';
+    const ci = params.get('ci') || '';
+    const co = params.get('co') || '';
+    if(from && ci){
+       document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
+    } else {
+       document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
+    }
+  }
+
+  function toggleFlights(){
+    const isBooked = document.getElementById('flightsBooked').checked;
+    document.getElementById('flightWidget').style.opacity = isBooked ? '0.5' : '1';
+    document.getElementById('flightWidget').style.pointerEvents = isBooked ? 'none' : 'auto';
+    if(isBooked) showToast("Awesome! Let's focus on your daily plan.");
+  }
+
+  function showToast(msg){
+    const t = document.createElement('div');
+    t.style = "position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:white;padding:0.75rem 1.5rem;border-radius:8px;z-index:1000;font-size:0.85rem;box-shadow:var(--shadow)";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3000);
   }
 
   function showEmptyState(){
