@@ -869,11 +869,23 @@ function showStats(){
       <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Tracking conversions and engagement across all platforms:</div>
       ${rows}
       <div style="margin-top:1rem;font-weight:700;text-align:right">Total Interactions: ${state.clickLog.length}</div>
+      
+      <div style="margin-top:2rem;padding-top:1.5rem;border-top:2px solid var(--cream)">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--rust);font-weight:700;margin-bottom:1rem">⚠️ Danger Zone</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1rem">Wipe all local trip projects, search history, and settings from this device.</div>
+        <button class="btn-create" style="background:var(--rust);width:100%" onclick="masterReset()">Wipe All History & Reset App</button>
+      </div>
     `;
   }
   document.getElementById('statsModalOverlay').classList.add('open');
 }
 function closeStatsModal(){document.getElementById('statsModalOverlay').classList.remove('open');}
+function masterReset(){
+  if(confirm('🚨 WARNING: This will permanently delete ALL your saved trips and history on this device. Continue?')){
+    localStorage.clear();
+    window.location.reload();
+  }
+}
 function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();searchTrip();}});
