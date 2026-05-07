@@ -261,15 +261,6 @@ curl http://127.0.0.1:5001
 
 ---
 
-## PWA — Needs Completing
-
-Two files need to be added to `~/tripsync/` for full PWA support:
-
-### manifest.json
-```json
-{
-  "name": "TripSync",
-  "short_name": "TripSync",
   "description": "AI Travel Planner by Just Me Media",
   "start_url": "/",
   "display": "standalone",
@@ -307,7 +298,8 @@ def sw():
 - Standalone TripSync app separated from Symbiotic Engine
 - Clean GitHub repo at Tripsync-justmeMedia/tripsync
 - Deployed on Render.com with auto-deploy
-- UptimeRobot keeping it alive 24/7
+- **Full PWA support (Manifest + Service Worker + Icons)** ✅
+- **UptimeRobot monitor active (5-min ping keep-alive)** ✅
 - Global departure city field (no Toronto hardcoding)
 - Currency selector (12 currencies)
 - PDF download with Just Me Media branding
@@ -322,9 +314,9 @@ def sw():
 ## What's Next 🔜
 
 **Immediate:**
-- [ ] Add manifest.json + sw.js + icons for full PWA
+- [x] Add manifest.json + sw.js + icons for full PWA
 - [ ] Apply for Booking.com, Agoda, Expedia affiliate accounts
-- [ ] Add GROQ_API_KEY to Render environment variables if not done
+- [ ] Add GROQ_API_KEY to Render environment variables (Done)
 
 **Short term:**
 - [ ] Buy gettripsync.com domain (~$12/yr)
