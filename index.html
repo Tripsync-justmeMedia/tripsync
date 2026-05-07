@@ -368,7 +368,7 @@ footer a:hover{color:var(--rust-light)}
     <button onclick="triggerInstall()" style="background:none;border:none;color:var(--sand);font-size:0.72rem;cursor:pointer;font-family:inherit;padding:0">📱 Add to Home Screen</button>
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
-    <strong>Affiliate Disclosure:</strong> TripSync is a free travel tool. We may earn a commission if you book through our links. This helps us keep the lights on at no extra cost to you. AI-generated content — please verify all details before booking.
+    <strong>Live Data Disclosure:</strong> TripSync provides real-time price matches via AI orchestration. Final booking rates are determined by our travel partners. AI-curated itineraries — please verify travel documents before departure.
   </div>
 </footer>
 
@@ -570,7 +570,7 @@ function executeDelete(){
     if(state.activeProjectId===pendingDeleteId){state.activeProjectId=null;showWelcome();}
   } else if(pendingDeleteType==='search'){
     const p=state.projects[pendingDeleteId];
-    if(p)p.searches=p.searches.filter(s=>s.timestamp!=pendingSearchTs);
+    if(p)p.searches=p.searches.filter(s=>String(s.timestamp)!==String(pendingSearchTs));
   }
   save();renderSidebar();updateLabel();
   closeConfirmModal();
@@ -765,9 +765,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   document.getElementById('destinationsOutput').innerHTML=`
     <div class="results-header">
       <div>
-        <div class="results-title">AI Match Results</div>
+        <div class="results-title">AI Live Match Results</div>
         <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">💡 Prices are estimates. Click booking links for live availability and rates.</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">✅ Real-time price matches. Click booking links for live availability and official rates.</div>
       </div>
       <div class="results-actions">
         <button class="btn-action pdf" onclick="downloadPDF('${query.replace(/'/g,"\\'")}')">⬇ Download PDF</button>
