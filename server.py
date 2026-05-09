@@ -201,6 +201,46 @@ def tripsync():
 
     return jsonify(result)
 
+@app.route('/api/tripsync-local', methods=['POST'])
+def tripsync_local():
+    data = request.get_json()
+    query       = data.get('query', '').strip()
+    depart_city = data.get('departCity', data.get('departure', '')).strip()
+    currency    = data.get('currency', 'USD')
+    check_in    = data.get('checkIn', '')
+    check_out   = data.get('checkOut', '')
+    guests      = data.get('guests', '2')
+    budget      = data.get('budget', '')
+    flight_class= data.get('flightClass', 'economy')
+    hotel_rating= data.get('hotelRating', 'any')
+    amenities   = data.get('amenities', [])
+    car_type    = data.get('carType', 'none')
+
+    if not query:
+        return jsonify({'error': 'No query provided'}), 400
+
+    prompt = build_prompt(query, depart_city, currency, check_in, check_out,
+                         guests, budget, flight_class, hotel_rating, amenities, car_type)
+
+    result_text = call_ollama(prompt)
+
+    result = extract_json_safe(result_text) if result_text else None
+
+    if not result or "destinations" not in result:
+        return jsonify({'error': 'Could not generate destinations. Try again.'}), 500
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("INSERT INTO search_log (query,departure,currency,hotel_rating,timestamp) VALUES (?,?,?,?,?)",
+            (query, depart_city, currency, hotel_rating, datetime.now().isoformat()))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"DB log error: {e}")
+
+    return jsonify(result)
+
 # --- Multi-stop route planner ---
 @app.route('/api/multi-stop', methods=['POST'])
 def multi_stop():
