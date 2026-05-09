@@ -481,10 +481,15 @@ document.querySelectorAll('.amenity-tag').forEach(tag=>{
 });
 
 function init(){
+  const modes = {
+    cloud: { icon: '☁️', label: 'Cloud AI (Groq)' },
+    gemma: { icon: '✨', label: 'Gemma 4 API' },
+    local: { icon: '🔒', label: 'Private AI (Local)' }
+  };
   const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-  if (aiMode === 'local') {
-    document.getElementById('aiModeIcon').textContent = '🔒';
-    document.getElementById('aiModeLabel').textContent = 'Private AI (Local)';
+  if (modes[aiMode]) {
+    document.getElementById('aiModeIcon').textContent = modes[aiMode].icon;
+    document.getElementById('aiModeLabel').textContent = modes[aiMode].label;
   }
   const s=localStorage.getItem('tripsync_v2');
   if(s){
@@ -691,8 +696,11 @@ async function searchTrip(){
   const iv=setInterval(()=>{mi=(mi+1)%MSGS.length;const el=document.getElementById('loadingText');if(el)el.textContent=MSGS[mi];},2200);
   try{
     let endpoint=tripType==='multicity'?'/api/multi-stop':'/api/tripsync';
-    const useLocal = localStorage.getItem('tripsync_ai_mode') === 'local';
-    if(useLocal && tripType !== 'multicity') endpoint = '/api/tripsync-local';
+    const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    if(tripType !== 'multicity') {
+      if(aiMode === 'local') endpoint = '/api/tripsync-local';
+      else if(aiMode === 'gemma') endpoint = '/api/tripsync-gemma';
+    }
     const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType};
     const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     clearInterval(iv);
@@ -815,8 +823,13 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     </div>`;
   }).join('');
 
-  const isLocal = localStorage.getItem('tripsync_ai_mode') === 'local';
-  const gemmaBadge = isLocal ? `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">✨ Curated locally by Gemma 4</div>` : '';
+  const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+  let badgeHtml = '';
+  if (aiMode === 'local') {
+    badgeHtml = `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">🔒 Curated locally by Gemma 4</div>`;
+  } else if (aiMode === 'gemma') {
+    badgeHtml = `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">✨ Powered by Gemma 4 API</div>`;
+  }
 
   document.getElementById('destinationsOutput').innerHTML=`
     <div class="results-header">
@@ -831,7 +844,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
       </div>
     </div>
     <div class="destinations-grid">${cards}</div>
-    ${gemmaBadge}`;
+    ${badgeHtml}`;
 }
 
 function copyLink(){
@@ -1010,16 +1023,19 @@ function renderMultiStopResults(data,query,currency){
 }
 
 function toggleAIMode(){
+  const modes = ['cloud', 'gemma', 'local'];
+  const labels = {
+    cloud: { icon: '☁️', label: 'Cloud AI (Groq)', toast: '☁️ Switched to Cloud AI (Groq)' },
+    gemma: { icon: '✨', label: 'Gemma 4 API', toast: '✨ Switched to Gemma 4 API (Fast Cloud)' },
+    local: { icon: '🔒', label: 'Private AI (Local)', toast: '🔒 Switched to Gemma 4 Local — your data stays on this device' }
+  };
   const current = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-  const next = current === 'cloud' ? 'local' : 'cloud';
+  const next = modes[(modes.indexOf(current) + 1) % modes.length];
   localStorage.setItem('tripsync_ai_mode', next);
-  document.getElementById('aiModeIcon').textContent = 
-    next === 'local' ? '🔒' : '☁️';
-  document.getElementById('aiModeLabel').textContent = 
-    next === 'local' ? 'Private AI (Local)' : 'Cloud AI';
-  showToast(next === 'local' ? 
-    '🔒 Switched to Gemma 4 Local — your data stays on this device' : 
-    '☁️ Switched to Cloud AI');
+  
+  document.getElementById('aiModeIcon').textContent = labels[next].icon;
+  document.getElementById('aiModeLabel').textContent = labels[next].label;
+  showToast(labels[next].toast);
 }
 
 init();

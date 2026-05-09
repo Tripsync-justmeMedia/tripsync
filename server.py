@@ -8,6 +8,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 import requests
+import google.generativeai as genai
 
 load_dotenv()
 
@@ -20,6 +21,9 @@ GROQ_KEY   = os.environ.get('GROQ_API_KEY')
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 OLLAMA_URL = "http://localhost:11434/api/generate"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 # --- Database ---
 def init_db():
@@ -92,6 +96,19 @@ def call_ollama(prompt):
             logging.error(f"Ollama attempt {attempt+1}: {e}")
         time.sleep(1)
     return None
+
+# --- Gemma 4 API (Gemini) ---
+def call_gemma_api(prompt):
+    if not GEMINI_API_KEY:
+        logging.error("No GEMINI_API_KEY found")
+        return None
+    try:
+        model = genai.GenerativeModel("gemma-2-27b-it")
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        logging.error(f"Gemma API error: {e}")
+        return None
 
 # --- Build destination search prompt ---
 def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="",
@@ -241,6 +258,47 @@ def tripsync_local():
 
     return jsonify(result)
 
+@app.route('/api/tripsync-gemma', methods=['POST'])
+def tripsync_gemma():
+    data = request.get_json()
+    query       = data.get('query', '').strip()
+    depart_city = data.get('departCity', data.get('departure', '')).strip()
+    currency    = data.get('currency', 'USD')
+    check_in    = data.get('checkIn', '')
+    check_out   = data.get('checkOut', '')
+    guests      = data.get('guests', '2')
+    budget      = data.get('budget', '')
+    flight_class= data.get('flightClass', 'economy')
+    hotel_rating= data.get('hotelRating', 'any')
+    amenities   = data.get('amenities', [])
+    car_type    = data.get('carType', 'none')
+
+    if not query:
+        return jsonify({'error': 'No query provided'}), 400
+
+    prompt = build_prompt(query, depart_city, currency, check_in, check_out,
+                         guests, budget, flight_class, hotel_rating, amenities, car_type)
+
+    result_text = call_gemma_api(prompt)
+    if not result_text:
+        return jsonify({"error": "Gemma API unavailable"}), 503
+
+    result = extract_json_safe(result_text)
+    if not result or "destinations" not in result:
+        return jsonify({"error": "Could not parse Gemma response"}), 500
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)",
+            (query, depart_city, currency, datetime.now().isoformat()))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"DB log error: {e}")
+
+    return jsonify(result)
+
 # --- Multi-stop route planner ---
 @app.route('/api/multi-stop', methods=['POST'])
 def multi_stop():
@@ -341,6 +399,21 @@ def generate_itinerary_local():
     if not result:
         return jsonify({"error": "Private AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href=\"https://github.com/Tripsync-justmeMedia/tripsync\" target=\"_blank\" style=\"text-decoration: underline; font-weight: bold; color: inherit;\">see our GitHub for local instructions!</a>"}), 200
     parsed = extract_json_safe(result)
+    if not parsed:
+        return jsonify({"error": "Could not parse response"}), 500
+    return jsonify(parsed)
+
+@app.route('/api/generate-itinerary-gemma', methods=['POST'])
+def generate_itinerary_gemma():
+    data = request.get_json()
+    destination = data.get('destination', '')
+    days = data.get('days', 5)
+    currency = data.get('currency', 'USD')
+    prompt = build_itinerary_prompt(destination, days, currency)
+    result_text = call_gemma_api(prompt)
+    if not result_text:
+        return jsonify({"error": "Gemma API unavailable"}), 503
+    parsed = extract_json_safe(result_text)
     if not parsed:
         return jsonify({"error": "Could not parse response"}), 500
     return jsonify(parsed)

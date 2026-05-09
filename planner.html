@@ -193,10 +193,15 @@
 
 <script>
   async function init(){
+    const modes = {
+      cloud: { icon: '☁️', label: 'Cloud AI (Groq)' },
+      gemma: { icon: '✨', label: 'Gemma 4 API' },
+      local: { icon: '🔒', label: 'Private AI (Local)' }
+    };
     const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-    if (aiMode === 'local') {
-      document.getElementById('aiModeIcon').textContent = '🔒';
-      document.getElementById('aiModeLabel').textContent = 'Private AI (Local)';
+    if (modes[aiMode]) {
+      document.getElementById('aiModeIcon').textContent = modes[aiMode].icon;
+      document.getElementById('aiModeLabel').textContent = modes[aiMode].label;
     }
     const params = new URLSearchParams(window.location.search);
     const destination = params.get('destination');
@@ -213,8 +218,10 @@
     document.title = `${destination} Planner — TripSync`;
 
     try {
-      const useLocal = localStorage.getItem('tripsync_ai_mode') === 'local';
-      const endpoint = useLocal ? '/api/generate-itinerary-local' : '/api/generate-itinerary';
+      const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+      let endpoint = '/api/generate-itinerary';
+      if (aiMode === 'local') endpoint = '/api/generate-itinerary-local';
+      else if (aiMode === 'gemma') endpoint = '/api/generate-itinerary-gemma';
       const resp = await fetch(endpoint, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -232,9 +239,12 @@
     document.getElementById('content').style.display = 'block';
 
     // Budget
-    const isLocal = localStorage.getItem('tripsync_ai_mode') === 'local';
-    document.getElementById('totalBudget').innerHTML = `${currency} ${data.total_budget_estimate || 'N/A'}` + 
-      (isLocal ? ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ Curated locally by Gemma 4</span>' : '');
+    const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    let badgeHtml = '';
+    if (aiMode === 'local') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">🔒 Curated locally by Gemma 4</span>';
+    else if (aiMode === 'gemma') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ Powered by Gemma 4 API</span>';
+
+    document.getElementById('totalBudget').innerHTML = `${currency} ${data.total_budget_estimate || 'N/A'}` + badgeHtml;
 
     // Hotels
     const hotelList = document.getElementById('hotelList');
@@ -410,16 +420,19 @@
   }
 
   function toggleAIMode(){
+    const modes = ['cloud', 'gemma', 'local'];
+    const labels = {
+      cloud: { icon: '☁️', label: 'Cloud AI (Groq)', toast: '☁️ Switched to Cloud AI (Groq)' },
+      gemma: { icon: '✨', label: 'Gemma 4 API', toast: '✨ Switched to Gemma 4 API (Fast Cloud)' },
+      local: { icon: '🔒', label: 'Private AI (Local)', toast: '🔒 Switched to Gemma 4 Local — your data stays on this device' }
+    };
     const current = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-    const next = current === 'cloud' ? 'local' : 'cloud';
+    const next = modes[(modes.indexOf(current) + 1) % modes.length];
     localStorage.setItem('tripsync_ai_mode', next);
-    document.getElementById('aiModeIcon').textContent = 
-      next === 'local' ? '🔒' : '☁️';
-    document.getElementById('aiModeLabel').textContent = 
-      next === 'local' ? 'Private AI (Local)' : 'Cloud AI';
-    showToast(next === 'local' ? 
-      '🔒 Switched to Gemma 4 Local — your data stays on this device' : 
-      '☁️ Switched to Cloud AI');
+    
+    document.getElementById('aiModeIcon').textContent = labels[next].icon;
+    document.getElementById('aiModeLabel').textContent = labels[next].label;
+    showToast(labels[next].toast);
   }
 
   init();

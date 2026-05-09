@@ -7,3 +7,4 @@ anthropic==0.97.0
 openai==2.6.0
 gunicorn==21.2.0
 simple-websocket==1.1.0
+google-generativeai
