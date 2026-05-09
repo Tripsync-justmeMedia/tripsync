@@ -103,7 +103,7 @@ def call_gemma_api(prompt):
         logging.error("No GEMINI_API_KEY found")
         return None
     try:
-        model = genai.GenerativeModel("gemma-2-27b-it")
+        model = genai.GenerativeModel("gemma-4-31b-it")
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
