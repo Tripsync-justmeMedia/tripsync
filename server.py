@@ -192,8 +192,8 @@ def tripsync():
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,departure,currency,hotel_rating,timestamp) VALUES (?,?,?,?,?)",
-            (query, depart_city, currency, hotel_rating, datetime.now().isoformat()))
+        c.execute("INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)",
+            (query, depart_city, currency, datetime.now().isoformat()))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -232,8 +232,8 @@ def tripsync_local():
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,departure,currency,hotel_rating,timestamp) VALUES (?,?,?,?,?)",
-            (query, depart_city, currency, hotel_rating, datetime.now().isoformat()))
+        c.execute("INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)",
+            (query, depart_city, currency, datetime.now().isoformat()))
         conn.commit()
         conn.close()
     except Exception as e:
