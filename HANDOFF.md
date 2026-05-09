@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 7, 2026  
+**Last Updated:** May 9, 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
 **Developer Contact:** wcommu@gmail.com  
@@ -7,7 +7,7 @@
 ---
 
 ## What TripSync Is
-AI-powered travel destination finder. User describes their dream trip in plain English. TripSync returns 3 detailed destination cards with real prices, flight estimates, visa info, and direct booking links to Booking.com, Agoda, and Expedia. Monetizes through affiliate commissions on every hotel and flight click.
+AI-powered travel destination finder. User describes their dream trip in plain English. TripSync returns 3 detailed destination cards with real prices, flight estimates, visa info, and direct booking links to Booking.com, Agoda, and Expedia. Monetizes through affiliate commissions on every hotel and flight click. Features a dual-mode AI engine (Cloud via Groq / Local Private AI via Gemma 4).
 
 **Live URL:** https://tripsync-ilao.onrender.com  
 **Target Domain:** gettripsync.com (not yet purchased)  
@@ -73,7 +73,7 @@ DB: /tmp/tripsync.db  (ephemeral — resets on redeploy)
 | Frontend | Single HTML file, no framework, no build step |
 | Backend | Python Flask + Gunicorn |
 | Primary AI | Groq API (llama-3.3-70b-versatile) |
-| Fallback AI | Ollama local (llama3.1:8b) — local only, not on Render |
+| Local Private AI | Ollama local (gemma4) — privacy-first local mode for the Gemma 4 Challenge |
 | Database | SQLite (click tracking + search logging) |
 | Hosting | Render.com free tier |
 | Uptime | UptimeRobot (5-min ping) |
@@ -151,191 +151,62 @@ GET  /sw.js         → service worker (needs adding)
 
 ## Frontend Features (Current)
 
-- ✅ Departure city field (remembers between sessions)
-- ✅ Currency selector (12 currencies)
-- ✅ Date pickers + guest count + budget field
-- ✅ 3 destination cards with Premium Glassmorphism UI
-- ✅ Dynamic Vibe Tags (#Beach, #History, etc.)
-- ✅ Trip Type selector (Round Trip, One Way, Multi-city)
-- ✅ **New: Dedicated Planner Page (`planner.html`)**
+- ✅ **New: Interactive Planner (`planner.html`)**
 - ✅ Day-by-day itineraries with budgets & meals
 - ✅ Hotel suggestions with direct booking
 - ✅ **New: Viator integration for activities/tours**
-- ✅ Booking links: Booking.com, Agoda, Expedia
-- ✅ Flight search: Google Flights (Robust deep-linking)
+- ✅ **New: Manual Activity Editing (Add/Remove items)**
+- ✅ **New: AI Refinement Tool (Rebuild plan with instructions)**
+- ✅ **New: Dual Flight Booking (Google Flights + Skyscanner)**
+- ✅ **New: Viral Sharing (WhatsApp, X, FB) for all itineraries**
 - ✅ PDF download (jsPDF) with Just Me Media branding
 - ✅ Save card as image (html2canvas)
-- ✅ Share buttons: WhatsApp, X/Twitter, Facebook, Email, Copy Link
-- ✅ Native share API (mobile)
 - ✅ PWA install banner (Add to Home Screen)
-- ✅ Service worker registration (needs sw.js + manifest.json added)
 - ✅ Left sidebar: Named trip projects + Interactive History (Local-First)
-- ✅ Clickable Recent Searches history
-- ✅ Auto-reset fields for new projects
-- ✅ Example chips (no location hardcoding)
-- ✅ Mobile responsive
+- ✅ **New: Legacy Data Sanitizer (Auto-repairs old history)**
 - ✅ Just Me Media footer branding
 - ✅ Click tracking → SQLite
 
 ---
 
-## Affiliate Links — READY, NEED IDs
+## Affiliate Tracking & IDs
+We have a dedicated tracker for all monetization partners:
+[AFFILIATE_TRACKER.md](file:///Users/williamcommu/.gemini/antigravity/brain/e714ab51-99f0-4e2e-b39c-63e574765a43/AFFILIATE_TRACKER.md)
 
-Current placeholders in index.html:
-```javascript
-const AFFILIATE = {
-  booking_aid: 'YOUR_BOOKING_AID',
-  agoda_cid: 'YOUR_AGODA_CID',
-  expedia_affcid: 'YOUR_EXPEDIA_AFFCID'
-};
-```
-
-**To insert IDs once approved — run this on Mac:**
-```bash
-cd ~/tripsync
-sed -i '' 's/YOUR_BOOKING_AID/real_id_here/' index.html
-sed -i '' 's/YOUR_AGODA_CID/real_id_here/' index.html
-sed -i '' 's/YOUR_EXPEDIA_AFFCID/real_id_here/' index.html
-git add index.html
-git commit -m "Add affiliate IDs"
-git push
-```
-
-**To register:**
-- Booking.com → partners.booking.com
-- Agoda → partners.agoda.com
-- Expedia → expediagroup.com/partners
+**Current Status:**
+- Booking.com: ✅ **LIVE** (aid: 2884913)
+- Agoda/Expedia: ⏳ Applied (Awin)
+- Viator: ⏳ Applied (Partnerize)
+- Skyscanner: ❌ Re-apply after traffic grows (use WayAway as alternative)
 
 ---
 
-## Deployment
+## What's Done ✅ (Updated May 7)
 
-### Auto-Deploy (normal workflow)
-```bash
-cd ~/tripsync
-# make changes to index.html or server.py
-git add .
-git commit -m "describe what changed"
-git push
-# Render auto-deploys within ~2 minutes
-```
-
-### Render Settings
-- **Build Command:** `pip install -r requirements.txt`
-- **Start Command:** `gunicorn server:app`
-- **Instance:** Free tier
-- **Region:** Virginia US East
-- **Auto-deploy:** On (triggers on every GitHub push)
-
-### If Render Goes Down
-```bash
-# Check logs at render.com dashboard
-# Or redeploy manually: Render → Manual Deploy → Deploy latest commit
-```
-
----
-
-## Local Development
-
-### Start TripSync locally
-```bash
-cd ~/tripsync
-python3 server.py
-# Visit http://127.0.0.1:5001
-```
-
-### Start Symbiotic Engine locally
-```bash
-cd ~/symbiotic
-python3 server.py
-# Or double-click SymbioticEngine.command on Desktop
-# Visit http://127.0.0.1:5000
-```
-
-### If anything breaks locally
-```bash
-pkill -f server.py
-cd ~/tripsync && python3 server.py &
-curl http://127.0.0.1:5001
-```
-
----
-
-  "description": "AI Travel Planner by Just Me Media",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0f0f0f",
-  "theme_color": "#0f0f0f",
-  "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
-```
-
-### sw.js (service worker)
-```javascript
-self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-});
-```
-
-### Flask routes to add in server.py
-```python
-@app.route('/manifest.json')
-def manifest():
-    return send_from_directory('.', 'manifest.json')
-
-@app.route('/sw.js')
-def sw():
-    return send_from_directory('.', 'sw.js')
-```
-
----
-
-## What's Done ✅
-
-- Standalone TripSync app separated from Symbiotic Engine
-- Clean GitHub repo at Tripsync-justmeMedia/tripsync
-- Deployed on Render.com with auto-deploy
-- **Full PWA support (Manifest + Service Worker + Icons)** ✅
-- **UptimeRobot monitor active (5-min ping keep-alive)** ✅
-- Global departure city field (no Toronto hardcoding)
-- Currency selector (12 currencies)
-- PDF download with Just Me Media branding
-- Save card as image
-- Social sharing: WhatsApp, X, Facebook, Email, Copy Link
-- PWA install banner (Add to Home Screen)
-- Just Me Media footer
-- Affiliate link slots ready
+- **Interactive Planner**: Users can now adjust activities and ask AI for refinements.
+- **Full Booking Funnel**: Flights, Hotels, and Tours all integrated into one view.
+- **PWA v2**: Updated service worker to force updates and improve performance.
+- **Stability**: Replaced all `confirm()` popups with stable custom modals.
+- **Navigation**: Prominent "Planner" link added to the main header.
 
 ---
 
 ## What's Next 🔜
 
-**Immediate:**
-- [x] Add manifest.json + sw.js + icons for full PWA
-- [ ] Apply for Booking.com, Agoda, Expedia affiliate accounts
-- [ ] Add GROQ_API_KEY to Render environment variables (Done)
+**Immediate (Public Beta Phase):**
+- [ ] Share with "Friends & Family" and gather first usage stats.
+- [ ] Monitor the "Stats" modal to see which travel partners get the most clicks.
+- [ ] Sign up for **WayAway** (Travelpayouts) as a high-approval flight alternative.
 
 **Short term:**
-- [ ] Buy gettripsync.com domain (~$12/yr)
-- [ ] Connect domain to Render
-- [ ] Post on Reddit (r/travel, r/solotravel, r/SideProject)
-- [ ] First TikTok/Reel screen recording
+- [ ] Buy **gettripsync.com** domain and connect to Render.
+- [ ] Update placeholder IDs for Agoda/Expedia once approved.
+- [ ] First TikTok/Reel screen recording showing the "Interactive Planner" magic.
 
 **Medium term:**
-- [ ] Add Gemini API as third brain (free at aistudio.google.com)
-- [ ] Add Amadeus flight API for real prices (free tier)
-- [ ] SEO landing page / blog content
-- [ ] Email capture ("save your results")
-- [ ] Admin dashboard for click stats
-
-**Longer term:**
-- [ ] Google Play Store (PWA wrapper via TWA)
-- [ ] Apple App Store (WebView wrapper)
-- [ ] Premium tier ($4.99/mo) — unlimited saves, history sync
-- [ ] Embed widget for travel bloggers
+- [ ] Add **Gemini API** as a third brain (for faster/cheaper planning).
+- [ ] **SEO Landing Page**: Create city-specific landing pages for organic traffic.
+- [ ] **Email Capture**: "Save this plan to email" to build a mailing list.
 
 ---
 

@@ -83,7 +83,7 @@ def call_ollama(prompt):
     for attempt in range(2):
         try:
             resp = requests.post(OLLAMA_URL,
-                json={"model": "llama3.1:8b", "prompt": prompt, "stream": False,
+                json={"model": "gemma4", "prompt": prompt, "stream": False,
                       "options": {"temperature": 0.5, "num_predict": 1500}},
                 timeout=90)
             if resp.status_code == 200:
@@ -192,8 +192,8 @@ def tripsync():
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,departure,currency,flight_class,hotel_rating,timestamp) VALUES (?,?,?,?,?,?)",
-            (query, depart_city, currency, flight_class, hotel_rating, datetime.now().isoformat()))
+        c.execute("INSERT INTO search_log (query,departure,currency,hotel_rating,timestamp) VALUES (?,?,?,?,?)",
+            (query, depart_city, currency, hotel_rating, datetime.now().isoformat()))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -245,15 +245,7 @@ Return EXACTLY this structure:
     return jsonify(result)
 
 # --- Day-by-day itinerary generator ---
-@app.route('/api/generate-itinerary', methods=['POST'])
-def generate_itinerary():
-    data        = request.get_json()
-    destination = data.get('destination', '')
-    days        = data.get('days', 5)
-    preferences = data.get('preferences', '')
-    currency    = data.get('currency', 'USD')
-    flight_class= data.get('flightClass', 'economy')
-
+def build_itinerary_prompt(destination, days, currency, preferences='', flight_class='economy'):
     prompt = f"""Create a highly detailed {days}-day travel itinerary for {destination}.
 Preferences: {preferences}. Currency: {currency}. Flight class: {flight_class}.
 
@@ -277,6 +269,18 @@ Return ONLY valid JSON:
     }}
   ]
 }}"""
+    return prompt
+
+@app.route('/api/generate-itinerary', methods=['POST'])
+def generate_itinerary():
+    data        = request.get_json()
+    destination = data.get('destination', '')
+    days        = data.get('days', 5)
+    preferences = data.get('preferences', '')
+    currency    = data.get('currency', 'USD')
+    flight_class= data.get('flightClass', 'economy')
+
+    prompt = build_itinerary_prompt(destination, days, currency, preferences, flight_class)
 
     result_text = call_groq(prompt, max_tokens=4000)
     if not result_text:
@@ -285,6 +289,21 @@ Return ONLY valid JSON:
     if not result:
         return jsonify({"error": "Could not parse itinerary."}), 500
     return jsonify(result)
+
+@app.route('/api/generate-itinerary-local', methods=['POST'])
+def generate_itinerary_local():
+    data = request.get_json()
+    destination = data.get('destination', '')
+    days = data.get('days', 5)
+    currency = data.get('currency', 'USD')
+    prompt = build_itinerary_prompt(destination, days, currency)
+    result = call_ollama(prompt)
+    if not result:
+        return jsonify({"error": "Local AI unavailable"}), 503
+    parsed = extract_json_safe(result)
+    if not parsed:
+        return jsonify({"error": "Could not parse response"}), 500
+    return jsonify(parsed)
 
 @app.route('/api/refine-itinerary', methods=['POST'])
 def refine_itinerary():

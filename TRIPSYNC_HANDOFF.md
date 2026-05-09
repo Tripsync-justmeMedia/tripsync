@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 7, 2026  
+**Last Updated:** May 9, 2026  
 **Owner:** William — Just Me Media  
 **Status:** FULLY UPGRADED - Premium UI & Local History Active
 
@@ -7,6 +7,7 @@
 https://tripsync-ilao.onrender.com
 
 ## Working Features
+- **NEW: Private AI Mode (Gemma 4)** — Dual-mode toggle allowing strict local processing via Ollama `gemma4` for complete privacy.
 - **NEW: Full PWA Support (Store Ready)**
 - **NEW: App Icon & Manifest (`manifest.json`)**
 - **NEW: Offline Caching (`sw.js`)**
@@ -18,29 +19,33 @@ https://tripsync-ilao.onrender.com
 - PDF export (Branded)
 - Save trips & Interactive History (localStorage - Local First)
 - Privacy Policy & Terms of Service (Compliant)
+- **NEW: Interactive Planner** — Manual edit (add/remove) + AI Refinement tool.
+- **NEW: Dual Flight Booking** — Google Flights & Skyscanner side-by-side.
+- **NEW: Viral Sharing** — WhatsApp, X, and Facebook sharing for all itineraries.
 - **NEW: Master Reset (Danger Zone)** — Complete device wipe option.
 - **NEW: Legacy Data Repair** — Auto-fixes old trip data on load.
 - Mobile responsive & High-End Glassmorphism UI.
 - Just Me Media footer branding.
 
-## Affiliate Programs (In Progress)
-- Agoda: Manual review (this week)
-- Booking.com: Applied via Awin (3-7 days)
-- Expedia: Payment setup (this week)
-- Skyscanner: Form submitted (1-2 weeks)
+## Affiliate Programs
+| Partner | Status | ID Location |
+| :--- | :--- | :--- |
+| **Booking.com** | ✅ Active | `index.html` (JS) & `planner.html` |
+| **Agoda** | ⏳ Applied | `index.html` (JS) |
+| **Expedia** | ⏳ Applied | `index.html` (JS) |
+| **Viator** | ⏳ Applied | `planner.html` (JS) |
+| **Skyscanner** | ❌ Re-apply | `index.html` & `planner.html` |
 
-## Production Advice
-- **Domain**: While `onrender.com` works, a custom domain (e.g., `.com`, `.io`) is recommended for App Store approval and affiliate trust.
-- **Hosting**: Ensure Render is on the **Starter ($7/mo)** plan to avoid "cold starts" which can frustrate app users.
+*See [AFFILIATE_TRACKER.md](file:///Users/williamcommu/.gemini/antigravity/brain/e714ab51-99f0-4e2e-b39c-63e574765a43/AFFILIATE_TRACKER.md) for detailed ID swap instructions.*
+
+## Production Roadmap & Goals
+1.  **Friends & Family Beta**: Send out for feedback and track clicks in the Stats modal.
+2.  **Monetization Swap**: As affiliate approvals arrive, update placeholders in the code.
+3.  **Domain Migration**: Purchase `gettripsync.com` and connect to Render.
+4.  **Store Submission**: Use **PWABuilder.com** to generate native wrappers for Apple and Google Play.
+5.  **Scaling**: Move from ephemeral SQLite to **Render PostgreSQL** once traffic exceeds 100+ daily users.
 
 ## Commands
-Local dev: cd ~/tripsync && python3 server.py
-Deploy: git add . && git commit -m "msg" && git push
-
-## When Affiliate IDs Arrive
-Run these commands (replace with real IDs):
-sed -i '' 's|https://www.agoda.com/search?city=|https://www.agoda.com/search?city=&cid=YOUR_ID|g' index.html
-sed -i '' 's|https://www.booking.com/searchresults.html?dest=|https://www.booking.com/searchresults.html?dest=&aid=YOUR_ID|g' index.html
-sed -i '' 's|https://www.expedia.com/Hotel-Search?destination=|https://www.expedia.com/Hotel-Search?destination=&affcid=YOUR_ID|g' index.html
-git add index.html && git commit -m "Add affiliate IDs" && git push
+Local dev: `python3 server.py`
+Deploy: `git add . && git commit -m "msg" && git push`
 

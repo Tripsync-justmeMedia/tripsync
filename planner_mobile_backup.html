@@ -69,24 +69,9 @@
     .spinner{width:50px;height:50px;border:4px solid var(--sky);border-top:4px solid var(--teal);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.5rem}
     @keyframes spin{to{transform:rotate(360deg)}}
     
-    @media(max-width:768px){
-      header{padding:1rem;flex-direction:column;gap:1rem;height:auto;position:static}
-      .header-btns{width:100%;gap:0.5rem}
-      .btn-outline{flex:1;text-align:center;padding:0.5rem;font-size:0.75rem}
-      
-      .hero{padding:3rem 1rem}
-      .hero-title{font-size:2rem}
-      .hero-sub{font-size:0.85rem}
-      
-      .container{padding:0 1rem;margin-top:1.5rem}
-      .day-card{padding:1.5rem 1.25rem;border-radius:12px}
-      .day-title{font-size:1.4rem}
-      
-      .meals-box{grid-template-columns:1fr;gap:0.75rem}
-      
-      .activity-item{font-size:0.95rem}
-      
-      .sidebar-widget{padding:1.5rem 1.25rem}
+    @media(max-width:900px){
+      .container{grid-template-columns:1fr}
+      .hero-title{font-size:2.5rem}
     }
     .btn-mini-del{background:none;border:none;color:var(--rust);cursor:pointer;font-size:1.2rem;line-height:1;opacity:0.3;transition:all 0.2s}
     .btn-mini-del:hover{opacity:1}
@@ -112,10 +97,6 @@
   <div class="header-btns">
     <a href="index.html" class="btn-outline" style="text-decoration:none">🔍 NEW SEARCH</a>
     <button class="btn-outline" onclick="window.print()">🖨️ PRINT ITINERARY</button>
-  </div>
-  <div id="aiModeToggle" style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;font-weight:700;cursor:pointer;color:var(--teal)" onclick="toggleAIMode()">
-    <span id="aiModeIcon">☁️</span>
-    <span id="aiModeLabel">Cloud AI</span>
   </div>
 </header>
 
@@ -208,9 +189,7 @@
     document.title = `${destination} Planner — TripSync`;
 
     try {
-      const useLocal = localStorage.getItem('tripsync_ai_mode') === 'local';
-      const endpoint = useLocal ? '/api/generate-itinerary-local' : '/api/generate-itinerary';
-      const resp = await fetch(endpoint, {
+      const resp = await fetch('/api/generate-itinerary', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ destination, days, currency })
@@ -227,9 +206,7 @@
     document.getElementById('content').style.display = 'block';
 
     // Budget
-    const isLocal = localStorage.getItem('tripsync_ai_mode') === 'local';
-    document.getElementById('totalBudget').innerHTML = `${currency} ${data.total_budget_estimate || 'N/A'}` + 
-      (isLocal ? ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ Curated locally by Gemma 4</span>' : '');
+    document.getElementById('totalBudget').textContent = `${currency} ${data.total_budget_estimate || 'N/A'}`;
 
     // Hotels
     const hotelList = document.getElementById('hotelList');
@@ -402,19 +379,6 @@
       navigator.clipboard.writeText(url);
       showToast("Link copied to clipboard!");
     }
-  }
-
-  function toggleAIMode(){
-    const current = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-    const next = current === 'cloud' ? 'local' : 'cloud';
-    localStorage.setItem('tripsync_ai_mode', next);
-    document.getElementById('aiModeIcon').textContent = 
-      next === 'local' ? '🔒' : '☁️';
-    document.getElementById('aiModeLabel').textContent = 
-      next === 'local' ? 'Private AI (Local)' : 'Cloud AI';
-    showToast(next === 'local' ? 
-      '🔒 Switched to Gemma 4 Local — your data stays on this device' : 
-      '☁️ Switched to Cloud AI');
   }
 
   init();
