@@ -97,17 +97,30 @@ def call_ollama(prompt):
         time.sleep(1)
     return None
 
-# --- Gemma 4 API (Gemini) ---
+# --- Gemma 4 API (Gemini REST) ---
 def call_gemma_api(prompt):
     if not GEMINI_API_KEY:
         logging.error("No GEMINI_API_KEY found")
-        return None
+        return "Error: No GEMINI_API_KEY found"
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key={GEMINI_API_KEY}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 2000
+        }
+    }
+    
     try:
-        model = genai.GenerativeModel("models/gemma-4-31b-it")
-        response = model.generate_content(prompt)
-        if not response.text:
-             return "Error: Empty response from Gemini"
-        return response.text
+        resp = requests.post(url, json=payload, timeout=60)
+        if resp.status_code != 200:
+            return f"Error: Gemini API returned {resp.status_code} - {resp.text}"
+            
+        data = resp.json()
+        if "candidates" in data and len(data["candidates"]) > 0:
+            return data["candidates"][0]["content"]["parts"][0]["text"]
+        return "Error: Unexpected response format from Gemini"
     except Exception as e:
         logging.error(f"Gemma API error: {e}")
         return f"Error: {str(e)}"
