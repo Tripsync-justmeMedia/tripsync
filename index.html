@@ -704,8 +704,15 @@ async function searchTrip(){
     const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType};
     const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     clearInterval(iv);
-    if(!resp.ok)throw new Error('Server error '+resp.status);
-    const data=await resp.json();
+    
+    let errorData = null;
+    try { errorData = await resp.json(); } catch(e) {}
+
+    if(!resp.ok) {
+      const msg = (errorData && errorData.error) ? errorData.error : 'Server error ' + resp.status;
+      throw new Error(msg);
+    }
+    const data = errorData;
     if(data.error)throw new Error(data.error);
     if(tripType==='multicity'){
       renderMultiStopResults(data,query,currency);
