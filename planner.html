@@ -227,7 +227,17 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ destination, days, currency })
       });
-      const data = await resp.json();
+      
+      let errorData = null;
+      try { errorData = await resp.json(); } catch(e) {}
+
+      if (!resp.ok) {
+        const msg = (errorData && errorData.error) ? errorData.error : 'Server error ' + resp.status;
+        throw new Error(msg);
+      }
+      
+      const data = errorData;
+      if (data.error) throw new Error(data.error);
       render(data, destination, currency);
     } catch(e) {
       document.getElementById('loadingText').textContent = "Error loading itinerary. Please try again.";
