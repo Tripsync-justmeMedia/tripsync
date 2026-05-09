@@ -193,6 +193,11 @@
 
 <script>
   async function init(){
+    const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    if (aiMode === 'local') {
+      document.getElementById('aiModeIcon').textContent = '🔒';
+      document.getElementById('aiModeLabel').textContent = 'Private AI (Local)';
+    }
     const params = new URLSearchParams(window.location.search);
     const destination = params.get('destination');
     const currency = params.get('currency') || 'USD';

@@ -481,6 +481,11 @@ document.querySelectorAll('.amenity-tag').forEach(tag=>{
 });
 
 function init(){
+  const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+  if (aiMode === 'local') {
+    document.getElementById('aiModeIcon').textContent = '🔒';
+    document.getElementById('aiModeLabel').textContent = 'Private AI (Local)';
+  }
   const s=localStorage.getItem('tripsync_v2');
   if(s){
     try{
