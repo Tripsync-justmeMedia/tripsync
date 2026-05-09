@@ -105,10 +105,12 @@ def call_gemma_api(prompt):
     try:
         model = genai.GenerativeModel("models/gemma-4-31b-it")
         response = model.generate_content(prompt)
+        if not response.text:
+             return "Error: Empty response from Gemini"
         return response.text
     except Exception as e:
         logging.error(f"Gemma API error: {e}")
-        return None
+        return f"Error: {str(e)}"
 
 # --- Build destination search prompt ---
 def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="",
@@ -280,8 +282,8 @@ def tripsync_gemma():
                          guests, budget, flight_class, hotel_rating, amenities, car_type)
 
     result_text = call_gemma_api(prompt)
-    if not result_text:
-        return jsonify({"error": "Gemma API unavailable"}), 503
+    if not result_text or result_text.startswith("Error:"):
+        return jsonify({"error": f"Gemma API unavailable: {result_text}"}), 503
 
     result = extract_json_safe(result_text)
     if not result or "destinations" not in result:
@@ -411,8 +413,8 @@ def generate_itinerary_gemma():
     currency = data.get('currency', 'USD')
     prompt = build_itinerary_prompt(destination, days, currency)
     result_text = call_gemma_api(prompt)
-    if not result_text:
-        return jsonify({"error": "Gemma API unavailable"}), 503
+    if not result_text or result_text.startswith("Error:"):
+        return jsonify({"error": f"Gemma API unavailable: {result_text}"}), 503
     parsed = extract_json_safe(result_text)
     if not parsed:
         return jsonify({"error": "Could not parse response"}), 500
