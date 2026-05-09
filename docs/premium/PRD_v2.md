@@ -4,6 +4,7 @@
 
 ## Free Tier (Builds user base)
 - ✅ AI multi-stop route generation
+- ✅ **Private AI Mode** (Gemma 4 local)
 - ✅ **Real-time flight & hotel prices** (via Amadeus + affiliates)
 - ✅ Save 3 itineraries
 - ✅ Basic PDF export

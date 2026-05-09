@@ -15,6 +15,7 @@
 ## Current Status (May 2026)
 - Free tier complete ✅
 - Multi-stop routing ✅
+- Private AI Mode (Gemma 4 local) ✅
 - Real-time prices: Not started
 - Premium: Not started
 
