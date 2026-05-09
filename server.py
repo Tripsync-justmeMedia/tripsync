@@ -244,7 +244,7 @@ def tripsync_local():
     result = extract_json_safe(result_text) if result_text else None
 
     if not result or "destinations" not in result:
-        return jsonify({'error': 'Private AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href="https://github.com/Tripsync-justmeMedia/tripsync" target="_blank" style="text-decoration: underline; font-weight: bold; color: inherit;">see our GitHub for local instructions!</a>'}), 200
+        return jsonify({'error': 'Local AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href="https://github.com/Tripsync-justmeMedia/tripsync" target="_blank" style="text-decoration: underline; font-weight: bold; color: inherit;">see our GitHub for local instructions!</a>'}), 200
 
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -397,7 +397,7 @@ def generate_itinerary_local():
     prompt = build_itinerary_prompt(destination, days, currency)
     result = call_ollama(prompt)
     if not result:
-        return jsonify({"error": "Private AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href=\"https://github.com/Tripsync-justmeMedia/tripsync\" target=\"_blank\" style=\"text-decoration: underline; font-weight: bold; color: inherit;\">see our GitHub for local instructions!</a>"}), 200
+        return jsonify({"error": "Local AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href=\"https://github.com/Tripsync-justmeMedia/tripsync\" target=\"_blank\" style=\"text-decoration: underline; font-weight: bold; color: inherit;\">see our GitHub for local instructions!</a>"}), 200
     parsed = extract_json_safe(result)
     if not parsed:
         return jsonify({"error": "Could not parse response"}), 500

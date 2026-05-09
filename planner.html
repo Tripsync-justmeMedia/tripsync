@@ -195,8 +195,8 @@
   async function init(){
     const modes = {
       cloud: { icon: '☁️', label: 'Cloud AI (Groq)' },
-      gemma: { icon: '✨', label: 'Gemma 4 API' },
-      local: { icon: '🔒', label: 'Private AI (Local)' }
+      gemma: { icon: '✨', label: 'Gemma 4 Expert' },
+      local: { icon: '💻', label: 'Local AI (Ollama)' }
     };
     const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
     if (modes[aiMode]) {
@@ -423,8 +423,8 @@
     const modes = ['cloud', 'gemma', 'local'];
     const labels = {
       cloud: { icon: '☁️', label: 'Cloud AI (Groq)', toast: '☁️ Switched to Cloud AI (Groq)' },
-      gemma: { icon: '✨', label: 'Gemma 4 API', toast: '✨ Switched to Gemma 4 API (Fast Cloud)' },
-      local: { icon: '🔒', label: 'Private AI (Local)', toast: '🔒 Switched to Gemma 4 Local — your data stays on this device' }
+      gemma: { icon: '✨', label: 'Gemma 4 Expert', toast: '✨ Switched to Gemma 4 Expert (API)' },
+      local: { icon: '💻', label: 'Local AI (Ollama)', toast: '💻 Switched to Local AI (Ollama) — runs on your hardware' }
     };
     const current = localStorage.getItem('tripsync_ai_mode') || 'cloud';
     const next = modes[(modes.indexOf(current) + 1) % modes.length];
