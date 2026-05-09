@@ -85,7 +85,7 @@ def call_ollama(prompt):
             resp = requests.post(OLLAMA_URL,
                 json={"model": "gemma4", "prompt": prompt, "stream": False,
                       "options": {"temperature": 0.5, "num_predict": 1500}},
-                timeout=90)
+                timeout=300)
             if resp.status_code == 200:
                 return resp.json().get("response", "")
         except Exception as e:
