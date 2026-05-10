@@ -211,6 +211,7 @@ We have a dedicated tracker for all monetization partners:
 ## What's Next 🔜
 
 **Immediate (Public Beta Phase):**
+- [ ] **June 4, 2026: Product Hunt Launch** (Tracked in [ROADMAP.md](file:///Users/williamcommu/tripsync/docs/ROADMAP.md))
 - [ ] Share with "Friends & Family" and gather first usage stats.
 - [ ] Monitor the "Stats" modal to see which travel partners get the most clicks.
 - [ ] Sign up for **WayAway** (Travelpayouts) as a high-approval flight alternative.
