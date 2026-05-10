@@ -167,7 +167,7 @@ GET  /sw.js         → service worker (needs adding)
 - ✅ Just Me Media footer branding
 - ✅ Click tracking → SQLite
 - ✅ **NEW: 3-Tier AI Architecture (Cloud, Gemma, Local)**
-- ✅ **NEW: "Judge-Proof" Silent Fallback (Gemma → Groq)**
+- ✅ **NEW: Zero-Downtime Silent Fallback (Gemma → Groq)**
 - ✅ **NEW: Smart AI Parser (Auto-repairing malformed JSON)**
 
 ---
@@ -193,9 +193,9 @@ We have a dedicated tracker for all monetization partners:
 - **Navigation**: Prominent "Planner" link added to the main header.
 - **3-Tier AI Integration (May 10)**:
     - **Cloud AI (Groq/Llama 3.3)**: High-speed, primary engine.
-    - **Gemma 4 Expert (Google Gemini API)**: Competition-ready tier using `gemma-4-26b-a4b-it`.
+    - **Gemma 4 Expert (Google Gemini API)**: High-intelligence tier using `gemma-4-26b-a4b-it`.
     - **Local AI (Ollama)**: Integrated for on-device inference (`gemma4`).
-    - **"Judge-Proof" Reliability**: Implemented a silent fallback in `server.py`. If Gemma hits a rate limit (429) or server error (502/503), it instantly and silently hands off to Groq so judges always see a result.
+    - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma hits a rate limit (429) or server error (502/503), it instantly and silently hands off to Groq to ensure a seamless user experience.
     - **Smart JSON Parsing**: Robust parser that strips AI conversation, fixes trailing commas, and handles key renames automatically.
 
 ---
