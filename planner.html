@@ -213,6 +213,24 @@
     const MSGS_STANDARD = ['Curating your experience...', 'Finding the best spots...', 'Calculating budgets...', 'Matching your preferences...', 'Finalizing...'];
 
     if(!destination){
+      // Try to load from localStorage if no URL params
+      const savedState = localStorage.getItem('tripsync_v2');
+      if(savedState){
+        try {
+          const state = JSON.parse(savedState);
+          const activeId = state.activeProjectId;
+          const project = state.projects[activeId];
+          if(project && project.searches && project.searches.length > 0){
+            const last = project.searches[project.searches.length-1];
+            if(last.results && last.results.length > 0){
+              const firstMatch = last.results[0];
+              // Redirect or just re-run with this data
+              window.location.search = `?destination=${encodeURIComponent(firstMatch.city)}&currency=${last.currency||'USD'}&days=5&from=${encodeURIComponent(last.departCity||'')}&ci=${last.checkIn||''}&co=${last.checkOut||''}&guests=${last.guests||'2'}`;
+              return;
+            }
+          }
+        } catch(e) { console.error("Error loading saved trip:", e); }
+      }
       showEmptyState();
       return;
     }

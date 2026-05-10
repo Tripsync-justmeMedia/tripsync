@@ -261,7 +261,7 @@ footer a:hover{color:var(--rust-light)}
     <div class="logo">Trip<span>Sync</span></div>
   </div>
   <div class="header-actions">
-    <a href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:1rem">🗂️ PLANNER</a>
+    <a id="headerPlannerLink" href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:1rem">🗂️ PLANNER</a>
     <button class="btn-ghost" onclick="openModal()">+ New Trip</button>
     <button class="btn-ghost" onclick="showStats()">Stats</button>
     <div id="aiModeToggle" style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;font-weight:700;cursor:pointer;color:var(--teal);margin-left:0.5rem" onclick="toggleAIMode()">
@@ -670,6 +670,13 @@ function restoreSearch(pid,query,timestamp){
   if(s.currency)document.getElementById('currency').value=s.currency;
   renderSidebar();updateLabel();
   renderResults(s.results,s.query,s.checkIn,s.checkOut,s.guests,s.departCity,s.currency);
+  
+  // Also update header link explicitly
+  if (s.results && s.results.length > 0) {
+    const best = s.results[0];
+    const plannerUrl = `planner.html?destination=${encodeURIComponent(best.city)}&currency=${s.currency}&days=5&from=${encodeURIComponent(s.departCity)}&ci=${s.checkIn}&co=${s.checkOut}&guests=${s.guests}`;
+    document.getElementById('headerPlannerLink').href = plannerUrl;
+  }
 }
 
 function updateLabel(){
@@ -771,6 +778,13 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   const ranks=['BEST MATCH','GREAT PICK','WORTH IT'];
   const ci=checkIn||'';const co=checkOut||'';const g=guests||'2';
   const fromLabel=departCity?`from ${departCity}`:'';
+
+  // Update header planner link to point to the best match
+  if (destinations && destinations.length > 0) {
+    const best = destinations[0];
+    const plannerUrl = `planner.html?destination=${encodeURIComponent(best.city)}&currency=${currency}&days=5&from=${encodeURIComponent(departCity)}&ci=${ci}&co=${co}&guests=${g}`;
+    document.getElementById('headerPlannerLink').href = plannerUrl;
+  }
 
   const cards=destinations.map((d,i)=>{
     const city=encodeURIComponent(d.city||'');
