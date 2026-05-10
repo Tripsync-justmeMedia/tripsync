@@ -776,6 +776,11 @@ async function searchTrip(){
 }
 
 function showLoading(){
+  const currentMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+  let activeMsgs = MSGS_STANDARD;
+  if (currentMode === 'gemma') activeMsgs = MSGS_EXPERT;
+  else if (currentMode === 'local') activeMsgs = MSGS_LOCAL;
+
   document.getElementById('welcomeState').style.display='none';
   document.getElementById('loadingState').style.display='flex';
   document.getElementById('errorState').style.display='none';
