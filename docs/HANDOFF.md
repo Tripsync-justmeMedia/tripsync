@@ -201,9 +201,9 @@ We have a dedicated tracker for all monetization partners:
 - **Navigation**: Prominent "Planner" link added to the main header.
 - **3-Tier AI Integration (May 10)**:
     - **Cloud AI (Groq)**: High-speed, primary engine.
-    - **Gemma 4 Expert (Google Gemini API)**: High-intelligence tier using `gemma-4-26b-a4b-it`.
+    - **Gemma 4 Expert (Google Gemini API)**: High-intelligence tier using `gemma-4-26b-a4b-it`. (Avg. load time: ~30 seconds)
     - **Local AI (Ollama)**: Integrated for on-device inference (`gemma4`).
-    - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma hits a rate limit (429) or server error (502/503), it instantly and silently hands off to Groq to ensure a seamless user experience.
+    - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma takes longer than 25s (nearing Render's 30s limit), it instantly and silently hands off to Groq to ensure a seamless experience. This guarantees a response in ~30s even in the worst-case scenario.
     - **Smart JSON Parsing**: Robust parser that strips AI conversation, fixes trailing commas, and handles key renames automatically.
 
 ---

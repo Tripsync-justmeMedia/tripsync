@@ -17,8 +17,10 @@ TripSync is a high-performance, AI-driven travel planning application designed t
 TripSync uses a sophisticated multi-tier AI strategy to ensure you always get the best results:
 
 1.  **Cloud AI (Groq)**: Optimized for milliseconds-fast responses.
-2.  **Gemma 4 Expert (Google Gemini API)**: A high-intelligence reasoning tier for complex, "off-the-beaten-path" requests.
+2.  **Gemma 4 Expert (Google Gemini API)**: A high-intelligence reasoning tier for complex requests. (Avg. response: ~30s)
 3.  **Local AI (Ollama/Gemma4)**: Runs directly on your hardware. No data ever leaves your device. Perfect for privacy-conscious travelers.
+
+*Note: Expert mode uses a "Silent Fallback" strategy. If the request nears the 30s platform limit, it seamlessly switches to Cloud AI to ensure you always get a result.*
 
 ## 🛠 Tech Stack
 
