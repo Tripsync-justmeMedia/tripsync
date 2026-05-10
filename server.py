@@ -197,6 +197,10 @@ Rules:
 - Return ONLY JSON. No preamble, no markdown."""
 
 # --- Routes ---
+@app.route('/api/ping')
+def ping():
+    return jsonify({"status": "online", "timestamp": time.time()})
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
