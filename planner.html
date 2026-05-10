@@ -207,6 +207,10 @@
     const destination = params.get('destination');
     const currency = params.get('currency') || 'USD';
     const days = params.get('days') || 5;
+    
+    const MSGS_LOCAL = ['Waking up Local AI...', 'Loading Gemma 4...', 'Analyzing itinerary locally...', 'This takes a bit of RAM...', 'Almost there...'];
+    const MSGS_EXPERT = ['Expert Deep Reasoning...', 'Analyzing global trends...', 'Optimizing your trip...', 'Curating premium spots...', 'Finalizing results...'];
+    const MSGS_STANDARD = ['Curating your experience...', 'Finding the best spots...', 'Calculating budgets...', 'Matching your preferences...', 'Finalizing...'];
 
     if(!destination){
       showEmptyState();
@@ -220,8 +224,21 @@
     try {
       const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
       let endpoint = '/api/generate-itinerary';
-      if (aiMode === 'local') endpoint = '/api/generate-itinerary-local';
-      else if (aiMode === 'gemma') endpoint = '/api/generate-itinerary-gemma';
+      let activeMsgs = MSGS_STANDARD;
+      if (aiMode === 'local') {
+          endpoint = '/api/generate-itinerary-local';
+          activeMsgs = MSGS_LOCAL;
+      } else if (aiMode === 'gemma') {
+          endpoint = '/api/generate-itinerary-gemma';
+          activeMsgs = MSGS_EXPERT;
+      }
+      
+      let mi = 0;
+      const iv = setInterval(() => {
+          mi = (mi + 1) % activeMsgs.length;
+          document.getElementById('loadingText').textContent = activeMsgs[mi];
+      }, 2500);
+
       const resp = await fetch(endpoint, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -237,10 +254,13 @@
       }
       
       const data = errorData;
+      clearInterval(iv);
       if (data.error) throw new Error(data.error);
       render(data, destination, currency);
     } catch(e) {
-      document.getElementById('loadingText').textContent = "Error loading itinerary. Please try again.";
+      // Make sure to clear interval on error too
+      if(typeof iv !== 'undefined') clearInterval(iv);
+      document.getElementById('loadingText').textContent = "Error loading itinerary. " + e.message;
     }
   }
 

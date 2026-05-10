@@ -437,6 +437,7 @@ footer a:hover{color:var(--rust-light)}
 const AFFILIATE={booking_aid:'2884913',agoda_cid:'YOUR_AGODA_CID',expedia_affcid:'YOUR_EXPEDIA_AFFCID'};
 const MSGS_STANDARD=['Scanning 190+ countries...','Checking flight routes...','Matching your vibe...','Comparing hotel rates...','Finalizing your trip...'];
 const MSGS_EXPERT=['Deep Expert Reasoning...','Analyzing Global Data...','Curating Expert Match...','Finalizing Premium Results...'];
+const MSGS_LOCAL=['Waking up Local AI...','Loading Gemma 4 into RAM...','This takes a moment on first run...','Thinking on your hardware...','Finalizing Private Results...'];
 const SITE_URL='https://tripsync-ilao.onrender.com';
 let state={projects:{},activeProjectId:null,clickLog:[]};
 let lastResults=[];
@@ -695,7 +696,10 @@ async function searchTrip(){
   showLoading();
   let mi=0;
   const currentMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-  const activeMsgs = currentMode === 'gemma' ? MSGS_EXPERT : MSGS_STANDARD;
+  let activeMsgs = MSGS_STANDARD;
+  if (currentMode === 'gemma') activeMsgs = MSGS_EXPERT;
+  else if (currentMode === 'local') activeMsgs = MSGS_LOCAL;
+  
   const iv=setInterval(()=>{mi=(mi+1)%activeMsgs.length;const el=document.getElementById('loadingText');if(el)el.textContent=activeMsgs[mi];},2200);
   try{
     let endpoint=tripType==='multicity'?'/api/multi-stop':'/api/tripsync';

@@ -85,7 +85,7 @@ def call_groq(prompt, max_tokens=2000):
                           {"role": "system", "content": "You are a travel expert. Respond with valid JSON only. No markdown, no preamble."},
                           {"role": "user", "content": prompt}],
                       "max_tokens": max_tokens, "temperature": 0.7},
-                timeout=30)
+                timeout=25)
             if resp.status_code == 200:
                 return resp.json()['choices'][0]['message']['content']
         except Exception as e:
@@ -100,7 +100,7 @@ def call_ollama(prompt):
             resp = requests.post(OLLAMA_URL,
                 json={"model": "gemma4", "prompt": prompt, "stream": False,
                       "options": {"temperature": 0.5, "num_predict": 1500}},
-                timeout=300)
+                timeout=90)
             if resp.status_code == 200:
                 return resp.json().get("response", "")
         except Exception as e:
@@ -124,7 +124,8 @@ def call_gemma_api(prompt):
     }
     
     try:
-        resp = requests.post(url, json=payload, timeout=50)
+        # Reduced timeout to 25s to stay under Render's 30s limit
+        resp = requests.post(url, json=payload, timeout=25)
         
         # INSTANT FALLBACK for Rate Limits (429) or Server Errors (502, 503)
         if resp.status_code in [429, 502, 503]:
@@ -140,6 +141,9 @@ def call_gemma_api(prompt):
         logging.warning(f"Gemma API failed with code {resp.status_code}. Falling back to Groq.")
         return call_groq(prompt)
         
+    except requests.exceptions.Timeout:
+        logging.error("Gemma API timed out (25s limit). Falling back to Groq.")
+        return call_groq(prompt)
     except Exception as e:
         logging.error(f"Gemma API connection error, falling back to Groq: {e}")
         return call_groq(prompt)
