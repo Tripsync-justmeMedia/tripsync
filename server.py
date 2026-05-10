@@ -124,18 +124,24 @@ def call_gemma_api(prompt):
     }
     
     try:
-        resp = requests.post(url, json=payload, timeout=50) # Increased for larger "Expert" models
+        resp = requests.post(url, json=payload, timeout=50)
+        
+        # INSTANT FALLBACK for Rate Limits (429) or Server Errors (502, 503)
+        if resp.status_code in [429, 502, 503]:
+            logging.warning(f"Gemma API returned {resp.status_code}. Triggering instant fallback to Groq.")
+            return call_groq(prompt)
+            
         if resp.status_code == 200:
             data = resp.json()
             if "candidates" in data and len(data["candidates"]) > 0:
                 return data["candidates"][0]["content"]["parts"][0]["text"]
         
-        # If we get here, it failed. Silent fallback to Groq!
-        logging.warning("Gemma API failed, falling back to Groq for competition reliability.")
+        # If we get any other non-200 code, still fallback as a safety measure
+        logging.warning(f"Gemma API failed with code {resp.status_code}. Falling back to Groq.")
         return call_groq(prompt)
         
     except Exception as e:
-        logging.error(f"Gemma API error, falling back to Groq: {e}")
+        logging.error(f"Gemma API connection error, falling back to Groq: {e}")
         return call_groq(prompt)
 
 # --- Build destination search prompt ---
