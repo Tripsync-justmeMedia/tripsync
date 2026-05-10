@@ -530,6 +530,11 @@ function init(){
   const savedCurrency=localStorage.getItem('tripsync_currency');
   if(savedCurrency)document.getElementById('currency').value=savedCurrency;
   renderSidebar();
+  
+  // Auto-load last search if active project exists
+  if(state.activeProjectId && state.projects[state.activeProjectId]){
+    restoreSearch(state.activeProjectId);
+  }
 }
 
 function setDefaultDates(){
