@@ -17,6 +17,7 @@ This document tracks upcoming launches, marketing events, and development milest
 - [ ] Draft the "Maker Comment" explaining the Zero-Downtime architecture.
 - [ ] Upgrade Render to the **Starter Plan** to avoid cold starts.
 - [ ] Finalize Agoda/Expedia affiliate approvals.
+- [x] Activate Google Analytics tracking (Measurement ID: G-3K845T64RP)
 
 ## 📈 Post-Launch Goals
 
