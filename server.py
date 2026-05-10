@@ -124,8 +124,8 @@ def call_gemma_api(prompt):
     }
     
     try:
-        # Reduced timeout to 25s to stay under Render's 30s limit
-        resp = requests.post(url, json=payload, timeout=25)
+        # Reduced timeout to 15s to allow Groq fallback within Render's 30s limit
+        resp = requests.post(url, json=payload, timeout=15)
         
         # INSTANT FALLBACK for Rate Limits (429) or Server Errors (502, 503)
         if resp.status_code in [429, 502, 503]:
@@ -342,7 +342,9 @@ def tripsync_gemma():
     except Exception as e:
         logging.error(f"DB log error: {e}")
 
-    return jsonify(result)
+    resp = jsonify(result)
+    resp.headers['X-AI-Mode'] = 'gemma'
+    return resp
 
 # --- Multi-stop route planner ---
 @app.route('/api/multi-stop', methods=['POST'])
@@ -462,7 +464,10 @@ def generate_itinerary_gemma():
     if not parsed:
         logging.error(f"Failed to parse Gemma itinerary: {result_text}")
         return jsonify({"error": f"Could not parse response: {result_text[:200]}..."}), 500
-    return jsonify(parsed)
+    
+    resp = jsonify(parsed)
+    resp.headers['X-AI-Mode'] = 'gemma'
+    return resp
 
 @app.route('/api/refine-itinerary', methods=['POST'])
 def refine_itinerary():
