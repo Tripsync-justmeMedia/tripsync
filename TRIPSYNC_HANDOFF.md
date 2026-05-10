@@ -10,7 +10,7 @@ This document provides a technical overview of the TripSync architecture and ins
 
 ## 🧠 AI Architecture
 TripSync uses a unique **3-Tier AI System** for unmatched reliability:
-*   **Tier 1: Cloud (Groq/Llama 3.3)** — Primary engine for high-speed results.
+*   **Tier 1: Cloud (Groq)** — Primary engine for high-speed results.
 *   **Tier 2: Expert (Gemini/Gemma 4)** — Deep reasoning for expert queries.
 *   **Tier 3: Local (Ollama/Gemma4)** — Optional on-device processing for privacy.
 

@@ -192,7 +192,7 @@ We have a dedicated tracker for all monetization partners:
 - **Stability**: Replaced all `confirm()` popups with stable custom modals.
 - **Navigation**: Prominent "Planner" link added to the main header.
 - **3-Tier AI Integration (May 10)**:
-    - **Cloud AI (Groq/Llama 3.3)**: High-speed, primary engine.
+    - **Cloud AI (Groq)**: High-speed, primary engine.
     - **Gemma 4 Expert (Google Gemini API)**: High-intelligence tier using `gemma-4-26b-a4b-it`.
     - **Local AI (Ollama)**: Integrated for on-device inference (`gemma4`).
     - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma hits a rate limit (429) or server error (502/503), it instantly and silently hands off to Groq to ensure a seamless user experience.
