@@ -9,6 +9,14 @@
 <meta property="og:description" content="Describe your dream trip. Get 3 AI-matched destinations with real prices and booking links.">
 <meta property="og:url" content="https://tripsync-ilao.onrender.com">
 <title>TripSync — AI Travel Planner</title>
+<!-- Global site tag (gtag.js) - Google Analytics Placeholder -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
 <link rel="manifest" href="/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -113,7 +121,7 @@ textarea#tripInput::placeholder{color:var(--muted)}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .dest-card:nth-child(2){animation-delay:0.12s}.dest-card:nth-child(3){animation-delay:0.24s}
 .card-header{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-light) 100%);padding:1.5rem 1.25rem;position:relative;color:white}
-.card-rank{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.25);backdrop-filter:blur(4px);color:white;font-size:0.65rem;font-weight:800;letter-spacing:1.2px;padding:0.25rem 0.6rem;border-radius:4px;text-transform:uppercase;border:1px solid rgba(255,255,255,0.2)}
+.card-rank{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.25);backdrop-filter:blur(4px);color:white;font-size:0.65rem;font-weight:800;letter-spacing:1.2px;padding:0.25rem 0.65rem;border-radius:4px;text-transform:uppercase;border:1px solid rgba(255,255,255,0.2)}
 .card-city{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:800;margin-bottom:0.15rem;text-shadow:0 2px 4px rgba(0,0,0,0.1)}
 .card-country{font-size:0.85rem;opacity:0.9;font-weight:600;letter-spacing:0.5px}
 .vibe-row{display:flex;gap:0.4rem;margin-top:0.75rem;flex-wrap:wrap}
@@ -243,7 +251,10 @@ footer a:hover{color:var(--rust-light)}
   .welcome-title{font-size:1.6rem}
   .welcome-sub{font-size:0.85rem}
 }
-</style>
+    .example-chip{background:var(--sky);border:1px solid var(--teal);color:var(--teal);padding:0.3rem 0.6rem;border-radius:20px;font-size:0.7rem;cursor:pointer;transition:all 0.2s;font-weight:700}
+    .example-chip:hover{background:var(--teal);color:white}
+    .filter-badge{display:inline-block;background:var(--teal);color:white;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;font-weight:700;margin-right:0.4rem;text-transform:uppercase}
+  </style>
 </head>
 <body>
 
@@ -359,7 +370,13 @@ footer a:hover{color:var(--rust-light)}
 
       <div class="search-box">
         <textarea id="tripInput" rows="2" placeholder='Describe your dream trip... "2 weeks in Southeast Asia, love beaches and street food, mid-range budget"'></textarea>
-        <button class="btn-search" id="searchBtn" onclick="searchTrip()">✈ Find Destinations</button>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
+          <span style="font-size:0.7rem;color:var(--muted);font-weight:700;align-self:center">Try:</span>
+          <button class="example-chip" onclick="setExample('7 days in Tokyo, food and pop culture')">7 days in Tokyo</button>
+          <button class="example-chip" onclick="setExample('Honeymoon in Amalfi Coast, romantic and luxury')">Amalfi Honeymoon</button>
+          <button class="example-chip" onclick="setExample('Backpacking Thailand for 1 month, budget friendly')">Thailand Backpacking</button>
+        </div>
+        <button class="btn-search" id="searchBtn" onclick="searchTrip()">Find Destinations</button>
       </div>
     </div>
 
@@ -684,6 +701,11 @@ function updateLabel(){
   document.getElementById('projectLabel').textContent=p?p.name.toUpperCase():'GENERAL SEARCH';
 }
 
+async function setExample(txt){
+  document.getElementById('tripInput').value = txt;
+  document.getElementById('tripInput').focus();
+}
+
 async function searchTrip(){
   const query=document.getElementById('tripInput').value.trim();
   if(!query){document.getElementById('tripInput').focus();return;}
@@ -736,7 +758,13 @@ async function searchTrip(){
     lastResults=data.destinations;lastQuery=query;
     const entry={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,hotelRating,timestamp:Date.now(),results:data.destinations};
     if(state.activeProjectId&&state.projects[state.activeProjectId]){
-      state.projects[state.activeProjectId].searches.push(entry);
+      const searches = state.projects[state.activeProjectId].searches;
+      const existingIdx = searches.findIndex(s => s.query === query && s.departCity === departCity);
+      if (existingIdx !== -1) {
+        searches[existingIdx] = entry; // Update existing
+      } else {
+        searches.push(entry);
+      }
     } else {
       const id='p_'+Date.now();
       state.projects[id]={name:query.substring(0,28)+'...',createdAt:Date.now(),searches:[entry]};
@@ -778,6 +806,15 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   const ranks=['BEST MATCH','GREAT PICK','WORTH IT'];
   const ci=checkIn||'';const co=checkOut||'';const g=guests||'2';
   const fromLabel=departCity?`from ${departCity}`:'';
+  
+  const tripType = document.getElementById('tripType').value;
+  const flightClass = document.getElementById('flightClass').value;
+  const hotelRating = document.getElementById('hotelRating').value;
+  
+  let filterHtml = '';
+  if (flightClass !== 'economy') filterHtml += `<span class="filter-badge">✈️ ${flightClass}</span>`;
+  if (hotelRating !== 'any') filterHtml += `<span class="filter-badge">🏨 ${hotelRating}★+</span>`;
+  if (tripType === 'multicity') filterHtml += `<span class="filter-badge">🗺️ Multi-city</span>`;
 
   // Update header planner link to point to the best match
   if (destinations && destinations.length > 0) {
@@ -807,11 +844,13 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     const fbUrl=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`;
     const emUrl=`mailto:?subject=${encodeURIComponent('Trip idea: '+cityRaw)}&body=${encodeURIComponent(cardText+'\n\n'+SITE_URL)}`;
     const vibeTags=(Array.isArray(d.vibe_tags)?d.vibe_tags:[]).map(v=>`<span class="vibe-tag">${v}</span>`).join('');
+    
     return `<div class="dest-card" id="card-${i}">
       <div class="card-header">
         <span class="card-rank">${ranks[i]||'PICK'}</span>
         <div class="card-city">${cityRaw}</div>
         <div class="card-country">${d.country||''}</div>
+        <div style="margin-top:0.5rem">${filterHtml}</div>
         <div class="vibe-row">${vibeTags}</div>
         ${d.match_score?`<div class="card-match">★ ${d.match_score} Match</div>`:''}
       </div>
