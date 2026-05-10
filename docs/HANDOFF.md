@@ -35,9 +35,17 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 
 ## File Locations
 
-### On William's Mac (Local)
+### Project Structure
 ```
 ~/tripsync/
+├── index.html        # Main Search/Inspiration UI
+├── planner.html      # Detailed Day-by-Day Planner UI
+├── docs/             # Technical Documentation & Handoffs
+├── legacy/           # Backup & Test files
+├── server.py         # Flask API
+├── requirements.txt  # Python dependencies
+└── .env              # API keys (NEVER commit this)
+```
  ├── index.html        # Main Search/Inspiration UI
 ├── planner.html      # NEW: Detailed Day-by-Day Planner UI
 ├── privacy.html      # Legal: Privacy Policy
@@ -174,7 +182,7 @@ GET  /sw.js         → service worker (needs adding)
 
 ## Affiliate Tracking & IDs
 We have a dedicated tracker for all monetization partners:
-[AFFILIATE_TRACKER.md](file:///Users/williamcommu/.gemini/antigravity/brain/e714ab51-99f0-4e2e-b39c-63e574765a43/AFFILIATE_TRACKER.md)
+*Internal Affiliate Tracking Document*
 
 **Current Status:**
 - Booking.com: ✅ **LIVE** (aid: 2884913)
