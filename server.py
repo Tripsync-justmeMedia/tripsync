@@ -124,7 +124,7 @@ def call_gemma_api(prompt):
     }
     
     try:
-        resp = requests.post(url, json=payload, timeout=25) # Short timeout for faster fallback
+        resp = requests.post(url, json=payload, timeout=50) # Increased for larger "Expert" models
         if resp.status_code == 200:
             data = resp.json()
             if "candidates" in data and len(data["candidates"]) > 0:
