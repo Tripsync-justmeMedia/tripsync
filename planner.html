@@ -367,9 +367,10 @@
     document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
     
     // Flight link
-    const from = params.get('from') || '';
-    const ci = params.get('ci') || '';
-    const co = params.get('co') || '';
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from') || '';
+    const ci = urlParams.get('ci') || '';
+    const co = urlParams.get('co') || '';
     if(from && ci){
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(from)}/to/${encodedDest}/`;
