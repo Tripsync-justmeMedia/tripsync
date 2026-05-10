@@ -114,7 +114,7 @@ def call_gemma_api(prompt):
         logging.error("No GEMINI_API_KEY found")
         return "Error: No GEMINI_API_KEY found"
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-4-26b-a4b-it:generateContent?key={GEMINI_API_KEY}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
