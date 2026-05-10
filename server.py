@@ -43,21 +43,32 @@ def init_db():
 
 init_db()
 
-# --- JSON extractor (4 strategies) ---
+# --- JSON extractor (Enhanced) ---
 def extract_json_safe(text):
+    if not text: return None
     text = text.strip()
+    
+    # Remove markdown code blocks if present
+    if "```" in text:
+        for pattern in [r'```json\s*([\s\S]*?)\s*```', r'```\s*([\s\S]*?)\s*```']:
+            m = re.search(pattern, text, re.DOTALL)
+            if m:
+                text = m.group(1).strip()
+                break
+    
+    # Try direct load
     try: return json.loads(text)
     except: pass
-    for pattern in [r'\{[\s\S]*"destinations"[\s\S]*\}', r'```json\s*([\s\S]*?)\s*```', r'```\s*([\s\S]*?)\s*```']:
-        m = re.search(pattern, text, re.DOTALL)
-        if m:
-            candidate = m.group(1) if m.lastindex else m.group(0)
-            try: return json.loads(candidate.strip())
-            except: continue
+    
+    # Try to find first { and last }
     s, e = text.find('{'), text.rfind('}')
     if s != -1 and e > s:
-        try: return json.loads(text[s:e+1])
+        candidate = text[s:e+1]
+        # Common fix: remove trailing commas before closing braces
+        candidate = re.sub(r',\s*([\]}])', r'\1', candidate)
+        try: return json.loads(candidate)
         except: pass
+        
     return None
 
 # --- Groq call with retry ---
@@ -299,8 +310,19 @@ def tripsync_gemma():
         return jsonify({"error": f"Gemma API unavailable: {result_text}"}), 503
 
     result = extract_json_safe(result_text)
-    if not result or "destinations" not in result:
-        return jsonify({"error": "Could not parse Gemma response"}), 500
+    if not result:
+        logging.error(f"Failed to parse Gemma response: {result_text}")
+        return jsonify({"error": f"Could not parse Gemma response: {result_text[:200]}..."}), 500
+    
+    # Ensure 'destinations' exists even if renamed
+    if "destinations" not in result:
+        for k in ["recommendations", "results", "trips", "data"]:
+            if k in result:
+                result["destinations"] = result[k]
+                break
+    
+    if "destinations" not in result:
+        return jsonify({"error": "Missing 'destinations' in response"}), 500
 
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -430,7 +452,8 @@ def generate_itinerary_gemma():
         return jsonify({"error": f"Gemma API unavailable: {result_text}"}), 503
     parsed = extract_json_safe(result_text)
     if not parsed:
-        return jsonify({"error": "Could not parse response"}), 500
+        logging.error(f"Failed to parse Gemma itinerary: {result_text}")
+        return jsonify({"error": f"Could not parse response: {result_text[:200]}..."}), 500
     return jsonify(parsed)
 
 @app.route('/api/refine-itinerary', methods=['POST'])
