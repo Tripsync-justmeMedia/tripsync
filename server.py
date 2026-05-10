@@ -194,11 +194,7 @@ Return exactly 3 destination recommendations in this exact JSON format:
 
 Rules:
 - All prices in {currency}
-- {('Flights from ' + depart_city) if depart_city else 'Include realistic flight estimates'}
-- Be specific with real price ranges
-- highlights must be an array of exactly 4 short, evocative strings
-- vibe_tags must be an array of 3 hashtags starting with #
-- Return ONLY the JSON object, nothing else"""
+- Return ONLY JSON. No preamble, no markdown."""
 
 # --- Routes ---
 @app.route('/')
