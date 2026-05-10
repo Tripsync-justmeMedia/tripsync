@@ -100,7 +100,7 @@ Set in Render dashboard (never in code):
 GROQ_API_KEY=your_groq_key        ← required, working
 ANTHROPIC_API_KEY=                ← installed, needs credits
 OPENAI_API_KEY=                   ← optional
-GEMINI_API_KEY=                   ← get free at aistudio.google.com
+GEMINI_API_KEY=AIzaSyBj...          ← Verified & LIVE on Render
 DB_PATH=/tmp/tripsync.db          ← set automatically
 ```
 
