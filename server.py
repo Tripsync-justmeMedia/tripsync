@@ -124,17 +124,19 @@ def call_gemma_api(prompt):
     }
     
     try:
-        resp = requests.post(url, json=payload, timeout=60)
-        if resp.status_code != 200:
-            return f"Error: Gemini API returned {resp.status_code} - {resp.text}"
-            
-        data = resp.json()
-        if "candidates" in data and len(data["candidates"]) > 0:
-            return data["candidates"][0]["content"]["parts"][0]["text"]
-        return "Error: Unexpected response format from Gemini"
+        resp = requests.post(url, json=payload, timeout=25) # Short timeout for faster fallback
+        if resp.status_code == 200:
+            data = resp.json()
+            if "candidates" in data and len(data["candidates"]) > 0:
+                return data["candidates"][0]["content"]["parts"][0]["text"]
+        
+        # If we get here, it failed. Silent fallback to Groq!
+        logging.warning("Gemma API failed, falling back to Groq for competition reliability.")
+        return call_groq(prompt)
+        
     except Exception as e:
-        logging.error(f"Gemma API error: {e}")
-        return f"Error: {str(e)}"
+        logging.error(f"Gemma API error, falling back to Groq: {e}")
+        return call_groq(prompt)
 
 # --- Build destination search prompt ---
 def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="",
