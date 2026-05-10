@@ -106,6 +106,28 @@
     .share-btn.wa{background:#25D366;color:white;border:none}
     .share-btn.tw{background:#000;color:white;border:none}
     .share-btn.fb{background:#1877F2;color:white;border:none}
+    .ai-mode-select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--teal-light);
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+      margin-left: 0.5rem;
+    }
+    .ai-mode-select:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--teal-light);
+    }
+    .ai-mode-select option {
+      background: var(--ink);
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -122,10 +144,11 @@
     <a href="index.html" class="btn-outline" style="text-decoration:none">🔍 NEW SEARCH</a>
     <button class="btn-outline" onclick="window.print()">🖨️ PRINT ITINERARY</button>
   </div>
-  <div id="aiModeToggle" style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;font-weight:700;cursor:pointer;color:var(--teal)" onclick="toggleAIMode()">
-    <span id="aiModeIcon">☁️</span>
-    <span id="aiModeLabel">Cloud AI</span>
-  </div>
+  <select id="aiModeSelect" class="ai-mode-select" onchange="changeAIMode()">
+    <option value="cloud">☁️ Cloud AI (Groq)</option>
+    <option value="gemma">✨ Gemma 4 Expert</option>
+    <option value="local">💻 Local AI (Ollama)</option>
+  </select>
 </header>
 
 <div id="content" style="display:none">
@@ -208,10 +231,8 @@
       local: { icon: '💻', label: 'Local AI (Ollama)' }
     };
     const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-    if (modes[aiMode]) {
-      document.getElementById('aiModeIcon').textContent = modes[aiMode].icon;
-      document.getElementById('aiModeLabel').textContent = modes[aiMode].label;
-    }
+    const sel = document.getElementById('aiModeSelect');
+    if (sel) sel.value = aiMode;
     const params = new URLSearchParams(window.location.search);
     const destination = params.get('destination');
     const currency = params.get('currency') || 'USD';
@@ -477,20 +498,15 @@
     }
   }
 
-  function toggleAIMode(){
-    const modes = ['cloud', 'gemma', 'local'];
+  function changeAIMode(){
     const labels = {
-      cloud: { icon: '☁️', label: 'Cloud AI (Groq)', toast: '☁️ Switched to Cloud AI (Groq)' },
-      gemma: { icon: '✨', label: 'Gemma 4 Expert', toast: '✨ Switched to Gemma 4 Expert (API)' },
-      local: { icon: '💻', label: 'Local AI (Ollama)', toast: '💻 Switched to Local AI (Ollama) — runs on your hardware' }
+      cloud: '☁️ Switched to Cloud AI (Groq)',
+      gemma: '✨ Switched to Gemma 4 Expert (API)',
+      local: '💻 Switched to Local AI (Ollama) — runs on your hardware'
     };
-    const current = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-    const next = modes[(modes.indexOf(current) + 1) % modes.length];
+    const next = document.getElementById('aiModeSelect').value;
     localStorage.setItem('tripsync_ai_mode', next);
-    
-    document.getElementById('aiModeIcon').textContent = labels[next].icon;
-    document.getElementById('aiModeLabel').textContent = labels[next].label;
-    showToast(labels[next].toast);
+    showToast(labels[next]);
   }
 
   init();

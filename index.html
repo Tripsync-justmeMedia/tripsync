@@ -98,6 +98,28 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .welcome-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700}
 .welcome-sub{font-size:0.95rem;color:var(--muted);max-width:420px;line-height:1.6}
 .example-chips{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-top:0.5rem}
+.ai-mode-select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--teal-light);
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+.ai-mode-select:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--teal-light);
+}
+.ai-mode-select option {
+  background: var(--ink);
+  color: white;
+}
 .chip{background:white;border:1.5px solid var(--sand);padding:0.4rem 0.9rem;border-radius:20px;font-size:0.8rem;color:var(--teal);cursor:pointer;font-weight:500;transition:all 0.2s}
 .chip:hover{border-color:var(--teal);background:var(--sky);transform:translateY(-1px)}
 .loading-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:1.5rem}
@@ -275,10 +297,11 @@ footer a:hover{color:var(--rust-light)}
     <a id="headerPlannerLink" href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:1rem">🗂️ PLANNER</a>
     <button class="btn-ghost" onclick="openModal()">+ New Trip</button>
     <button class="btn-ghost" onclick="showStats()">Stats</button>
-    <div id="aiModeToggle" style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;font-weight:700;cursor:pointer;color:var(--teal);margin-left:0.5rem" onclick="toggleAIMode()">
-      <span id="aiModeIcon">☁️</span>
-      <span id="aiModeLabel">Cloud AI</span>
-    </div>
+    <select id="aiModeSelect" class="ai-mode-select" onchange="changeAIMode()">
+      <option value="cloud">☁️ Cloud AI (Groq)</option>
+      <option value="gemma">✨ Gemma 4 Expert</option>
+      <option value="local">💻 Local AI (Ollama)</option>
+    </select>
   </div>
 </header>
 
@@ -506,10 +529,8 @@ function init(){
     local: { icon: '💻', label: 'Local AI (Ollama)' }
   };
   const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-  if (modes[aiMode]) {
-    document.getElementById('aiModeIcon').textContent = modes[aiMode].icon;
-    document.getElementById('aiModeLabel').textContent = modes[aiMode].label;
-  }
+  const sel = document.getElementById('aiModeSelect');
+  if (sel) sel.value = aiMode;
   const s=localStorage.getItem('tripsync_v2');
   if(s){
     try{
@@ -1099,20 +1120,15 @@ function renderMultiStopResults(data,query,currency){
   `;
 }
 
-function toggleAIMode(){
-  const modes = ['cloud', 'gemma', 'local'];
+function changeAIMode(){
   const labels = {
-    cloud: { icon: '☁️', label: 'Cloud AI (Groq)', toast: '☁️ Switched to Cloud AI (Groq)' },
-    gemma: { icon: '✨', label: 'Gemma 4 Expert', toast: '✨ Switched to Gemma 4 Expert (API)' },
-    local: { icon: '💻', label: 'Local AI (Ollama)', toast: '💻 Switched to Local AI (Ollama) — runs on your hardware' }
+    cloud: '☁️ Switched to Cloud AI (Groq)',
+    gemma: '✨ Switched to Gemma 4 Expert (API)',
+    local: '💻 Switched to Local AI (Ollama) — runs on your hardware'
   };
-  const current = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-  const next = modes[(modes.indexOf(current) + 1) % modes.length];
+  const next = document.getElementById('aiModeSelect').value;
   localStorage.setItem('tripsync_ai_mode', next);
-  
-  document.getElementById('aiModeIcon').textContent = labels[next].icon;
-  document.getElementById('aiModeLabel').textContent = labels[next].label;
-  showToast(labels[next].toast);
+  showToast(labels[next]);
 }
 
 init();
