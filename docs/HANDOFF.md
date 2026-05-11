@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 9, 2026  
+**Last Updated:** May 11, 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
 **Developer Contact:** wcommu@gmail.com  
@@ -185,10 +185,12 @@ We have a dedicated tracker for all monetization partners:
 *Internal Affiliate Tracking Document*
 
 **Current Status:**
+- Search Tracking: ✅ **VERIFIED** (Logs to `click_log` table in SQLite)
 - Booking.com: ✅ **LIVE** (aid: 2884913)
-- Agoda/Expedia: ⏳ Applied (Awin)
+- Agoda/Expedia: ⏳ Applied (Awin) - Placeholders active
 - Viator: ⏳ Applied (Partnerize)
-- Skyscanner: ❌ Re-apply after traffic grows (use WayAway as alternative)
+- Skyscanner: ❌ Re-apply after traffic grows
+- **Conversion Data**: Visible via the "Stats" (📊) icon in the sidebar (Client-side `showStats()`).
 
 ---
 
