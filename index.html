@@ -351,13 +351,7 @@ footer a:hover{color:var(--rust-light)}
 </head>
 <body>
 
-<div class="install-banner" id="installBanner">
-  <div class="install-banner-text">📱 <strong>Add TripSync to your home screen</strong> — access it like an app, no download needed</div>
-  <div style="display:flex;gap:0.5rem">
-    <button class="btn-install-now" onclick="triggerInstall()">Add to Home Screen</button>
-    <button class="btn-install-dismiss" onclick="dismissInstall()">Not now</button>
-  </div>
-</div>
+
 
 <header>
   <div style="display:flex;align-items:center;gap:1rem">
@@ -530,7 +524,7 @@ footer a:hover{color:var(--rust-light)}
     &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; 
     <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp; 
     <a href="terms.html">Terms of Service</a> &nbsp;·&nbsp; 
-        <button onclick="triggerInstall()" style="background:var(--teal);border:none;color:white;font-size:0.75rem;cursor:pointer;font-family:inherit;padding:0.4rem 0.8rem;border-radius:20px;font-weight:700;margin-top:0.5rem">📱 Add TripSync to your Device</button>
+
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
     <strong>Live Data Disclosure:</strong> TripSync provides real-time price matches via AI orchestration. Final booking rates are determined by our travel partners. AI-curated itineraries — please verify travel documents before departure.
@@ -1056,13 +1050,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     </div>`;
   }).join('');
 
-  // PWA Nudge Logic
-  if(!localStorage.getItem('tripsync_pwa_nudged') && deferredInstallPrompt) {
-    setTimeout(() => {
-       showToast("💡 Pro Tip: Add TripSync to your device for one-touch access to these results!");
-       localStorage.setItem('tripsync_pwa_nudged', '1');
-    }, 4000);
-  }
+
 
   const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
   let badgeHtml = '';
