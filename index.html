@@ -412,11 +412,10 @@ footer a:hover{color:var(--rust-light)}
           <option value="multicity">🗺️ Multi-city</option>
         </select>
         <span class="depart-label">✈ From:</span>
-        <input type="text" class="depart-input" id="departCity" placeholder="Your city (e.g. London)" autocomplete="off">
+        <input type="text" class="depart-input" id="departCity" placeholder="Your city (e.g. Toronto)" autocomplete="off">
         <input type="date" class="param-input" id="checkIn">
         <input type="date" class="param-input" id="checkOut">
         <input type="number" class="param-input" id="guests" value="2" min="1" max="20" style="width:65px" placeholder="Guests">
-        <input type="text" class="param-input" id="budget" placeholder="Budget" style="width:100px">
         <select class="param-select" id="currency">
           <option value="USD">🇺🇸 USD</option>
           <option value="EUR">🇪🇺 EUR</option>
@@ -433,44 +432,52 @@ footer a:hover{color:var(--rust-light)}
         </select>
       </div>
 
-      <div class="prefs-row">
-        <span class="depart-label">🛫 Flight:</span>
-        <select class="param-select" id="flightClass">
-          <option value="economy">Economy</option>
-          <option value="premium economy">Premium Economy</option>
-          <option value="business">Business Class</option>
-          <option value="first">First Class</option>
-        </select>
-        <select class="param-select" id="flightPriority">
-          <option value="cheapest">💰 Cheapest</option>
-          <option value="fastest">⏱ Fastest</option>
-          <option value="best value">✨ Best Value</option>
-        </select>
-        <span class="depart-label" style="margin-left:0.5rem">🏨 Hotel:</span>
-        <select class="param-select" id="hotelRating">
-          <option value="any">Any ★</option>
-          <option value="3">3★+</option>
-          <option value="4">4★+</option>
-          <option value="5">5★</option>
-        </select>
-        <span class="depart-label" style="margin-left:0.5rem">🚗 Car:</span>
-        <select class="param-select" id="carType">
-          <option value="none">No car</option>
-          <option value="economy">Economy</option>
-          <option value="suv">SUV</option>
-          <option value="minivan">Minivan</option>
-        </select>
-      </div>
+      <button class="btn-ghost" onclick="togglePrefs()" style="margin-bottom:1rem; border-color:var(--sand); color:var(--muted); width:100%; display:flex; justify-content:space-between; align-items:center; padding:0.6rem 1rem">
+        <span>⚙️ More Preferences <span id="prefsSummary" style="font-size:0.7rem; opacity:0.7; margin-left:0.5rem; font-weight:400"></span></span>
+        <span id="prefsChevron">▼</span>
+      </button>
 
-      <div class="amenities-row">
-        <span class="amenity-label">🏨 Amenities:</span>
-        <span class="amenity-tag" data-amenity="pool">🏊 Pool</span>
-        <span class="amenity-tag" data-amenity="spa">💆 Spa</span>
-        <span class="amenity-tag" data-amenity="gym">💪 Gym</span>
-        <span class="amenity-tag" data-amenity="beachfront">🏖 Beachfront</span>
-        <span class="amenity-tag" data-amenity="restaurant">🍽 Restaurant</span>
-        <span class="amenity-tag" data-amenity="parking">🅿 Free Parking</span>
-        <span class="amenity-tag" data-amenity="wifi">📶 Free WiFi</span>
+      <div id="extraPrefs" style="display:none; background:rgba(0,0,0,0.02); border:1px solid var(--sand); border-radius:8px; padding:1rem; margin-bottom:1rem; animation: slideIn 0.3s ease;">
+        <div class="prefs-row">
+          <input type="text" class="param-input" id="budget" placeholder="Max Budget (e.g. 5000)" style="width:160px">
+          <span class="depart-label">🛫 Flight:</span>
+          <select class="param-select" id="flightClass">
+            <option value="economy">Economy</option>
+            <option value="premium economy">Premium Economy</option>
+            <option value="business">Business Class</option>
+            <option value="first">First Class</option>
+          </select>
+          <select class="param-select" id="flightPriority">
+            <option value="cheapest">💰 Cheapest</option>
+            <option value="fastest">⏱ Fastest</option>
+            <option value="best value">✨ Best Value</option>
+          </select>
+          <span class="depart-label" style="margin-left:0.5rem">🏨 Hotel:</span>
+          <select class="param-select" id="hotelRating">
+            <option value="any">Any ★</option>
+            <option value="3">3★+</option>
+            <option value="4">4★+</option>
+            <option value="5">5★</option>
+          </select>
+          <span class="depart-label" style="margin-left:0.5rem">🚗 Car:</span>
+          <select class="param-select" id="carType">
+            <option value="none">No car</option>
+            <option value="economy">Economy</option>
+            <option value="suv">SUV</option>
+            <option value="minivan">Minivan</option>
+          </select>
+        </div>
+
+        <div class="amenities-row" style="margin-bottom:0">
+          <span class="amenity-label">🏨 Amenities:</span>
+          <span class="amenity-tag" data-amenity="pool">🏊 Pool</span>
+          <span class="amenity-tag" data-amenity="spa">💆 Spa</span>
+          <span class="amenity-tag" data-amenity="gym">💪 Gym</span>
+          <span class="amenity-tag" data-amenity="beachfront">🏖 Beachfront</span>
+          <span class="amenity-tag" data-amenity="restaurant">🍽 Restaurant</span>
+          <span class="amenity-tag" data-amenity="parking">🅿 Free Parking</span>
+          <span class="amenity-tag" data-amenity="wifi">📶 Free WiFi</span>
+        </div>
       </div>
 
       <div class="search-box">
@@ -700,6 +707,31 @@ function showToast(msg,duration=3000){
 function openModal(){document.getElementById('modalOverlay').classList.add('open');document.getElementById('newProjectName').focus();}
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.getElementById('newProjectName').value='';}
 document.getElementById('newProjectName').addEventListener('keydown',e=>{if(e.key==='Enter')createProject();if(e.key==='Escape')closeModal();});
+
+function togglePrefs() {
+  const panel = document.getElementById('extraPrefs');
+  const chevron = document.getElementById('prefsChevron');
+  const isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  chevron.textContent = isOpen ? '▼' : '▲';
+}
+
+function updatePrefsSummary() {
+  const fc = document.getElementById('flightClass').value;
+  const hr = document.getElementById('hotelRating').value;
+  const budget = document.getElementById('budget').value;
+  const summary = [];
+  if (fc !== 'economy') summary.push(fc);
+  if (hr !== 'any') summary.push(hr + '★+');
+  if (budget) summary.push(document.getElementById('currency').value + budget);
+  document.getElementById('prefsSummary').textContent = summary.length ? `(${summary.join(' · ')})` : '';
+}
+
+// Add listeners for auto-summary
+['flightClass', 'hotelRating', 'budget', 'currency'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updatePrefsSummary);
+  if (id === 'budget') document.getElementById(id).addEventListener('input', updatePrefsSummary);
+});
 
 function createProject(){
   const name=document.getElementById('newProjectName').value.trim();
