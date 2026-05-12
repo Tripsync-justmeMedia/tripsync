@@ -375,22 +375,26 @@ Create a realistic multi-stop flight itinerary with 5-8 legs.
 Every city must be a REAL city name. Use REAL airline codes (AC, UA, DL, AA, BA, LH, EK, QR, SQ, TG, CX, NH, JL, KE).
 The FIRST leg MUST depart from {depart_city}.
 
+Pricing & Logistics Rules:
+- All prices in {currency}.
+- SMART INSIGHT: Provide one high-value "Smart Deal" tip for this specific multi-city route.
+
 Return EXACTLY this structure:
 {{
-  "total_estimated_cost_{currency}": 0,
-  "savings_vs_direct_percent": 0,
+  "total_estimated_cost": 0,
+  "route_savings": "0%",
+  "smart_deal_insight": "...",
   "legs": [
     {{
-      "from": "city",
-      "to": "city",
-      "flight_number_example": "AC123",
-      "duration_hours": 0,
-      "estimated_cost_{currency}": 0,
-      "stopover_days_suggested": 0,
-      "booking_link": "https://www.google.com/travel/flights?q=Flights+from+city1+to+city2"
+      "origin": "city",
+      "destination": "city",
+      "flight_no": "AC123",
+      "duration": "0h",
+      "stay_duration": 0,
+      "cost": 0
     }}
   ],
-  "tips": ["tip1", "tip2", "tip3", "tip4"]
+  "planning_tips": ["tip1", "tip2", "tip3", "tip4"]
 }}"""
 
     result_text = call_groq(prompt, max_tokens=3000)

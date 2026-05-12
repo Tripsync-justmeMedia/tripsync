@@ -1228,60 +1228,81 @@ function toggleSidebar(){
 }
 document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();searchTrip();}});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
-function renderMultiStopResults(data,query,currency){
-  document.getElementById('loadingState').style.display='none';
-  document.getElementById('welcomeState').style.display='none';
-  document.getElementById('errorState').style.display='none';
-  document.getElementById('searchBtn').disabled=false;
+function renderMultiStopResults(data, query, currency) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('welcomeState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'none';
+  document.getElementById('searchBtn').disabled = false;
   
-  const legs=(data.legs||[]).map(l=>`
-    <div class="leg-item">
-      <div class="leg-cities">
-        <span>${l.from}</span>
-        <span class="leg-arrow">✈</span>
-        <span>${l.to}</span>
+  const departCity = document.getElementById('departCity').value;
+  
+  const insightBlock = data.smart_deal_insight ? `<div class="smart-insight" style="margin:1rem">
+    <div class="insight-icon">💡</div>
+    <div class="insight-text"><strong>Smart Deal:</strong> ${data.smart_deal_insight}</div>
+  </div>` : '';
+
+  const legs = (data.legs || []).map(l => `
+    <div style="background:white; border:1px solid var(--sand); border-radius:12px; padding:1.25rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center">
+      <div style="flex:1">
+        <div style="font-weight:700; font-size:1.1rem; color:var(--teal)">${l.origin} → ${l.destination}</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:0.25rem">✈️ ${l.flight_no || 'TBD'} · ${l.duration || 'N/A'} · ${l.stay_duration || '0'} day stay</div>
       </div>
-      <div class="leg-details">
-        <div class="leg-meta"><strong>Flight:</strong> ${l.flight_number_example||'TBD'}</div>
-        <div class="leg-meta"><strong>Duration:</strong> ${l.duration_hours||'?'}h</div>
-        <div class="leg-meta"><strong>Stay:</strong> ${l.stopover_days_suggested||'0'} days</div>
-        <div class="leg-cost">${currency} ${l['estimated_cost_'+currency]||l.estimated_cost||'0'}</div>
+      <div style="text-align:right">
+        <div style="font-weight:700; color:var(--rust)">${currency} ${l.cost || '---'}</div>
+        <a href="https://www.google.com/travel/flights?q=Flights+from+${encodeURIComponent(l.origin)}+to+${encodeURIComponent(l.destination)}" target="_blank" class="share-btn" style="margin-top:0.5rem; display:inline-block">View Flight →</a>
       </div>
-      <a href="${l.booking_link}" target="_blank" class="leg-link">View Flight &rarr;</a>
     </div>
   `).join('');
 
-  const tips=(data.tips||[]).map(t=>`<li class="tip-item">${t}</li>`).join('');
-
-  document.getElementById('destinationsOutput').innerHTML=`
+  document.getElementById('destinationsOutput').innerHTML = `
     <div class="results-header">
       <div>
-        <div class="results-title">Your Multi-City Itinerary</div>
-        <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
+        <div class="results-title">Expert Multi-City Route</div>
+        <div class="results-query">"${query}"</div>
       </div>
     </div>
-    <div class="multistop-container">
-      <div class="itinerary-card">
-        <div class="itinerary-summary">
-          <div class="summary-stat">
-            <div class="summary-label">Total Estimated Cost</div>
-            <div class="summary-value">${currency} ${data['total_estimated_cost_'+currency]||data.total_estimated_cost||'0'}</div>
-          </div>
-          <div class="summary-stat">
-            <div class="summary-label">Route Savings</div>
-            <div class="summary-value">${data.savings_vs_direct_percent||'15'}%</div>
-          </div>
-          <div class="summary-stat">
-            <div class="summary-label">Legs</div>
-            <div class="summary-value">${data.legs ? data.legs.length : 0}</div>
-          </div>
+    <div class="dest-card" style="width:100%; max-width:800px; margin:0 auto">
+      <div class="card-header">
+        <span class="card-rank">ROUTE</span>
+        <div class="card-city">Your Multi-City Itinerary</div>
+        <div class="card-country">${data.legs?.length || 0} LEGS TOTAL</div>
+      </div>
+      <div class="card-body">
+        ${insightBlock}
+        <div class="info-grid" style="margin-bottom:1.5rem">
+          <div class="info-block"><div class="info-label">Total Estimated</div><div class="info-value price">${currency} ${data.total_estimated_cost || 'N/A'}</div></div>
+          <div class="info-block"><div class="info-label">Route Savings</div><div class="info-value hi">${data.route_savings || '---'}</div></div>
+          <div class="info-block"><div class="info-label">Legs</div><div class="info-value">${data.legs?.length || 0}</div></div>
         </div>
-        <div class="leg-list">${legs}</div>
+        
+        <a href="planner.html?destination=${encodeURIComponent(query)}&currency=${currency}&days=14&from=${encodeURIComponent(departCity)}" target="_blank" class="btn-itin" style="margin-bottom:2rem; padding:0.8rem; font-size:0.95rem">🗺️ View Detailed Day-by-Day Planner</a>
+
+        <div style="margin-bottom:2rem">${legs}</div>
+        
+        <div style="background:var(--sky); padding:1.5rem; border-radius:12px; margin-bottom:1.5rem">
+          <div style="font-weight:700; color:var(--teal); margin-bottom:0.75rem">🎭 Expert Planning Tips</div>
+          <ul style="font-size:0.85rem; padding-left:1.2rem; line-height:1.6">
+            ${(data.planning_tips || []).map(t => `<li>${t}</li>`).join('')}
+          </ul>
+        </div>
       </div>
-      <div class="tips-box">
-        <div class="tips-title">Expert Planning Tips</div>
-        <ul class="tips-list">${tips}</ul>
+      <div class="card-footer">
+        <div class="card-share-row">
+          <button class="share-btn" onclick="saveToMyTrips('Multi-city Route', 0)">⭐ Save Route</button>
+          <button class="share-btn" onclick="copyLink()">🔗 Copy Link</button>
+        </div>
       </div>
+    </div>
+
+    <div class="dest-card" style="width:100%; max-width:800px; margin:2rem auto; background:var(--ink); color:white">
+       <div class="card-body">
+         <h3 style="font-family:'Playfair Display'; margin-bottom:0.5rem">✨ Refine this Route</h3>
+         <p style="font-size:0.85rem; opacity:0.8; margin-bottom:1.5rem">Ask AI to adjust this route (e.g. "Add a stop in Tokyo" or "Find cheaper flights").</p>
+         <div style="display:flex; gap:0.5rem">
+           <input type="text" id="refineInput" class="input-mini" style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2); color:white; flex:1" placeholder="Type your adjustment here...">
+           <button class="btn-primary" onclick="refineResults()" id="refineBtn" style="margin:0; width:auto; background:var(--teal)">Refine</button>
+         </div>
+       </div>
     </div>
   `;
 }
