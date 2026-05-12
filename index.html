@@ -361,11 +361,6 @@ footer a:hover{color:var(--rust-light)}
     <a id="headerPlannerLink" href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:0.5rem">🗂️<span class="mobile-hide"> PLANNER</span></a>
     <button class="btn-ghost" onclick="openModal()">+<span> New Trip</span></button>
     <button class="btn-ghost header-stats-btn" onclick="showStats()">Stats</button>
-    <select id="aiModeSelect" class="ai-mode-select" onchange="changeAIMode()">
-      <option value="cloud">☁️ Cloud AI (Groq)</option>
-      <option value="gemma">✨ Gemma 4 Expert</option>
-      <option value="local">💻 Local AI (Ollama)</option>
-    </select>
   </div>
 </header>
 
@@ -387,6 +382,15 @@ footer a:hover{color:var(--rust-light)}
     <div class="search-area">
       <div class="project-label" id="projectLabel">GENERAL SEARCH</div>
       <div class="project-heading">Where do you want to go?</div>
+
+      <div class="ai-engine-row" style="margin-bottom:1.5rem; display:flex; gap:0.5rem; align-items:center; background:rgba(0,0,0,0.03); padding:0.5rem; border-radius:12px; border:1px solid var(--sand)">
+        <span style="font-size:0.7rem; font-weight:700; color:var(--muted); margin-left:0.5rem; white-space:nowrap">AI ENGINE:</span>
+        <select id="aiModeSelectMain" class="ai-mode-select" onchange="changeAIMode(false)" style="flex:1; border:none; background:transparent; font-size:0.85rem; padding-right:2rem">
+          <option value="cloud">☁️ Cloud AI (Groq) — Fast</option>
+          <option value="gemma">✨ Gemma 4 Expert — Reasoning</option>
+          <option value="local">💻 Local AI (Ollama) — Private</option>
+        </select>
+      </div>
 
       <div class="prefs-row">
         <select class="param-select" id="tripType" onchange="updateTripType()" style="background:var(--teal);color:white;border-color:var(--teal)">
@@ -421,14 +425,7 @@ footer a:hover{color:var(--rust-light)}
       </button>
 
       <div id="extraPrefs" style="display:none; background:rgba(0,0,0,0.02); border:1px solid var(--sand); border-radius:8px; padding:1rem; margin-bottom:1rem; animation: slideIn 0.3s ease;">
-        <div class="prefs-row" style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--sand)">
-          <span class="depart-label">🧠 AI Engine:</span>
-          <select id="aiModeSelectMobile" class="ai-mode-select" onchange="changeAIMode(true)" style="flex:1; max-width:none">
-            <option value="cloud">☁️ Cloud AI (Groq)</option>
-            <option value="gemma">✨ Gemma 4 Expert</option>
-            <option value="local">💻 Local AI (Ollama)</option>
-          </select>
-        </div>
+
         <div class="prefs-row">
           <input type="text" class="param-input" id="budget" placeholder="Max Budget (e.g. 5000)" style="width:160px">
           <span class="depart-label">🛫 Flight:</span>
@@ -645,6 +642,11 @@ function init(){
   if(savedCity)document.getElementById('departCity').value=savedCity;
   const savedCurrency=localStorage.getItem('tripsync_currency');
   if(savedCurrency)document.getElementById('currency').value=savedCurrency;
+  
+  // Restore AI mode
+  const savedMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+  document.getElementById('aiModeSelectMain').value = savedMode;
+  
   renderSidebar();
   
   // Check for resume-able last search
@@ -1307,17 +1309,14 @@ function renderMultiStopResults(data, query, currency) {
   `;
 }
 
-function changeAIMode(isMobile=false){
-  const next = isMobile ? document.getElementById('aiModeSelectMobile').value : document.getElementById('aiModeSelect').value;
+function changeAIMode(){
+  const next = document.getElementById('aiModeSelectMain').value;
   const labels = {
     cloud: '☁️ Switched to Cloud AI (Groq)',
     gemma: '✨ Switched to Gemma 4 Expert (API)',
     local: '💻 Switched to Local AI (Ollama)'
   };
   localStorage.setItem('tripsync_ai_mode', next);
-  // Sync selectors
-  document.getElementById('aiModeSelect').value = next;
-  document.getElementById('aiModeSelectMobile').value = next;
   showToast(labels[next]);
 }
 
