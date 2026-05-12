@@ -186,14 +186,20 @@ Return exactly 3 destination recommendations in this exact JSON format:
       "flight_duration": "X-Y hours",
       "visa": "Visa requirements for most nationalities",
       "highlights": ["Iconic Activity", "Local Secret", "Food Experience", "Must-see Spot"],
+      "smart_deal_insight": "One powerful sentence about timing or currency (e.g., 'Book 6 weeks out on a Tuesday for ~15% savings' or 'Switching to BRL currency may lower this fare').",
+      "best_time_to_book": "6-8 weeks out",
       "flight_class": "{flight_class}",
       "hotel_rating": "{hotel_rating}"
     }}
   ]
 }}
 
-Rules:
-- All prices in {currency}
+Pricing & Logistics Rules:
+- All prices in {currency}.
+- FLIGHT PRICING: 
+  * If depart_city is '{depart_city}', calculate a realistic return flight price and duration from that specific city.
+  * If the destination is on a different continent (e.g., North America to Asia), the flight_estimate MUST be {currency}1,200 - {currency}2,500+.
+  * If depart_city is EMPTY or 'your city', set flight_estimate to "Set origin for price" and flight_duration to "Duration varies". DO NOT GUESS.
 - Return ONLY JSON. No preamble, no markdown."""
 
 # --- Routes ---
