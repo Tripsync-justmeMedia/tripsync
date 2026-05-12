@@ -595,7 +595,7 @@ window.addEventListener('appinstalled',()=>{
 function triggerInstall(){
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   if(isIOS) {
-    alert('To save TripSync as an app on your device:\n\n1. Tap the Share icon (square with arrow ⬆️) at the bottom of Safari.\n2. Scroll down and tap "Add to Home Screen".');
+    showToast('💡 Tip: Tap Share ⬆️ and "Add to Home Screen" to save TripSync as an app.');
     return;
   }
   if(deferredInstallPrompt){
@@ -603,7 +603,7 @@ function triggerInstall(){
     deferredInstallPrompt.userChoice.then(()=>{deferredInstallPrompt=null;});
     document.getElementById('installBanner').classList.remove('show');
   } else {
-    showToast('Open in Chrome or Safari to install TripSync as an app.');
+    showToast('Open in Chrome or Safari to save TripSync to your device.');
   }
 }
 function dismissInstall(){
