@@ -378,16 +378,6 @@ footer a:hover{color:var(--rust-light)}
 
 <div class="app-body">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-mobile-only">
-      <div class="sidebar-title">Settings</div>
-      <button class="btn-ghost" style="width:100%; color: var(--sand); border-color: rgba(255,255,255,0.2); margin-bottom: 1rem;" onclick="showStats()">📊 View Click Stats</button>
-      <div class="sidebar-title">AI Engine</div>
-      <select id="aiModeSelectMobile" class="ai-mode-select" onchange="changeAIMode(true)">
-        <option value="cloud">☁️ Cloud AI (Groq)</option>
-        <option value="gemma">✨ Gemma 4 Expert</option>
-        <option value="local">💻 Local AI (Ollama)</option>
-      </select>
-    </div>
     <div class="sidebar-header">
       <span class="sidebar-title">My Trips</span>
       <button class="btn-new-project" onclick="openModal()">+ New</button>
@@ -438,6 +428,14 @@ footer a:hover{color:var(--rust-light)}
       </button>
 
       <div id="extraPrefs" style="display:none; background:rgba(0,0,0,0.02); border:1px solid var(--sand); border-radius:8px; padding:1rem; margin-bottom:1rem; animation: slideIn 0.3s ease;">
+        <div class="prefs-row" style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--sand)">
+          <span class="depart-label">🧠 AI Engine:</span>
+          <select id="aiModeSelectMobile" class="ai-mode-select" onchange="changeAIMode(true)" style="flex:1; max-width:none">
+            <option value="cloud">☁️ Cloud AI (Groq)</option>
+            <option value="gemma">✨ Gemma 4 Expert</option>
+            <option value="local">💻 Local AI (Ollama)</option>
+          </select>
+        </div>
         <div class="prefs-row">
           <input type="text" class="param-input" id="budget" placeholder="Max Budget (e.g. 5000)" style="width:160px">
           <span class="depart-label">🛫 Flight:</span>
