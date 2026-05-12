@@ -532,7 +532,7 @@ footer a:hover{color:var(--rust-light)}
     &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; 
     <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp; 
     <a href="terms.html">Terms of Service</a> &nbsp;·&nbsp; 
-    <button onclick="triggerInstall()" style="background:none;border:none;color:var(--sand);font-size:0.72rem;cursor:pointer;font-family:inherit;padding:0">📱 Add to Home Screen</button>
+        <button onclick="triggerInstall()" style="background:var(--teal);border:none;color:white;font-size:0.75rem;cursor:pointer;font-family:inherit;padding:0.4rem 0.8rem;border-radius:20px;font-weight:700;margin-top:0.5rem">📱 Add TripSync to your Phone</button>
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
     <strong>Live Data Disclosure:</strong> TripSync provides real-time price matches via AI orchestration. Final booking rates are determined by our travel partners. AI-curated itineraries — please verify travel documents before departure.
@@ -595,13 +595,17 @@ window.addEventListener('appinstalled',()=>{
   showToast('TripSync added to your home screen!');
 });
 function triggerInstall(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS) {
+    alert('To save TripSync as an app on your iPhone:\n\n1. Tap the Share icon (square with arrow ⬆️) at the bottom of Safari.\n2. Scroll down and tap "Add to Home Screen".');
+    return;
+  }
   if(deferredInstallPrompt){
     deferredInstallPrompt.prompt();
     deferredInstallPrompt.userChoice.then(()=>{deferredInstallPrompt=null;});
     document.getElementById('installBanner').classList.remove('show');
   } else {
-    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-    showToast(isIOS?'Tap Share → "Add to Home Screen"':'Open in Chrome or Safari to install');
+    showToast('Open in Chrome or Safari to install TripSync as an app.');
   }
 }
 function dismissInstall(){
