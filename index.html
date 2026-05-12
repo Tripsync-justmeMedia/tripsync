@@ -997,7 +997,8 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         <div class="flight-price" style="${isMissingOrigin ? 'font-size:0.85rem; color:var(--muted)' : ''}">${d.flight_estimate}</div>
         <div class="flight-detail">${d.flight_duration && !isMissingOrigin ? '~'+d.flight_duration+' travel time ' : ''}${fromLabel}</div>
       </div>
-      <a href="#tripInput" 
+      <a href="${isMissingOrigin ? '#tripInput' : googleFlightsUrl}" 
+         target="${isMissingOrigin ? '_self' : '_blank'}" 
          class="flight-link" 
          style="${isMissingOrigin ? 'background:var(--muted)' : ''}"
          onclick="${isMissingOrigin ? "window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('departCity').focus(), 500); return false;" : `track('google_flights','${cityRaw}')`}">
