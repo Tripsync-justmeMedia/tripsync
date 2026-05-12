@@ -368,7 +368,10 @@ footer a:hover{color:var(--rust-light)}
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <span class="sidebar-title">My Trips</span>
-      <button class="btn-new-project" onclick="openModal()">+ New</button>
+      <div style="display:flex; gap:0.5rem; align-items:center">
+        <button class="btn-new-project" onclick="openModal()">+ New</button>
+        <button class="btn-sidebar-close" onclick="toggleSidebar()" style="background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; padding:0 0.5rem">✕</button>
+      </div>
     </div>
     <div class="project-list" id="projectList"></div>
     <div class="chat-history">
