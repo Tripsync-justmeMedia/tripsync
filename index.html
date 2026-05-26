@@ -440,9 +440,8 @@ footer a:hover{color:var(--rust-light)}
       <div class="ai-engine-row" style="margin-bottom:1.5rem; display:flex; gap:0.5rem; align-items:center; background:rgba(0,0,0,0.03); padding:0.5rem; border-radius:12px; border:1px solid var(--sand)">
         <span style="font-size:0.7rem; font-weight:700; color:var(--muted); margin-left:0.5rem; white-space:nowrap">AI ENGINE:</span>
         <select id="aiModeSelectMain" class="ai-mode-select" onchange="changeAIMode(false)" style="flex:1; border:none; background:transparent; font-size:0.85rem; padding-right:2rem">
-          <option value="cloud">☁️ Cloud AI (Groq) — Fast</option>
-          <option value="gemma">✨ Gemma 4 Expert — Reasoning</option>
-          <option value="local">💻 Local AI (Ollama) — Private</option>
+          <option value="cloud">⚡ Fast (2 sec) — instant ideas</option>
+          <option value="gemma">✨ Deep (30 sec) — better for complex trips</option>
         </select>
       </div>
 
@@ -531,6 +530,9 @@ footer a:hover{color:var(--rust-light)}
           <button class="example-chip" onclick="setExample('Backpacking Thailand for 1 month, budget friendly')">Thailand Backpacking</button>
         </div>
         <button class="btn-search" id="searchBtn" onclick="searchTrip()">Find Destinations</button>
+        <div style="font-size:0.7rem; color:var(--muted); margin-top:0.75rem; text-align:center; width:100%; font-weight:500;">
+          * ⚡ Fast = instant ideas &middot; ✨ Deep = better for complex trips (takes 30 seconds) *
+        </div>
       </div>
     </div>
 
@@ -1398,9 +1400,8 @@ function renderMultiStopResults(data, query, currency) {
 function changeAIMode(){
   const next = document.getElementById('aiModeSelectMain').value;
   const labels = {
-    cloud: '☁️ Switched to Cloud AI (Groq)',
-    gemma: '✨ Switched to Gemma 4 Expert (API)',
-    local: '💻 Switched to Local AI (Ollama)'
+    cloud: '⚡ Switched to Fast Mode (instant ideas)',
+    gemma: '✨ Switched to Deep Mode (curated reasoning)'
   };
   localStorage.setItem('tripsync_ai_mode', next);
   showToast(labels[next]);
