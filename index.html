@@ -391,7 +391,14 @@ footer a:hover{color:var(--rust-light)}
 </head>
 <body>
 
-
+<!-- Install to Home Screen Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-text">📱 <strong>Add TripSync to your home screen</strong> — access it like an app, anytime, no download needed</div>
+  <div style="display:flex;gap:0.5rem">
+    <button class="btn-install-now" onclick="triggerInstall()">Add to Home Screen</button>
+    <button class="btn-install-dismiss" onclick="dismissInstall()">Not now</button>
+  </div>
+</div>
 
 <header>
   <div style="display:flex;align-items:center;gap:1rem">
