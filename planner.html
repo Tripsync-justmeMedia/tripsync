@@ -79,6 +79,7 @@
     .loading-overlay{position:fixed;inset:0;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
     .spinner{width:50px;height:50px;border:4px solid var(--sky);border-top:4px solid var(--teal);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.5rem}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
     
     .btn-mini-del{background:none;border:none;color:var(--rust);cursor:pointer;font-size:1.2rem;line-height:1;opacity:0.3;transition:all 0.2s}
     .btn-mini-del:hover{opacity:1}
@@ -139,15 +140,7 @@
   <a href="index.html" class="logo" style="text-decoration:none">Trip<span>Sync</span></a>
   <div class="header-btns">
     <a href="index.html" class="btn-outline" title="Back to Results">⬅️<span> RESULTS</span></a>
-    <a href="index.html" class="btn-outline" title="New Search">🔍<span> NEW</span></a>
     <button class="btn-outline" onclick="window.print()" title="Print Itinerary">🖨️<span class="mobile-hide"> PRINT</span></button>
-  </div>
-  <div class="header-ai-select">
-    <select id="aiModeSelect" class="ai-mode-select" onchange="changeAIMode()">
-      <option value="cloud">☁️ Cloud AI</option>
-      <option value="gemma">✨ Gemma 4</option>
-      <option value="local">💻 Local AI</option>
-    </select>
   </div>
 </header>
 
@@ -163,6 +156,16 @@
     </main>
 
     <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="widget-title">⚙️ AI Engine Settings</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem">AI Intelligence Engine:</div>
+        <select id="aiModeSelect" class="ai-mode-select" onchange="changeAIMode()" style="width:100%; border-color:var(--teal); font-size:0.82rem; height:38px;">
+          <option value="cloud">☁️ Cloud AI (Groq) — Fast</option>
+          <option value="gemma">✨ Gemma 4 Expert — Reasoning</option>
+          <option value="local">💻 Local AI (Ollama) — Private</option>
+        </select>
+      </div>
+
       <div class="sidebar-widget" id="flightWidget">
         <div class="widget-title">✈️ Book Flights</div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Secure your travel dates before finalizing hotels.</div>
@@ -343,37 +346,53 @@
 
     // Itinerary
     const section = document.getElementById('itinerarySection');
-    section.innerHTML = (data.itinerary || []).map(day => `
-      <div class="day-card" data-day="${day.day}">
-        <span class="day-num">Day ${day.day}</span>
-        <h2 class="day-title">${day.title}</h2>
-        <ul class="activity-list" id="list-day-${day.day}">
-          ${(day.activities || []).map((a,idx) => `
-            <li class="activity-item">
-              <span style="flex:1">${a}</span>
-              <button class="btn-mini-del" onclick="removeActivity(${day.day}, ${idx})">×</button>
-            </li>`).join('')}
-        </ul>
-        <div style="display:flex;gap:0.5rem;margin-bottom:2rem">
-           <input type="text" id="add-day-${day.day}" class="input-mini" placeholder="Add custom activity...">
-           <button class="btn-mini-add" onclick="addActivity(${day.day})">Add</button>
+    section.innerHTML = (data.itinerary || []).map(day => {
+      const isFirst = day.day === 1;
+      const detailsDisplay = isFirst ? 'block' : 'none';
+      const chevronText = isFirst ? '▲' : '▼';
+      return `
+      <div class="day-card" data-day="${day.day}" id="day-card-${day.day}">
+        <div onclick="toggleDayCollapse(${day.day})" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="day-num" style="margin-bottom:0.25rem;">Day ${day.day}</span>
+            <h2 class="day-title" style="margin-bottom:0; font-size:1.45rem;">${day.title}</h2>
+            <div style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem; font-weight: 500;">
+              📊 ${(day.activities || []).length} activities &middot; 🍽️ 3 meals
+            </div>
+          </div>
+          <span id="day-chevron-${day.day}" style="font-size:1.35rem; color:var(--teal); font-weight: bold; transition: transform 0.2s;">${chevronText}</span>
         </div>
-        <div class="meals-box">
-          <div class="meal-item">
-            <span class="meal-label">Breakfast</span>
-            ${day.meals?.breakfast || 'Local Café'}
+        
+        <div id="day-details-${day.day}" class="day-details" style="display:${detailsDisplay}; margin-top:1.5rem; border-top:1px solid var(--cream); padding-top:1.5rem; animation: fadeIn 0.25s ease both;">
+          <ul class="activity-list" id="list-day-${day.day}">
+            ${(day.activities || []).map((a,idx) => `
+              <li class="activity-item">
+                <span style="flex:1">${a}</span>
+                <button class="btn-mini-del" onclick="removeActivity(${day.day}, ${idx})">×</button>
+              </li>`).join('')}
+          </ul>
+          <div style="display:flex;gap:0.5rem;margin-bottom:2rem">
+             <input type="text" id="add-day-${day.day}" class="input-mini" placeholder="Add custom activity...">
+             <button class="btn-mini-add" onclick="addActivity(${day.day})">Add</button>
           </div>
-          <div class="meal-item">
-            <span class="meal-label">Lunch</span>
-            ${day.meals?.lunch || 'Street Food/Bistro'}
-          </div>
-          <div class="meal-item">
-            <span class="meal-label">Dinner</span>
-            ${day.meals?.dinner || 'Traditional Dining'}
+          <div class="meals-box">
+            <div class="meal-item">
+              <span class="meal-label">🍳 Breakfast</span>
+              ${day.meals?.breakfast || 'Local Café'}
+            </div>
+            <div class="meal-item">
+              <span class="meal-label">🥗 Lunch</span>
+              ${day.meals?.lunch || 'Street Food/Bistro'}
+            </div>
+            <div class="meal-item">
+              <span class="meal-label">🍽️ Dinner</span>
+              ${day.meals?.dinner || 'Traditional Dining'}
+            </div>
           </div>
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
     
     // Add Refine Box
     const refineDiv = document.createElement('div');
@@ -382,10 +401,18 @@
     refineDiv.style.color = 'white';
     refineDiv.innerHTML = `
       <h3 style="font-family:'Playfair Display';margin-bottom:0.5rem">✨ Refine this Itinerary</h3>
-      <p style="font-size:0.85rem;opacity:0.8;margin-bottom:1.5rem">Ask AI to adjust this plan (e.g. "Add more budget-friendly options" or "Make it more adventurous")</p>
+      <p style="font-size:0.85rem;opacity:0.8;margin-bottom:1rem">Ask AI to adjust this plan (e.g. "Add more budget-friendly options" or "Make it more adventurous")</p>
       <div style="display:flex;gap:0.5rem">
         <input type="text" id="refineInput" class="input-mini" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white" placeholder="Type your adjustment here...">
         <button class="btn-primary" onclick="refineItinerary()" id="refineBtn" style="margin:0;width:auto">Refine</button>
+      </div>
+      <div style="display:flex; gap:0.4rem; margin-top:1rem; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:0.72rem; opacity:0.7; margin-right:0.25rem;">Quick Adjust:</span>
+        <button class="share-btn" onclick="applyRefineChip('make it more budget friendly')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">💰 Budget-friendly</button>
+        <button class="share-btn" onclick="applyRefineChip('faster pace with more active sightseeing')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">⚡ Faster Pace</button>
+        <button class="share-btn" onclick="applyRefineChip('slower pace with more relaxation and leisure time')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">🧘 Less Busy</button>
+        <button class="share-btn" onclick="applyRefineChip('make it family-friendly and great for kids')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">👨‍👩‍👧 Family-friendly</button>
+        <button class="share-btn" onclick="applyRefineChip('add more local culinary highlights and street food')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">🍜 Food Focus</button>
       </div>
     `;
     section.appendChild(refineDiv);
@@ -514,6 +541,31 @@
     const next = document.getElementById('aiModeSelect').value;
     localStorage.setItem('tripsync_ai_mode', next);
     showToast(labels[next]);
+  }
+
+  function toggleDayCollapse(dayNum) {
+    const details = document.getElementById('day-details-' + dayNum);
+    const chevron = document.getElementById('day-chevron-' + dayNum);
+    if (!details) return;
+    const isHidden = details.style.display === 'none';
+    if (isHidden) {
+      details.style.display = 'block';
+      if (chevron) {
+        chevron.textContent = '▲';
+      }
+    } else {
+      details.style.display = 'none';
+      if (chevron) {
+        chevron.textContent = '▼';
+      }
+    }
+  }
+
+  function applyRefineChip(text) {
+    const input = document.getElementById('refineInput');
+    if (!input) return;
+    input.value = text;
+    refineItinerary();
   }
 
   init();
