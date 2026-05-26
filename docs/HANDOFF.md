@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 11, 2026  
+**Last Updated:** May 26, 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
 **Developer Contact:** wcommu@gmail.com  
@@ -24,7 +24,7 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 | UptimeRobot | wcommu@gmail.com | Pings every 5 min to keep Render alive |
 | Groq API | wcommu@gmail.com | Free tier, llama-3.3-70b-versatile |
 | Google Play | wcommu@gmail.com | Org account active |
-| Apple Developer | wcommu@gmail.com | Converting individual → org |
+| Apple Developer | wcommu@gmail.com | Converting individual → org (Registration Docs Submitted) |
 
 **Affiliate accounts (PENDING — not yet applied):**
 - Booking.com → partners.booking.com
@@ -194,8 +194,22 @@ We have a dedicated tracker for all monetization partners:
 
 ---
 
-## What's Done ✅ (Updated May 7)
+## What's Done ✅ (Updated May 26)
 
+- **UX Overhaul & Progressive Disclosure**: Collapsed detailed destination card elements (budgets, season, visa, flight block, and hotel book links) behind an animated, expandable `[ Details ➔ ]` accordion wrapper. This reduces vertical page scrolling by 70% and drastically streamlines the mobile experience.
+- **Warm & Simplified Planner**:
+  - Restructured `planner.html` to collapse daily lists dynamically by default (keeping Day 1 open to seamlessly guide travelers on arrival).
+  - Prepended friendly emojis to meal displays (`🍳 Breakfast`, `🥗 Lunch`, `🍽️ Dinner`) for a warmer, safer user feel.
+  - Simplified the top bar to focus purely on navigation (`⬅ RESULTS` and `🖨 PRINT`).
+  - Removed AI selector settings from the planner page sidebar to reduce configuration noise and focus on itinerary consumption.
+- **One-Click AI Refinement**: Added 5 interactive quick-adjust chips (`💰 Budget-friendly`, `⚡ Faster Pace`, `🧘 Less Busy`, `👨‍👩‍👧 Family-friendly`, and `🍜 Food Focus`) right under the Refinement input box on `planner.html` for instant, one-touch rebuilding.
+- **Fast vs. Deep AI Engine Branding**: Rebranded cloud-orchestrated API routes into simple, expectations-setting labels:
+  - `⚡ Fast (2 sec) — instant ideas` (using Groq llama-3.3-70b-versatile)
+  - `✨ Deep (30 sec) — better for complex trips` (using Google Gemini REST gemma-4)
+- **Critical Reliability Fixes**:
+  - Fixed `setInterval` scoping crash inside `planner.html`'s `init()` block (scoping timer `iv` cleanly to prevent infinite loading cycles on API errors).
+  - Resolved `Uncaught TypeError` in homepage script execution by fully restoring the missing PWA `installBanner` HTML element in `index.html`.
+  - Added automatic state sanitizing to `init()` to instantly default stale `localStorage` settings (like older `'local'` options) back to `'cloud'`.
 - **Interactive Planner**: Users can now adjust activities and ask AI for refinements.
 - **Full Booking Funnel**: Flights, Hotels, and Tours all integrated into one view.
 - **PWA v2**: Updated service worker to force updates and improve performance.
@@ -203,9 +217,9 @@ We have a dedicated tracker for all monetization partners:
 - **Navigation**: Prominent "Planner" link added to the main header.
 - **3-Tier AI Integration (May 10)**:
     - **Cloud AI (Groq)**: High-speed, primary engine.
-    - **Gemma 4 Expert (Google Gemini API)**: High-intelligence tier using `gemma-4-26b-a4b-it`. (Avg. load time: ~30 seconds)
+    - **Gemma 4 Expert (Google Gemini API)**: High-intelligence tier using `gemma-4-26b-a4b-it`.
     - **Local AI (Ollama)**: Integrated for on-device inference (`gemma4`).
-    - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma takes longer than 25s (nearing Render's 30s limit), it instantly and silently hands off to Groq to ensure a seamless experience. This guarantees a response in ~30s even in the worst-case scenario.
+    - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma takes longer than 25s, it silently hands off to Groq.
     - **Smart JSON Parsing**: Robust parser that strips AI conversation, fixes trailing commas, and handles key renames automatically.
 
 ---
@@ -258,7 +272,7 @@ TripSync is now a fully qualified **PWA (Progressive Web App)**. To submit it to
 - Fiber internet
 - Vibe coder — builds with AI + terminal, not manual coding
 - Google Play org account active
-- Apple Developer converting individual → org
+- Apple Developer converting individual → org (Registration Docs Submitted)
 - External hard drive incoming for local model storage
 - Works nights, moves fast
 
