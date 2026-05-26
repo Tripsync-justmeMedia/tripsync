@@ -18,6 +18,10 @@
   gtag('config', 'G-3K845T64RP');
 </script>
 <link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" type="image/png" href="/icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -602,7 +606,13 @@ footer a:hover{color:var(--rust-light)}
 <div class="toast" id="toast"></div>
 
 <script>
-const AFFILIATE={booking_aid:'2884913',agoda_cid:'YOUR_AGODA_CID',expedia_affcid:'YOUR_EXPEDIA_AFFCID'};
+const AFFILIATE={
+  cj_pid: '101234567', // REPLACE WITH YOUR CJ PUBLISHER ID
+  cj_sid: 'tripsync_web',
+  booking_aid: '2884913', // Legacy fallback
+  agoda_cid: 'YOUR_AGODA_CID',
+  expedia_affcid: 'YOUR_EXPEDIA_AFFCID'
+};
 const MSGS_STANDARD=['Scanning 190+ countries...','Checking flight routes...','Matching your vibe...','Comparing hotel rates...','Finalizing your trip...'];
 const MSGS_EXPERT=['Deep Expert Reasoning...','Analyzing Global Data...','Curating Expert Match...','Finalizing Premium Results...'];
 const MSGS_LOCAL=['Waking up Local AI...','Loading Gemma 4 into RAM...','This takes a moment on first run...','Thinking on your hardware...','Finalizing Private Results...'];
@@ -1080,7 +1090,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         </div>
         <div class="booking-label">Book Hotels</div>
         <div class="booking-links">
-          <a href="https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}&aid=${AFFILIATE.booking_aid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
+          <a href="https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}`)}&sid=${AFFILIATE.cj_sid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
           <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
           <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
         </div>

@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#1a6b6b">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="icon.png">
   <title>Trip Planner — TripSync</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -221,6 +224,12 @@
 </footer>
 
 <script>
+  const AFFILIATE = {
+    cj_pid: '101234567', // REPLACE WITH YOUR CJ PUBLISHER ID
+    cj_sid: 'tripsync_planner',
+    booking_aid: '2884913' // Legacy fallback
+  };
+
   async function init(){
     const modes = {
       cloud: { icon: '☁️', label: 'Cloud AI (Groq)' },
@@ -266,6 +275,7 @@
     document.getElementById('heroSub').textContent = `${days} Day Detailed Experience`;
     document.title = `${destination} Planner — TripSync`;
 
+    let iv = null;
     try {
       const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
       let endpoint = '/api/generate-itinerary';
@@ -279,7 +289,7 @@
       }
       
       let mi = 0;
-      const iv = setInterval(() => {
+      iv = setInterval(() => {
           mi = (mi + 1) % activeMsgs.length;
           document.getElementById('loadingText').textContent = activeMsgs[mi];
       }, 2500);
@@ -299,12 +309,12 @@
       }
       
       const data = errorData;
-      clearInterval(iv);
+      if (iv) clearInterval(iv);
       if (data.error) throw new Error(data.error);
       render(data, destination, currency);
     } catch(e) {
       // Make sure to clear interval on error too
-      if(typeof iv !== 'undefined') clearInterval(iv);
+      if (iv) clearInterval(iv);
       document.getElementById('loadingText').textContent = "Error loading itinerary. " + e.message;
     }
   }
@@ -382,7 +392,7 @@
 
     // Links
     const encodedDest = encodeURIComponent(destination);
-    document.getElementById('bookingLink').href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=2884913`;
+    document.getElementById('bookingLink').href = `https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${encodedDest}`)}&sid=${AFFILIATE.cj_sid}`;
     document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
     
     // Flight link
