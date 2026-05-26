@@ -705,8 +705,12 @@ function init(){
   const savedCurrency=localStorage.getItem('tripsync_currency');
   if(savedCurrency)document.getElementById('currency').value=savedCurrency;
   
-  // Restore AI mode
-  const savedMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+  // Restore AI mode safely
+  let savedMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+  if (savedMode !== 'cloud' && savedMode !== 'gemma') {
+    savedMode = 'cloud';
+    localStorage.setItem('tripsync_ai_mode', 'cloud');
+  }
   document.getElementById('aiModeSelectMain').value = savedMode;
   
   renderSidebar();

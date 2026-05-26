@@ -238,7 +238,11 @@
       gemma: { icon: '✨', label: 'Gemma 4 Expert' },
       local: { icon: '💻', label: 'Local AI (Ollama)' }
     };
-    const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    let aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    if (aiMode !== 'cloud' && aiMode !== 'gemma') {
+      aiMode = 'cloud';
+      localStorage.setItem('tripsync_ai_mode', 'cloud');
+    }
     const sel = document.getElementById('aiModeSelect');
     if (sel) sel.value = aiMode;
     const params = new URLSearchParams(window.location.search);
