@@ -143,6 +143,9 @@ textarea#tripInput::placeholder{color:var(--muted)}
 /* Cards */
 /* Cards */
 .dest-card{background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.3s;animation:cardIn 0.5s ease both;border:1px solid rgba(255,255,255,0.4);display:flex;flex-direction:column}
+.card-details{display:none;animation:fadeIn 0.25s ease both}
+.card-details.open{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .dest-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .dest-card:nth-child(2){animation-delay:0.12s}.dest-card:nth-child(3){animation-delay:0.24s}
@@ -1076,34 +1079,45 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         <div class="vibe-row">${vibeTags}</div>
         ${d.match_score?`<div class="card-match">★ ${d.match_score} Match</div>`:''}
       </div>
-      <div class="card-body">
-        ${d.smart_deal_insight ? `<div class="smart-insight"><div class="insight-icon">💡</div><div class="insight-text"><strong>Smart Deal:</strong> ${d.smart_deal_insight}</div></div>` : ''}
+      <div class="card-body" style="padding-bottom: 0.5rem;">
         <div class="card-description">${d.description||''}</div>
-        <div class="info-grid">
-          ${d.budget_per_day?`<div class="info-block"><div class="info-label">Budget / Day</div><div class="info-value price">${d.budget_per_day}</div></div>`:''}
-          ${d.best_season?`<div class="info-block"><div class="info-label">Best Season</div><div class="info-value hi">${d.best_season}</div></div>`:''}
-          ${d.visa?`<div class="info-block"><div class="info-label">Visa</div><div class="info-value">${d.visa}</div></div>`:''}
-          ${d.flight_duration?`<div class="info-block"><div class="info-label">Flight Time</div><div class="info-value">${d.flight_duration}</div></div>`:''}
+        
+        <div style="display:flex; gap:0.5rem; margin-top:1.25rem; margin-bottom: 0.5rem;">
+          <button class="btn-action" id="toggle-btn-${i}" onclick="toggleCardDetails(${i}, this)" style="flex:1; padding:0.6rem 0.5rem; font-size:0.78rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:0.25rem;">Details ➔</button>
+          <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=5&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}" target="_blank" class="btn-itin" style="flex:1; margin:0; padding:0.6rem 0.5rem; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center;">🗺️ Open Planner</a>
         </div>
-        <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=5&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}" target="_blank" class="btn-itin" style="margin-top:1.5rem;margin-bottom:1.5rem;padding:0.75rem;font-size:0.9rem">🗺️ View Detailed Planner</a>
-        ${hl?`<div class="highlights-row">${hl}</div>`:''}
-        ${flightBlock}
       </div>
-      <div class="card-footer">
-        <div class="booking-links" style="margin-bottom:1rem">
-          <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
-          <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1" onclick="track('google_flights','${cityRaw}')">Google Flights</a>
-          <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
+      
+      <div id="details-${i}" class="card-details">
+        <div class="card-body" style="padding-top: 0; padding-bottom: 0;">
+          ${d.smart_deal_insight ? `<div class="smart-insight"><div class="insight-icon">💡</div><div class="insight-text"><strong>Smart Deal:</strong> ${d.smart_deal_insight}</div></div>` : ''}
+          <div class="info-grid">
+            ${d.budget_per_day?`<div class="info-block"><div class="info-label">Budget / Day</div><div class="info-value price">${d.budget_per_day}</div></div>`:''}
+            ${d.best_season?`<div class="info-block"><div class="info-label">Best Season</div><div class="info-value hi">${d.best_season}</div></div>`:''}
+            ${d.visa?`<div class="info-block"><div class="info-label">Visa</div><div class="info-value">${d.visa}</div></div>`:''}
+            ${d.flight_duration?`<div class="info-block"><div class="info-label">Flight Time</div><div class="info-value">${d.flight_duration}</div></div>`:''}
+          </div>
+          ${hl?`<div class="highlights-row">${hl}</div>`:''}
+          ${flightBlock}
         </div>
-        <div class="booking-label">Book Hotels</div>
-        <div class="booking-links">
-          <a href="https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}`)}&sid=${AFFILIATE.cj_sid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
-          <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
-          <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
-        </div>
-          <button class="share-btn" onclick="saveToMyTrips('${cityRaw}', ${i})">⭐ Save Trip</button>
-          <button class="share-btn" onclick="copyLink()">🔗 Copy Link</button>
-          <button class="share-btn" onclick="saveCardImage(${i},'${cityRaw}')">🖼 Save Image</button>
+        <div class="card-footer" style="padding-top:0.5rem">
+          <div class="booking-links" style="margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+              <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1;text-align:center;text-decoration:none;font-size:0.8rem;font-weight:700;padding:0.65rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('google_flights','${cityRaw}')">Google Flights</a>
+              <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1;text-align:center;text-decoration:none;font-size:0.8rem;font-weight:700;padding:0.65rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
+            </div>
+            <div class="booking-label">Book Hotels</div>
+            <div class="booking-links" style="margin-bottom:0.5rem">
+              <a href="https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}`)}&sid=${AFFILIATE.cj_sid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
+              <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
+              <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
+            </div>
+            <div class="card-share-row" style="margin-top:0.5rem">
+              <button class="share-btn" onclick="saveToMyTrips('${cityRaw}', ${i})">⭐ Save Trip</button>
+              <button class="share-btn" onclick="copyLink()">🔗 Copy Link</button>
+              <button class="share-btn" onclick="saveCardImage(${i},'${cityRaw}')">🖼 Save Image</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>`;
@@ -1133,6 +1147,19 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     </div>
     <div class="destinations-grid">${cards}</div>
     ${badgeHtml}`;
+}
+
+function toggleCardDetails(idx, btn) {
+  const details = document.getElementById('details-' + idx);
+  if (!details) return;
+  const isOpen = details.classList.contains('open');
+  if (isOpen) {
+    details.classList.remove('open');
+    btn.innerHTML = 'Details ➔';
+  } else {
+    details.classList.add('open');
+    btn.innerHTML = 'Less ▴';
+  }
 }
 
 function copyLink(){
