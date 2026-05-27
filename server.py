@@ -417,6 +417,59 @@ Pricing & Logistics Rules:
 - Return ONLY JSON. No preamble, no markdown."""
 
 # --- Routes ---
+UNSPLASH_ACCESS_KEY = os.environ.get('UNSPLASH_ACCESS_KEY')
+
+def get_fallback_image(query):
+    query_lower = query.lower()
+    
+    # Category mappings with beautiful, high-res Unsplash stock photos
+    if any(k in query_lower for k in ['beach', 'tropical', 'cancun', 'caribbean', 'hawaii', 'maldives', 'island', 'coast', 'sea', 'ocean', 'bahamas', 'phuket', 'bali']):
+        return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80'
+    elif any(k in query_lower for k in ['tokyo', 'new york', 'london', 'paris', 'city', 'urban', 'skyline', 'chicago', 'seattle', 'metropolis', 'singapore', 'hong kong', 'toronto']):
+        return 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80'
+    elif any(k in query_lower for k in ['mountain', 'hiking', 'nature', 'swiss', 'alps', 'park', 'forest', 'national park', 'lake', 'rocky', 'canada', 'banff', 'greenery']):
+        return 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80'
+    elif any(k in query_lower for k in ['snow', 'ski', 'winter', 'ice', 'glacier', 'lapland', 'finland', 'cabin', 'iceland', 'aurora', 'norway']):
+        return 'https://images.unsplash.com/photo-1482862549707-f63cb32c5fd9?auto=format&fit=crop&w=1600&q=80'
+    elif any(k in query_lower for k in ['europe', 'historic', 'culture', 'rome', 'temple', 'ancient', 'museum', 'castle', 'ruins', 'greece', 'athens', 'egypt', 'kyoto', 'heritage']):
+        return 'https://images.unsplash.com/photo-1485088412644-d07c37c2299b?auto=format&fit=crop&w=1600&q=80'
+        
+    # Default travel boat on lake
+    return 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80'
+
+@app.route('/api/destination-image')
+def destination_image():
+    query = request.args.get('query', '').strip()
+    if not query:
+        return jsonify({"url": 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80'})
+        
+    if not UNSPLASH_ACCESS_KEY:
+        # Fallback to local curated categorizer
+        return jsonify({"url": get_fallback_image(query)})
+        
+    # Unsplash search API URL
+    url = "https://api.unsplash.com/search/photos"
+    params = {
+        "query": query,
+        "client_id": UNSPLASH_ACCESS_KEY,
+        "orientation": "landscape",
+        "per_page": 1
+    }
+    
+    try:
+        resp = requests.get(url, params=params, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get('results') and len(data['results']) > 0:
+                raw_url = data['results'][0]['urls']['raw']
+                formatted_url = f"{raw_url}&auto=format&fit=crop&w=1600&q=80"
+                return jsonify({"url": formatted_url})
+        logging.warning(f"Unsplash API call failed with code {resp.status_code}. Using fallback.")
+    except Exception as e:
+        logging.error(f"Error calling Unsplash API: {e}")
+        
+    return jsonify({"url": get_fallback_image(query)})
+
 @app.route('/api/ping')
 def ping():
     return jsonify({"status": "online", "timestamp": time.time()})

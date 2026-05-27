@@ -359,6 +359,16 @@
     document.getElementById('heroSub').textContent = `${days} Day Detailed Experience`;
     document.title = `${destination} Planner — TripSync`;
 
+    // Fetch dynamic destination image asynchronously
+    fetch(`/api/destination-image?query=${encodeURIComponent(destination)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.url) {
+          document.getElementById('hero').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url('${data.url}')`;
+        }
+      })
+      .catch(err => console.warn("Failed to fetch dynamic hero image:", err));
+
     let iv = null;
     try {
       const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
