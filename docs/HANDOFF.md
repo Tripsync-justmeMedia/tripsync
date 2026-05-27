@@ -2,7 +2,7 @@
 **Last Updated:** May 26, 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
-**Developer Contact:** wcommu@gmail.com  
+**Developer Contact:** [refer to gitignored docs/PRIVATE_HANDOFF.md]  
 
 ---
 
@@ -17,18 +17,10 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 
 ## Accounts & Logins
 
-| Service | Login Email | Portal Link | Notes |
-|---|---|---|---|
-| **GitHub** | wcommu@gmail.com | [github.com](https://github.com) | @Tripsync-justmeMedia organization repository |
-| **Render.com** | wcommu@gmail.com | [dashboard.render.com](https://dashboard.render.com) | Flask API hosting with GitHub auto-deploy |
-| **UptimeRobot** | wcommu@gmail.com | [uptimerobot.com](https://uptimerobot.com) | Automated 5-min ping checker |
-| **Groq API** | wcommu@gmail.com | [console.groq.com](https://console.groq.com) | Llama-3.3 Cloud AI engine keys |
-| **Google Play** | wcommu@gmail.com | [play.google.com/console](https://play.google.com/console) | Active publisher developer account |
-| **Apple Developer** | wcommu@gmail.com | [developer.apple.com](https://developer.apple.com) | Org transfer pending review |
-| **Booking.com** | wcommu@gmail.com | [partners.booking.com](https://partners.booking.com) | ✅ LIVE (aid: 2884913) |
-| **Agoda** | wcommu@gmail.com | [partners.agoda.com](https://partners.agoda.com) | ⏳ PENDING approval on Awin network |
-| **Expedia** | wcommu@gmail.com | [expediagroup.com/partners](https://www.expediagroup.com/partners) | ⏳ PENDING approval on Awin network |
-| **Viator** | wcommu@gmail.com | [partnerize.com](https://www.partnerize.com) | ⏳ PENDING approval on Partnerize network |
+> [!IMPORTANT]
+> **Security Notice**:
+> For security, all actual organization login details, developer credentials, and affiliate program passwords reside in the gitignored **[PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/02_ACTIVE_PROJECTS/TripSync/docs/PRIVATE_HANDOFF.md)** file on your local machine. 
+> This file is strictly excluded from Git commits (`.gitignore`) to keep the public repository safe from scanning bots.
 
 ---
 
@@ -180,36 +172,16 @@ GET  /sw.js         → service worker (needs adding)
 ---
 
 ## Affiliate Tracking & IDs
-All accounts registered under: **wcommu@gmail.com** (Just Me Media).
 
-### Current Integration Status
-- **Search & Click Tracking**: ✅ **VERIFIED** (Client clicks are sent to `/api/track-click` and saved to `click_log` SQLite table).
-- **Booking.com**: ✅ **LIVE** — Partner Portal: [partners.booking.com](https://partners.booking.com) (Active Affiliate ID: `2884913`).
-- **Agoda**: ⏳ **PENDING** — Portal: [partners.agoda.com](https://partners.agoda.com) (Applied via Awin network; current placeholders active).
-- **Expedia**: ⏳ **PENDING** — Portal: [expediagroup.com/partners](https://www.expediagroup.com/partners) (Applied via Awin network; placeholders active).
-- **Viator**: ⏳ **PENDING** — Portal: [partnerize.com](https://www.partnerize.com) (Applied via Partnerize network; placeholder tour code active).
-- **Skyscanner**: ❌ **RE-APPLY** — Portal: [partners.skyscanner.net](https://partners.skyscanner.net) (Re-submit application after public beta traffic has scaled).
+All active affiliate accounts are configured locally. For precise network credentials, login emails, and custom affiliate IDs, please refer to the gitignored **[PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/02_ACTIVE_PROJECTS/TripSync/docs/PRIVATE_HANDOFF.md)** on your local machine.
 
-### High-Value Target Partnerships to Register
-Apply for these travel affiliate programs under `wcommu@gmail.com` to capture other highly profitable segments:
+### Integration Status & Fallback Targets
+* **Search & Click Tracking**: ✅ **VERIFIED** (Logs client click-throughs to the `click_log` SQLite table).
+* **Accommodation Partnerships**: Booking.com is active (refer to private files for Affiliate ID). Agoda and Expedia applications are pending via Awin (using code placeholders).
+* **Tours & Activities**: Viator tours are active (refer to private files for code).
+* **Target Program Checklist**: See [PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/02_ACTIVE_PROJECTS/TripSync/docs/PRIVATE_HANDOFF.md) for sign-up links for **WayAway** (Travelpayouts flights), **GetYourGuide** (tours), **Discover Cars** (rental vehicles), **SafetyWing** (nomad medical insurance), and **Hostelworld** (budget properties).
 
-1. **WayAway / Travelpayouts** (Flights)
-   - **Signup URL**: [travelpayouts.com](https://www.travelpayouts.com)
-   - **Why**: Excellent flight comparison meta-search tool with high approval rates, instant setup, and great flight cookie commissions. Excellent fallback flight partner.
-2. **GetYourGuide** (Tours & Activities)
-   - **Signup URL**: [partner.getyourguide.com](https://partner.getyourguide.com)
-   - **Why**: Excellent alternative or addition to Viator for local day tickets, skip-the-line passes, and city tours with massive global inventory.
-3. **Discover Cars** (Car Rental)
-   - **Signup URL**: [discovercars.com/affiliates](https://www.discovercars.com/affiliates)
-   - **Why**: Very high conversion rates and high commissions (up to 70% of car rental profit margin). Ideal to replace basic car placeholders.
-4. **SafetyWing** (Travel Insurance)
-   - **Signup URL**: [safetywing.com/nomad-insurance/partner](https://safetywing.com/nomad-insurance/partner)
-   - **Why**: Highly popular and affordable travel medical insurance for digital nomads and long-term backpackers. High recurring commissions.
-5. **Hostelworld** (Budget Stays)
-   - **Signup URL**: [hostelworld.com/affiliates](https://www.hostelworld.com/affiliates/)
-   - **Why**: Ideal accommodation match for budget/backpacking destinations where users want youth hostels rather than standard Booking.com hotel listings.
-
-*Conversion click logs are viewable locally via the **Stats** (📊) icon on the dashboard sidebar.*
+*Conversion analytics are plotted inside the dashboard via the **Stats** (📊) icon.*
 
 ---
 
