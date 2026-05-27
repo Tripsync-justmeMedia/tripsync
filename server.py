@@ -443,6 +443,9 @@ def planner():
             content = f.read()
             
         if destination:
+            import urllib.parse
+            quoted_dest = urllib.parse.quote(destination)
+            full_url = f"https://www.tripsync.ca/planner.html?destination={quoted_dest}&days={days}"
             title = f"{destination} {days}-Day Travel Itinerary — TripSync"
             desc = f"Explore a detailed {days}-day travel itinerary for {destination} on TripSync. View flight deals, recommended hotels, tours, transfers, and budgets."
             
@@ -469,6 +472,10 @@ def planner():
             content = content.replace(
                 '<meta property="twitter:description" content="View your detailed travel itinerary, flight suggestions, hotels, and custom transfers on TripSync — the AI Travel Planner.">',
                 f'<meta property="twitter:description" content="{desc}">'
+            )
+            content = content.replace(
+                '<meta property="og:url" content="https://tripsync.ca/planner.html">',
+                f'<meta property="og:url" content="{full_url}">'
             )
         return content
     except Exception as e:
