@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1">
+  (function () {
+      var script = document.createElement("script");
+      script.async = 1;
+      script.src = 'https://emrld.ltd/NTMzNTUw.js?t=533550';
+      document.head.appendChild(script);
+  })();
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a6b6b">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="icon.png">
+  <title>Trip Planner — TripSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3K845T64RP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3K845T64RP');
+  </script>
+  <style>
+    :root {
+      --teal: #1a6b6b; --teal-light: #2d8f8f; --ink: #1a1a1a;
+      --muted: #666; --cream: #f4f1ea; --paper: #faf9f6;
+      --rust: #c25e4d; --gold: #b8962e; --sky: #eaf4f4;
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
+    
+    header{background:white;padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cream);position:sticky;top:0;z-index:100}
+    .logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--ink);text-decoration:none}
+    .logo span{color:var(--teal)}
+    .header-btns{display:flex;gap:1rem}
+    .btn-outline{background:none;border:1.5px solid var(--teal);color:var(--teal);padding:0.6rem 1.2rem;border-radius:6px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.2s}
+    .btn-outline:hover{background:var(--sky)}
+    
+    .hero{background:linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80'); background-size:cover; background-position:center; padding:6rem 2rem; text-align:center; color:white}
+    .hero-title{font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:900;margin-bottom:0.5rem;text-shadow:0 4px 10px rgba(0,0,0,0.2)}
+    .hero-sub{font-size:1.1rem;opacity:0.9;font-weight:500;letter-spacing:1px;text-transform:uppercase}
+
+    .container{max-width:1100px;margin:3rem auto;padding:0 2rem;display:grid;grid-template-columns:1fr 320px;gap:3rem}
+    
+    .itinerary-section{display:flex;flex-direction:column;gap:2.5rem}
+    .day-card{background:white;border-radius:16px;padding:2.5rem;box-shadow:var(--shadow);border:1px solid var(--cream)}
+    .day-num{font-family:'Playfair Display',serif;font-size:1rem;color:var(--teal);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.5rem;display:block}
+    .day-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;margin-bottom:1.5rem;color:var(--ink)}
+    
+    .activity-list{list-style:none;margin-bottom:2rem}
+    .activity-item{margin-bottom:1rem;display:flex;gap:1rem;font-size:1.05rem}
+    .activity-item::before{content:'📍';font-size:1.2rem}
+    
+    .meals-box{background:var(--sky);padding:1.5rem;border-radius:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    .meal-item{font-size:0.85rem}
+    .meal-label{font-weight:700;color:var(--teal);text-transform:uppercase;font-size:0.7rem;display:block;margin-bottom:0.25rem}
+    
+    .sidebar{display:flex;flex-direction:column;gap:2rem}
+    .sidebar-widget{background:white;border-radius:16px;padding:2rem;box-shadow:var(--shadow);border:1px solid var(--cream)}
+    .widget-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:1.25rem;border-bottom:2px solid var(--sky);padding-bottom:0.5rem}
+    
+    .stat-row{display:flex;justify-content:space-between;margin-bottom:0.75rem;font-size:0.9rem}
+    .stat-label{color:var(--muted)}
+    .stat-value{font-weight:700;color:var(--rust)}
+    
+    .hotel-card{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--cream)}
+    .hotel-card:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .hotel-name{font-weight:700;font-size:0.95rem;margin-bottom:0.2rem}
+    .hotel-type{font-size:0.75rem;color:var(--teal);background:var(--sky);padding:0.2rem 0.5rem;border-radius:4px;font-weight:600}
+    .hotel-link{display:block;margin-top:0.5rem;font-size:0.8rem;color:var(--teal);text-decoration:none;font-weight:700}
+    
+    .btn-primary{background:var(--teal);color:white;border:none;padding:1rem;border-radius:8px;font-weight:700;width:100%;cursor:pointer;margin-top:1rem;display:block;text-align:center;text-decoration:none;font-size:0.9rem;transition:all 0.2s}
+    .btn-primary:hover{background:var(--teal-light);transform:translateY(-1px)}
+    
+    .btn-viator{background:#ff5900;color:white;text-decoration:none;padding:0.8rem;border-radius:8px;font-weight:700;display:block;text-align:center;margin-top:0.75rem;font-size:0.85rem}
+    
+    .loading-overlay{position:fixed;inset:0;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
+    .spinner{width:50px;height:50px;border:4px solid var(--sky);border-top:4px solid var(--teal);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    
+    .btn-mini-del{background:none;border:none;color:var(--rust);cursor:pointer;font-size:1.2rem;line-height:1;opacity:0.3;transition:all 0.2s}
+    .btn-mini-del:hover{opacity:1}
+    .input-mini{flex:1;padding:0.5rem;border:1px solid var(--cream);border-radius:6px;font-family:inherit;font-size:0.85rem}
+    .btn-mini-add{background:var(--teal);color:white;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer}
+    .btn-mini-add:hover{background:var(--teal-light)}
+    .share-btn{padding:0.6rem;border-radius:6px;border:1px solid var(--cream);background:white;font-size:0.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;transition:all 0.2s}
+    .share-btn:hover{background:var(--sky);transform:translateY(-2px)}
+    .share-btn.wa{background:#25D366;color:white;border:none}
+    .share-btn.tw{background:#000;color:white;border:none}
+    .share-btn.fb{background:#1877F2;color:white;border:none}
+    .ai-mode-select {
+      background: white;
+      border: 1px solid var(--teal);
+      color: var(--teal);
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+    @media(max-width:768px){
+      header{padding:0.75rem 1rem; flex-direction:row; justify-content: space-between; height: 60px; position: sticky; top:0;}
+      .logo{font-size: 1.2rem;}
+      .header-btns{width:auto; gap:0.4rem}
+      .btn-outline{padding:0.4rem 0.6rem; font-size:0.7rem}
+      .btn-outline span { display: none; } /* Hide text, keep icon */
+      .header-ai-select { display: none; } /* Hide from header on mobile */
+      
+      .hero{padding:2.5rem 1rem}
+      .hero-title{font-size:1.8rem}
+      .hero-sub{font-size:0.75rem}
+      
+      .container{padding:0 0.75rem; margin-top:1rem; grid-template-columns: 1fr;}
+      .day-card{padding:1.25rem 1rem; border-radius:12px}
+      .day-title{font-size:1.3rem}
+      
+      .meals-box{grid-template-columns:1fr; gap: 0.5rem; padding: 1rem;}
+      
+      .activity-item{font-size:0.9rem; gap: 0.5rem;}
+      
+      .sidebar-widget{padding:1.25rem 1rem}
+      .sidebar { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingText">Curating your experience...</div>
+</div>
+
+<header>
+  <a href="index.html" class="logo" style="text-decoration:none">Trip<span>Sync</span></a>
+  <div class="header-btns">
+    <a href="index.html" class="btn-outline" title="Back to Results">⬅️<span> RESULTS</span></a>
+    <button class="btn-outline" onclick="window.print()" title="Print Itinerary">🖨️<span class="mobile-hide"> PRINT</span></button>
+  </div>
+</header>
+
+<div id="content" style="display:none">
+  <div class="hero" id="hero">
+    <div class="hero-sub" id="heroSub">Your Destination</div>
+    <div class="hero-title" id="heroTitle">Detailed Planner</div>
+  </div>
+
+  <div class="container">
+    <main class="itinerary-section" id="itinerarySection">
+      <!-- Days populated here -->
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-widget" id="flightWidget">
+        <div class="widget-title">✈️ Book Flights</div>
+        <div id="liveFlightPrice" style="display:none; background:var(--sky); border:1px solid rgba(26,107,107,0.15); border-radius:8px; padding:0.75rem; margin-bottom:1rem; text-align:center;">
+          <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); font-weight:700">Live Flight Deal</div>
+          <div id="livePriceValue" style="font-size:1.4rem; font-weight:800; color:var(--rust); margin-top:0.25rem;"></div>
+          <div id="livePriceDetail" style="font-size:0.75rem; color:var(--muted); margin-top:0.15rem;"></div>
+        </div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Secure your travel dates before finalizing hotels.</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
+          <div style="display:flex;gap:0.5rem">
+            <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1">Google Flights</a>
+            <a id="skyscannerLink" href="#" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1">Skyscanner</a>
+          </div>
+          <a id="aviasalesLink" href="#" target="_blank" class="btn-primary" style="background:#ff6f3b;color:white;border:none;margin:0;width:100%;text-align:center">Aviasales (40% Off Flights)</a>
+        </div>
+        <div style="margin-top:1rem;display:flex;align-items:center;gap:0.5rem;font-size:0.75rem">
+          <input type="checkbox" id="flightsBooked" onchange="toggleFlights()">
+          <label for="flightsBooked">I've already booked my flights</label>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">💰 Budget Overview</div>
+        <div class="stat-row">
+          <span class="stat-label">Total Estimated</span>
+          <span class="stat-value" id="totalBudget">Calculating...</span>
+        </div>
+        <div class="stat-row" style="font-size:0.75rem;color:var(--muted)">
+          Includes flights, mid-range hotels, and daily expenses.
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">🏨 Suggested Stays</div>
+        <div id="hotelList"></div>
+        <a id="bookingLink" href="#" target="_blank" class="btn-primary">Book Hotels on Booking.com</a>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">🎭 Tours & Activities</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Skip the lines and book local experiences ahead of time.</div>
+        <a id="viatorLink" href="#" target="_blank" class="btn-viator" style="margin-bottom:0.5rem">Browse Tours on Viator</a>
+        <div style="display:flex;gap:0.5rem">
+          <a id="klookLink" href="#" target="_blank" class="btn-viator" style="background:#ff5800;margin-top:0;flex:1">Klook Activities</a>
+          <a id="tiqetsLink" href="#" target="_blank" class="btn-viator" style="background:#24b3cf;margin-top:0;flex:1">Tiqets Attractions</a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">🛡️ Travel Extras & Transfers</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem">Arrive smoothly and protect your trip with our selected partners.</div>
+        
+        <div style="font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:0.4rem">Airport Transfers</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem">
+          <a id="kiwitaxiLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#00a86b;color:white;border:none;text-decoration:none">Kiwitaxi</a>
+          <a id="welcomePickupsLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#24b3cf;color:white;border:none;text-decoration:none">Welcome Pickups</a>
+        </div>
+        
+        <div style="font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:0.4rem">Car Hire & Protection</div>
+        <a id="rentacarLink" href="#" target="_blank" class="share-btn" style="width:100%;margin-bottom:0.5rem;background:#ffd600;color:#1a1a1a;border:none;font-weight:700;text-decoration:none">GetRentacar.com (Save 10%)</a>
+        <div style="display:flex;gap:0.5rem">
+          <a id="ektaLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#32CD32;color:white;border:none;text-decoration:none;font-size:0.7rem">EKTA Insurance</a>
+          <a id="airhelpLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#e5e7eb;color:var(--ink);border:none;text-decoration:none;font-size:0.7rem">AirHelp Claim</a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">↗️ Share this Itinerary</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+          <button class="share-btn wa" style="flex:1" onclick="shareItin('wa')">WhatsApp</button>
+          <button class="share-btn tw" style="flex:1" onclick="shareItin('tw')">X / Twitter</button>
+          <button class="share-btn fb" style="flex:1" onclick="shareItin('fb')">Facebook</button>
+        </div>
+        <button class="share-btn" style="width:100%;margin-top:0.5rem" onclick="shareItin('copy')">🔗 Copy Link to Planner</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer style="background:var(--ink);color:var(--muted);text-align:center;padding:2rem;font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:4rem">
+  <div style="margin-bottom:1rem">
+    &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; 
+    <a href="privacy.html" style="color:var(--sand);text-decoration:none">Privacy Policy</a> &nbsp;·&nbsp; 
+    <a href="terms.html" style="color:var(--sand);text-decoration:none">Terms of Service</a>
+  </div>
+  <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto;line-height:1.5">
+    <strong>Affiliate Disclosure:</strong> TripSync is a free travel tool. We may earn a commission if you book through our links. This helps us keep the lights on at no extra cost to you. AI-generated content — please verify all details before booking.
+  </div>
+</footer>
+
+<script>
+  const AFFILIATE = {
+    cj_pid: '101234567', // REPLACE WITH YOUR CJ PUBLISHER ID
+    cj_sid: 'tripsync_planner',
+    booking_aid: '2884913', // Legacy fallback
+    // Travelpayouts Integration
+    tp_marker: '733310',
+    tp_trs: '533550'
+  };
+
+  async function init(){
+    const modes = {
+      cloud: { icon: '☁️', label: 'Cloud AI (Groq)' },
+      gemma: { icon: '✨', label: 'Gemma 4 Expert' },
+      local: { icon: '💻', label: 'Local AI (Ollama)' }
+    };
+    let aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    if (aiMode !== 'cloud' && aiMode !== 'gemma') {
+      aiMode = 'cloud';
+      localStorage.setItem('tripsync_ai_mode', 'cloud');
+    }
+    const sel = document.getElementById('aiModeSelect');
+    if (sel) sel.value = aiMode;
+    const params = new URLSearchParams(window.location.search);
+    const destination = params.get('destination');
+    const currency = params.get('currency') || 'USD';
+    const days = params.get('days') || 5;
+    
+    const MSGS_LOCAL = ['Waking up Local AI...', 'Loading Gemma 4...', 'Analyzing itinerary locally...', 'This takes a bit of RAM...', 'Almost there...'];
+    const MSGS_EXPERT = ['Expert Deep Reasoning...', 'Analyzing global trends...', 'Optimizing your trip...', 'Curating premium spots...', 'Finalizing results...'];
+    const MSGS_STANDARD = ['Curating your experience...', 'Finding the best spots...', 'Calculating budgets...', 'Matching your preferences...', 'Finalizing...'];
+
+    if(!destination){
+      // Try to load from localStorage if no URL params
+      const savedState = localStorage.getItem('tripsync_v2');
+      if(savedState){
+        try {
+          const state = JSON.parse(savedState);
+          const activeId = state.activeProjectId;
+          const project = state.projects[activeId];
+          if(project && project.searches && project.searches.length > 0){
+            const last = project.searches[project.searches.length-1];
+            if(last.results && last.results.length > 0){
+              const firstMatch = last.results[0];
+              // Redirect or just re-run with this data
+              window.location.search = `?destination=${encodeURIComponent(firstMatch.city)}&currency=${last.currency||'USD'}&days=5&from=${encodeURIComponent(last.departCity||'')}&ci=${last.checkIn||''}&co=${last.checkOut||''}&guests=${last.guests||'2'}`;
+              return;
+            }
+          }
+        } catch(e) { console.error("Error loading saved trip:", e); }
+      }
+      showEmptyState();
+      return;
+    }
+
+    document.getElementById('heroTitle').textContent = destination;
+    document.getElementById('heroSub').textContent = `${days} Day Detailed Experience`;
+    document.title = `${destination} Planner — TripSync`;
+
+    let iv = null;
+    try {
+      const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+      let endpoint = '/api/generate-itinerary';
+      let activeMsgs = MSGS_STANDARD;
+      if (aiMode === 'local') {
+          endpoint = '/api/generate-itinerary-local';
+          activeMsgs = MSGS_LOCAL;
+      } else if (aiMode === 'gemma') {
+          endpoint = '/api/generate-itinerary-gemma';
+          activeMsgs = MSGS_EXPERT;
+      }
+      
+      let mi = 0;
+      iv = setInterval(() => {
+          mi = (mi + 1) % activeMsgs.length;
+          document.getElementById('loadingText').textContent = activeMsgs[mi];
+      }, 2500);
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ destination, days, currency })
+      });
+      
+      let errorData = null;
+      try { errorData = await resp.json(); } catch(e) {}
+
+      if (!resp.ok) {
+        const msg = (errorData && errorData.error) ? errorData.error : 'Server error ' + resp.status;
+        throw new Error(msg);
+      }
+      
+      const data = errorData;
+      if (iv) clearInterval(iv);
+      if (data.error) throw new Error(data.error);
+      render(data, destination, currency);
+    } catch(e) {
+      // Make sure to clear interval on error too
+      if (iv) clearInterval(iv);
+      document.getElementById('loadingText').textContent = "Error loading itinerary. " + e.message;
+    }
+  }
+
+  function render(data, destination, currency){
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    // Budget
+    const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
+    let badgeHtml = '';
+    if (aiMode === 'local') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ AI Estimated</span>';
+    else if (aiMode === 'gemma') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ AI Estimated</span>';
+
+    document.getElementById('totalBudget').innerHTML = `${currency} ${data.total_budget_estimate || 'N/A'}` + badgeHtml;
+
+    // Hotels
+    const hotelList = document.getElementById('hotelList');
+    hotelList.innerHTML = (data.suggested_accommodation || []).map(h => `
+      <div class="hotel-card">
+        <div class="hotel-name">${h.name}</div>
+        <span class="hotel-type">${h.type}</span>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:0.3rem">${h.reason}</div>
+      </div>
+    `).join('');
+
+    // Itinerary
+    const section = document.getElementById('itinerarySection');
+    section.innerHTML = (data.itinerary || []).map(day => {
+      const isFirst = day.day === 1;
+      const detailsDisplay = isFirst ? 'block' : 'none';
+      const chevronText = isFirst ? '▲' : '▼';
+      return `
+      <div class="day-card" data-day="${day.day}" id="day-card-${day.day}">
+        <div onclick="toggleDayCollapse(${day.day})" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="day-num" style="margin-bottom:0.25rem;">Day ${day.day}</span>
+            <h2 class="day-title" style="margin-bottom:0; font-size:1.45rem;">${day.title}</h2>
+            <div style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem; font-weight: 500;">
+              📊 ${(day.activities || []).length} activities &middot; 🍽️ 3 meals
+            </div>
+          </div>
+          <span id="day-chevron-${day.day}" style="font-size:1.35rem; color:var(--teal); font-weight: bold; transition: transform 0.2s;">${chevronText}</span>
+        </div>
+        
+        <div id="day-details-${day.day}" class="day-details" style="display:${detailsDisplay}; margin-top:1.5rem; border-top:1px solid var(--cream); padding-top:1.5rem; animation: fadeIn 0.25s ease both;">
+          <ul class="activity-list" id="list-day-${day.day}">
+            ${(day.activities || []).map((a,idx) => `
+              <li class="activity-item">
+                <span style="flex:1">${a}</span>
+                <button class="btn-mini-del" onclick="removeActivity(${day.day}, ${idx})">×</button>
+              </li>`).join('')}
+          </ul>
+          <div style="display:flex;gap:0.5rem;margin-bottom:2rem">
+             <input type="text" id="add-day-${day.day}" class="input-mini" placeholder="Add custom activity...">
+             <button class="btn-mini-add" onclick="addActivity(${day.day})">Add</button>
+          </div>
+          <div class="meals-box">
+            <div class="meal-item">
+              <span class="meal-label">🍳 Breakfast</span>
+              ${day.meals?.breakfast || 'Local Café'}
+            </div>
+            <div class="meal-item">
+              <span class="meal-label">🥗 Lunch</span>
+              ${day.meals?.lunch || 'Street Food/Bistro'}
+            </div>
+            <div class="meal-item">
+              <span class="meal-label">🍽️ Dinner</span>
+              ${day.meals?.dinner || 'Traditional Dining'}
+            </div>
+          </div>
+        </div>
+      </div>
+      `;
+    }).join('');
+    
+    // Add Refine Box
+    const refineDiv = document.createElement('div');
+    refineDiv.className = 'day-card';
+    refineDiv.style.background = 'var(--ink)';
+    refineDiv.style.color = 'white';
+    refineDiv.innerHTML = `
+      <h3 style="font-family:'Playfair Display';margin-bottom:0.5rem">✨ Refine this Itinerary</h3>
+      <p style="font-size:0.85rem;opacity:0.8;margin-bottom:1rem">Ask AI to adjust this plan (e.g. "Add more budget-friendly options" or "Make it more adventurous")</p>
+      <div style="display:flex;gap:0.5rem">
+        <input type="text" id="refineInput" class="input-mini" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white" placeholder="Type your adjustment here...">
+        <button class="btn-primary" onclick="refineItinerary()" id="refineBtn" style="margin:0;width:auto">Refine</button>
+      </div>
+      <div style="display:flex; gap:0.4rem; margin-top:1rem; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:0.72rem; opacity:0.7; margin-right:0.25rem;">Quick Adjust:</span>
+        <button class="share-btn" onclick="applyRefineChip('make it more budget friendly')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">💰 Budget-friendly</button>
+        <button class="share-btn" onclick="applyRefineChip('faster pace with more active sightseeing')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">⚡ Faster Pace</button>
+        <button class="share-btn" onclick="applyRefineChip('slower pace with more relaxation and leisure time')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">🧘 Less Busy</button>
+        <button class="share-btn" onclick="applyRefineChip('make it family-friendly and great for kids')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">👨‍👩‍👧 Family-friendly</button>
+        <button class="share-btn" onclick="applyRefineChip('add more local culinary highlights and street food')" style="padding:0.3rem 0.55rem; font-size:0.7rem; color:var(--ink); border-radius:4px; font-weight:600;">🍜 Food Focus</button>
+      </div>
+    `;
+    section.appendChild(refineDiv);
+
+    // Links
+    const encodedDest = encodeURIComponent(destination);
+    document.getElementById('bookingLink').href = `https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${encodedDest}`)}&sid=${AFFILIATE.cj_sid}`;
+    document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
+    
+    document.getElementById('klookLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent(`https://www.klook.com/search?query=${destination}`)}`;
+    document.getElementById('tiqetsLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=2074&campaign_id=89&u=${encodeURIComponent(`https://www.tiqets.com/en/search/?q=${destination}`)}`;
+    
+    // Extras & Transfers
+    document.getElementById('kiwitaxiLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=647&campaign_id=1&u=${encodeURIComponent(`https://kiwitaxi.com`)}`;
+    document.getElementById('welcomePickupsLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=8919&campaign_id=627&u=${encodeURIComponent(`https://welcomepickups.com`)}`;
+    document.getElementById('rentacarLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent(`https://getrentacar.com/en/car-rental?location=${destination}`)}`;
+    document.getElementById('ektaLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5869&campaign_id=225&u=${encodeURIComponent(`https://ektatraveling.com`)}`;
+    document.getElementById('airhelpLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=9139&campaign_id=120&u=${encodeURIComponent(`https://airhelp.com`)}`;
+
+    // Flight link
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from') || '';
+    const ci = urlParams.get('ci') || '';
+    const co = urlParams.get('co') || '';
+    const flightClass = urlParams.get('flightClass') || 'economy';
+    if(from && ci){
+       document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
+       document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(from)}/to/${encodedDest}/`;
+       document.getElementById('aviasalesLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent(`https://www.aviasales.com/search/${encodeURIComponent(from)}/to/${encodedDest}`)}`;
+       
+       // Asynchronously trigger live flight price updates
+       fetchLiveFlightPricePlanner(from, destination, ci, co, flightClass, currency);
+    } else {
+       document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
+       document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/anywhere/to/${encodedDest}/`;
+       document.getElementById('aviasalesLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent(`https://www.aviasales.com`)}`;
+    }
+  }
+
+  function toggleFlights(){
+    const isBooked = document.getElementById('flightsBooked').checked;
+    document.getElementById('flightWidget').style.opacity = isBooked ? '0.5' : '1';
+    document.getElementById('flightWidget').style.pointerEvents = isBooked ? 'none' : 'auto';
+    if(isBooked) showToast("Awesome! Let's focus on your daily plan.");
+  }
+
+  function showToast(msg){
+    const t = document.createElement('div');
+    t.style = "position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:white;padding:0.75rem 1.5rem;border-radius:8px;z-index:1000;font-size:0.85rem;box-shadow:var(--shadow)";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3000);
+  }
+
+  function showEmptyState(){
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('hero').style.padding = '8rem 2rem';
+    document.getElementById('heroTitle').textContent = "The TripSync Planner";
+    document.getElementById('heroSub').textContent = "Step-by-Step Magic";
+    
+    document.getElementById('itinerarySection').innerHTML = `
+      <div class="day-card" style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1.5rem">📂</div>
+        <h2 class="day-title">Your Planner is Ready</h2>
+        <p style="color:var(--muted);margin-bottom:2rem">The Planner builds deep, day-by-day itineraries with meal and hotel suggestions. To get started:</p>
+        <div style="display:flex;flex-direction:column;gap:1rem;max-width:400px;margin:0 auto">
+          <a href="index.html" class="btn-primary" style="text-decoration:none">1. Search for a destination</a>
+          <div style="font-size:0.9rem;color:var(--teal);font-weight:700">2. Click "View Detailed Planner" on any result</div>
+          <div style="font-size:0.85rem;color:var(--muted)">3. Edit, print, or share your perfect trip.</div>
+        </div>
+      </div>
+    `;
+    document.querySelector('.sidebar').style.display = 'none';
+    document.querySelector('.container').style.gridTemplateColumns = '1fr';
+  }
+
+  function removeActivity(day, idx){
+    const list = document.getElementById(`list-day-${day}`);
+    const items = list.querySelectorAll('.activity-item');
+    if(items[idx]) items[idx].remove();
+  }
+
+  function addActivity(day){
+    const input = document.getElementById(`add-day-${day}`);
+    const val = input.value.trim();
+    if(!val) return;
+    const list = document.getElementById(`list-day-${day}`);
+    const li = document.createElement('li');
+    li.className = 'activity-item';
+    li.innerHTML = `<span style="flex:1">${val}</span><button class="btn-mini-del" onclick="this.parentElement.remove()">×</button>`;
+    list.appendChild(li);
+    input.value = '';
+  }
+
+  async function refineItinerary(){
+    const prompt = document.getElementById('refineInput').value.trim();
+    if(!prompt) return;
+    const btn = document.getElementById('refineBtn');
+    btn.disabled = true; btn.textContent = 'Refining...';
+    
+    const params = new URLSearchParams(window.location.search);
+    const destination = params.get('destination');
+    const currency = params.get('currency') || 'USD';
+    const days = params.get('days') || 5;
+
+    try {
+      const resp = await fetch('/api/refine-itinerary', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ destination, days, currency, instruction: prompt })
+      });
+      const data = await resp.json();
+      render(data, destination, currency);
+    } catch(e) {
+      alert("AI was unable to refine this time. Please try again.");
+    } finally {
+      btn.disabled = false; btn.textContent = 'Refine';
+    }
+  }
+
+  function shareItin(type){
+    const url = window.location.href;
+    const dest = new URLSearchParams(window.location.search).get('destination');
+    const text = `Check out my detailed ${dest} itinerary on TripSync! ✈️🌍`;
+    
+    if(type==='wa') window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`);
+    else if(type==='tw') window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
+    else if(type==='fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+    else if(type==='copy') {
+      navigator.clipboard.writeText(url);
+      showToast("Link copied to clipboard!");
+    }
+  }
+
+  function changeAIMode(){
+    const labels = {
+      cloud: '⚡ Switched to Fast Mode (instant ideas)',
+      gemma: '✨ Switched to Deep Mode (curated reasoning)'
+    };
+    const next = document.getElementById('aiModeSelect').value;
+    localStorage.setItem('tripsync_ai_mode', next);
+    showToast(labels[next]);
+  }
+
+  function toggleDayCollapse(dayNum) {
+    const details = document.getElementById('day-details-' + dayNum);
+    const chevron = document.getElementById('day-chevron-' + dayNum);
+    if (!details) return;
+    const isHidden = details.style.display === 'none';
+    if (isHidden) {
+      details.style.display = 'block';
+      if (chevron) {
+        chevron.textContent = '▲';
+      }
+    } else {
+      details.style.display = 'none';
+      if (chevron) {
+        chevron.textContent = '▼';
+      }
+    }
+  }
+
+  function applyRefineChip(text) {
+    const input = document.getElementById('refineInput');
+    if (!input) return;
+    input.value = text;
+    refineItinerary();
+  }
+
+  async function fetchLiveFlightPricePlanner(origin, destination, depDate, retDate, flightClass, currency) {
+    try {
+      const resp = await fetch('/api/flight-prices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origin: origin,
+          destination: destination,
+          departureDate: depDate,
+          returnDate: retDate,
+          flightClass: flightClass,
+          currency: currency
+        })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.price) {
+          const symbol = getCurrencySymbol(currency);
+          document.getElementById('liveFlightPrice').style.display = 'block';
+          document.getElementById('livePriceValue').textContent = `${symbol}${data.price}`;
+          
+          let airlineText = data.airline_name ? `on ${data.airline_name}` : '';
+          document.getElementById('livePriceDetail').textContent = `Cheapest live fare ${airlineText}`;
+          
+          const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination)}%20from%20${encodeURIComponent(origin)}%20on%20${depDate}${retDate ? '%20through%20' + retDate : ''}`;
+          document.getElementById('googleFlightsLink').href = googleFlightsUrl;
+          document.getElementById('googleFlightsLink').textContent = `Book Live Deal (${symbol}${data.price})`;
+        }
+      }
+    } catch(e) {
+      console.warn("Unable to fetch live prices in planner:", e);
+    }
+  }
+
+  function getCurrencySymbol(currency) {
+    const symbols = {
+      USD: '$', EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', SGD: 'S$', AED: 'د.إ', JPY: '¥', INR: '₹', MXN: '$', BRL: 'R$', ZAR: 'R'
+    };
+    return symbols[currency] || currency;
+  }
+
+  init();
+</script>
+
+</body>
+</html>
