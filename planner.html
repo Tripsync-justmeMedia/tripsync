@@ -172,9 +172,12 @@
           <div id="livePriceDetail" style="font-size:0.75rem; color:var(--muted); margin-top:0.15rem;"></div>
         </div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Secure your travel dates before finalizing hotels.</div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
-          <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1">Google Flights</a>
-          <a id="skyscannerLink" href="#" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1">Skyscanner</a>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
+          <div style="display:flex;gap:0.5rem">
+            <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1">Google Flights</a>
+            <a id="skyscannerLink" href="#" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1">Skyscanner</a>
+          </div>
+          <a id="aviasalesLink" href="#" target="_blank" class="btn-primary" style="background:#ff6f3b;color:white;border:none;margin:0;width:100%;text-align:center">Aviasales (40% Off Flights)</a>
         </div>
         <div style="margin-top:1rem;display:flex;align-items:center;gap:0.5rem;font-size:0.75rem">
           <input type="checkbox" id="flightsBooked" onchange="toggleFlights()">
@@ -202,7 +205,29 @@
       <div class="sidebar-widget">
         <div class="widget-title">🎭 Tours & Activities</div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Skip the lines and book local experiences ahead of time.</div>
-        <a id="viatorLink" href="#" target="_blank" class="btn-viator">Browse Tours on Viator</a>
+        <a id="viatorLink" href="#" target="_blank" class="btn-viator" style="margin-bottom:0.5rem">Browse Tours on Viator</a>
+        <div style="display:flex;gap:0.5rem">
+          <a id="klookLink" href="#" target="_blank" class="btn-viator" style="background:#ff5800;margin-top:0;flex:1">Klook Activities</a>
+          <a id="tiqetsLink" href="#" target="_blank" class="btn-viator" style="background:#24b3cf;margin-top:0;flex:1">Tiqets Attractions</a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="widget-title">🛡️ Travel Extras & Transfers</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem">Arrive smoothly and protect your trip with our selected partners.</div>
+        
+        <div style="font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:0.4rem">Airport Transfers</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem">
+          <a id="kiwitaxiLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#00a86b;color:white;border:none;text-decoration:none">Kiwitaxi</a>
+          <a id="welcomePickupsLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#24b3cf;color:white;border:none;text-decoration:none">Welcome Pickups</a>
+        </div>
+        
+        <div style="font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:0.4rem">Car Hire & Protection</div>
+        <a id="rentacarLink" href="#" target="_blank" class="share-btn" style="width:100%;margin-bottom:0.5rem;background:#ffd600;color:#1a1a1a;border:none;font-weight:700;text-decoration:none">GetRentacar.com (Save 10%)</a>
+        <div style="display:flex;gap:0.5rem">
+          <a id="ektaLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#32CD32;color:white;border:none;text-decoration:none;font-size:0.7rem">EKTA Insurance</a>
+          <a id="airhelpLink" href="#" target="_blank" class="share-btn" style="flex:1;background:#e5e7eb;color:var(--ink);border:none;text-decoration:none;font-size:0.7rem">AirHelp Claim</a>
+        </div>
       </div>
 
       <div class="sidebar-widget">
@@ -233,7 +258,10 @@
   const AFFILIATE = {
     cj_pid: '101234567', // REPLACE WITH YOUR CJ PUBLISHER ID
     cj_sid: 'tripsync_planner',
-    booking_aid: '2884913' // Legacy fallback
+    booking_aid: '2884913', // Legacy fallback
+    // Travelpayouts Integration
+    tp_marker: '733310',
+    tp_trs: '533550'
   };
 
   async function init(){
@@ -429,20 +457,33 @@
     document.getElementById('bookingLink').href = `https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${encodedDest}`)}&sid=${AFFILIATE.cj_sid}`;
     document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
     
+    document.getElementById('klookLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent(`https://www.klook.com/search?query=${destination}`)}`;
+    document.getElementById('tiqetsLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=2074&campaign_id=89&u=${encodeURIComponent(`https://www.tiqets.com/en/search/?q=${destination}`)}`;
+    
+    // Extras & Transfers
+    document.getElementById('kiwitaxiLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=647&campaign_id=1&u=${encodeURIComponent(`https://kiwitaxi.com`)}`;
+    document.getElementById('welcomePickupsLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=8919&campaign_id=627&u=${encodeURIComponent(`https://welcomepickups.com`)}`;
+    document.getElementById('rentacarLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent(`https://getrentacar.com/en/car-rental?location=${destination}`)}`;
+    document.getElementById('ektaLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5869&campaign_id=225&u=${encodeURIComponent(`https://ektatraveling.com`)}`;
+    document.getElementById('airhelpLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=9139&campaign_id=120&u=${encodeURIComponent(`https://airhelp.com`)}`;
+
     // Flight link
     const urlParams = new URLSearchParams(window.location.search);
     const from = urlParams.get('from') || '';
     const ci = urlParams.get('ci') || '';
     const co = urlParams.get('co') || '';
+    const flightClass = urlParams.get('flightClass') || 'economy';
     if(from && ci){
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(from)}/to/${encodedDest}/`;
+       document.getElementById('aviasalesLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent(`https://www.aviasales.com/search/${encodeURIComponent(from)}/to/${encodedDest}`)}`;
        
        // Asynchronously trigger live flight price updates
        fetchLiveFlightPricePlanner(from, destination, ci, co, flightClass, currency);
     } else {
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/anywhere/to/${encodedDest}/`;
+       document.getElementById('aviasalesLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent(`https://www.aviasales.com`)}`;
     }
   }
 

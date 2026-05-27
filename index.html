@@ -215,6 +215,10 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .btn-booking{background:#003580;color:white;border-color:#003580}.btn-booking:hover{background:#002d6b}
 .btn-agoda{background:#e3000b;color:white;border-color:#e3000b}.btn-agoda:hover{background:#c20009}
 .btn-expedia{background:#f5a623;color:white;border-color:#f5a623}.btn-expedia:hover{background:#e09010}
+.btn-klook{background:#ff5800;color:white;border-color:#ff5800}.btn-klook:hover{background:#d44900}
+.btn-tiqets{background:#24b3cf;color:white;border-color:#24b3cf}.btn-tiqets:hover{background:#1e97ae}
+.btn-rentacar{background:#ffd600;color:#1a1a1a;border-color:#ffd600}.btn-rentacar:hover{background:#e0bd00}
+.btn-aviasales{background:#ff6f3b;color:white;border-color:#ff6f3b}.btn-aviasales:hover{background:#e05b29}
 .btn-google-flights{background:white;color:#1a73e8;border:1.5px solid #1a73e8;text-align:center;text-decoration:none;padding:0.6rem 0.5rem;border-radius:6px;font-size:0.8rem;font-weight:700;transition:all 0.2s;font-family:'DM Sans',sans-serif;display:block;margin-bottom:0.5rem;box-shadow:0 2px 6px rgba(26,115,232,0.05)}
 .btn-google-flights:hover{background:#e8f0fe;border-color:#174ea6;color:#174ea6}
 .card-share-row{display:flex;gap:0.4rem;flex-wrap:wrap;padding-top:0.75rem;border-top:1px solid var(--cream)}
@@ -700,7 +704,10 @@ const AFFILIATE={
   cj_sid: 'tripsync_web',
   booking_aid: '2884913', // Legacy fallback
   agoda_cid: 'YOUR_AGODA_CID',
-  expedia_affcid: 'YOUR_EXPEDIA_AFFCID'
+  expedia_affcid: 'YOUR_EXPEDIA_AFFCID',
+  // Travelpayouts Integration
+  tp_marker: '733310',
+  tp_trs: '533550'
 };
 const MSGS_STANDARD=['Scanning 190+ countries...','Checking flight routes...','Matching your vibe...','Comparing hotel rates...','Finalizing your trip...'];
 const MSGS_EXPERT=['Deep Expert Reasoning...','Analyzing Global Data...','Curating Expert Match...','Finalizing Premium Results...'];
@@ -1216,17 +1223,26 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
           ${hl?`<div class="highlights-row">${hl}</div>`:''}
           ${flightBlock}
         </div>
-        <div class="card-footer" style="padding-top:0.5rem">
           <div class="booking-links" style="margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
-            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
-              <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1;text-align:center;text-decoration:none;font-size:0.8rem;font-weight:700;padding:0.65rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('google_flights','${cityRaw}')">Google Flights</a>
-              <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1;text-align:center;text-decoration:none;font-size:0.8rem;font-weight:700;padding:0.65rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
+            <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;flex-wrap:wrap">
+              <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('google_flights','${cityRaw}')">Google Flights</a>
+              <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com')}" target="_blank" class="btn-primary btn-aviasales" style="border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('aviasales','${cityRaw}')">Aviasales</a>
             </div>
             <div class="booking-label">Book Hotels</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
               <a href="https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}`)}&sid=${AFFILIATE.cj_sid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
               <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
               <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
+            </div>
+            <div class="booking-label">Book Tours & Activities</div>
+            <div class="booking-links" style="margin-bottom:0.5rem">
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent('https://www.klook.com/search?query=' + cityRaw)}" target="_blank" class="booking-btn btn-klook" onclick="track('klook','${cityRaw}')">Klook</a>
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=2074&campaign_id=89&u=${encodeURIComponent('https://www.tiqets.com/en/search/?q=' + cityRaw)}" target="_blank" class="booking-btn btn-tiqets" onclick="track('tiqets','${cityRaw}')">Tiqets</a>
+            </div>
+            <div class="booking-label">Car Rental</div>
+            <div class="booking-links" style="margin-bottom:0.5rem">
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent('https://getrentacar.com/en/car-rental?location=' + cityRaw)}" target="_blank" class="booking-btn btn-rentacar" onclick="track('getrentacar','${cityRaw}')">GetRentacar.com</a>
             </div>
             <div class="card-share-row" style="margin-top:0.5rem">
               <button class="share-btn" onclick="saveToMyTrips('${cityRaw}', ${i})">⭐ Save Trip</button>
