@@ -18,6 +18,7 @@
   gtag('config', 'G-3K845T64RP');
 </script>
 <link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="/icon.png">
@@ -1168,8 +1169,8 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     <div class="destinations-grid">${cards}</div>
     ${badgeHtml}`;
 
-  // Progressive real-time flight checks
-  const flightClass = document.getElementById('flightClass').value || 'economy';
+  // Progressive real-time flight checks (flightClass already declared above)
+  flightClass = document.getElementById('flightClass').value || 'economy';
   destinations.forEach((d, i) => {
     const isMissingOrigin = d.flight_estimate && d.flight_estimate.includes("Set origin");
     if (!isMissingOrigin && departCity && d.city && checkIn) {
