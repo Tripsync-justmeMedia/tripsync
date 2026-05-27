@@ -127,11 +127,36 @@ textarea#tripInput::placeholder{color:var(--muted)}
 }
 .chip{background:white;border:1.5px solid var(--sand);padding:0.4rem 0.9rem;border-radius:20px;font-size:0.8rem;color:var(--teal);cursor:pointer;font-weight:500;transition:all 0.2s}
 .chip:hover{border-color:var(--teal);background:var(--sky);transform:translateY(-1px)}
-.loading-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:1.5rem}
-.spinner{width:60px;height:60px;border:3px solid var(--sand);border-top-color:var(--rust);border-radius:50%;animation:spin 0.9s linear infinite}
+.loading-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:420px;gap:0;padding:2rem}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--muted);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+/* Premium Loading Screen */
+.loading-hero{text-align:center;margin-bottom:2rem}
+.loading-globe{font-size:3.5rem;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.loading-headline{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:800;color:var(--ink);margin:0.75rem 0 0.35rem}
+.loading-subline{font-size:0.88rem;color:var(--muted);font-weight:500}
+
+.loading-progress-wrap{width:100%;max-width:380px;margin:0 auto 1.75rem}
+.loading-progress-bar{height:3px;background:var(--sand);border-radius:3px;overflow:hidden;margin-bottom:0.6rem}
+.loading-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--rust-light));border-radius:3px;width:0%;animation:progressFill var(--progress-duration,28s) ease-in-out forwards}
+@keyframes progressFill{0%{width:0%}85%{width:88%}100%{width:92%}}
+.loading-status{font-size:0.75rem;color:var(--teal);font-weight:700;text-align:center;letter-spacing:0.5px;animation:pulse 2s ease-in-out infinite}
+
+.loading-destinations{display:flex;gap:0.75rem;margin-bottom:2rem;max-width:520px;width:100%}
+.loading-dest-card{flex:1;background:white;border-radius:10px;padding:1rem;box-shadow:var(--shadow);border:1px solid var(--cream);animation:shimmer 1.8s ease-in-out infinite;min-width:0}
+.loading-dest-card:nth-child(2){animation-delay:0.3s}
+.loading-dest-card:nth-child(3){animation-delay:0.6s}
+@keyframes shimmer{0%,100%{opacity:0.5;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+.loading-card-bar{height:10px;background:linear-gradient(90deg,var(--cream),var(--sand),var(--cream));background-size:200% 100%;border-radius:6px;margin-bottom:0.5rem;animation:barShimmer 1.5s ease infinite}
+.loading-card-bar.short{width:60%;height:8px}
+.loading-card-bar.xs{width:40%;height:6px}
+@keyframes barShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.loading-tip{background:var(--sky);border:1px solid rgba(26,107,107,0.15);border-radius:10px;padding:0.9rem 1.25rem;max-width:380px;width:100%;display:flex;gap:0.75rem;align-items:flex-start}
+.loading-tip-icon{font-size:1.2rem;flex-shrink:0;margin-top:0.05rem}
+.loading-tip-text{font-size:0.8rem;color:var(--teal);line-height:1.5;font-weight:500}
 .results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem}
 .results-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700}
 .results-query{font-size:0.8rem;color:var(--muted);font-style:italic}
@@ -544,9 +569,6 @@ footer a:hover{color:var(--rust-light)}
           <button class="example-chip" onclick="setExample('Backpacking Thailand for 1 month, budget friendly')">Thailand Backpacking</button>
         </div>
         <button class="btn-search" id="searchBtn" onclick="searchTrip()">Find Destinations</button>
-        <div style="font-size:0.7rem; color:var(--muted); margin-top:0.75rem; text-align:center; width:100%; font-weight:500;">
-          * ⚡ Fast = instant ideas &middot; ✨ Deep = better for complex trips (takes 30 seconds) *
-        </div>
       </div>
     </div>
 
@@ -576,8 +598,41 @@ footer a:hover{color:var(--rust-light)}
         </div>
       </div>
       <div class="loading-state" id="loadingState">
-        <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">Scanning the globe for you...</div>
+        <div class="loading-hero">
+          <span class="loading-globe">🌍</span>
+          <div class="loading-headline">Searching the world for you</div>
+          <div class="loading-subline" id="loadingText">Scanning 190+ countries...</div>
+        </div>
+
+        <div class="loading-progress-wrap">
+          <div class="loading-progress-bar">
+            <div class="loading-progress-fill" id="loadingProgressFill"></div>
+          </div>
+          <div class="loading-status" id="loadingStatus">Matching your vibe...</div>
+        </div>
+
+        <div class="loading-destinations">
+          <div class="loading-dest-card">
+            <div class="loading-card-bar"></div>
+            <div class="loading-card-bar short"></div>
+            <div class="loading-card-bar xs"></div>
+          </div>
+          <div class="loading-dest-card">
+            <div class="loading-card-bar"></div>
+            <div class="loading-card-bar short"></div>
+            <div class="loading-card-bar xs"></div>
+          </div>
+          <div class="loading-dest-card">
+            <div class="loading-card-bar"></div>
+            <div class="loading-card-bar short"></div>
+            <div class="loading-card-bar xs"></div>
+          </div>
+        </div>
+
+        <div class="loading-tip">
+          <div class="loading-tip-icon">💡</div>
+          <div class="loading-tip-text" id="loadingTipText">Book flights at least 6–8 weeks in advance for the best economy fares.</div>
+        </div>
       </div>
       <div class="error-state" id="errorState"></div>
       <div id="destinationsOutput"></div>
@@ -956,13 +1011,6 @@ async function searchTrip(){
   if(departCity)localStorage.setItem('tripsync_depart_city',departCity);
   localStorage.setItem('tripsync_currency',currency);
   showLoading();
-  let mi=0;
-  const currentMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
-  let activeMsgs = MSGS_STANDARD;
-  if (currentMode === 'gemma') activeMsgs = MSGS_EXPERT;
-  else if (currentMode === 'local') activeMsgs = MSGS_LOCAL;
-  
-  const iv=setInterval(()=>{mi=(mi+1)%activeMsgs.length;const el=document.getElementById('loadingText');if(el)el.textContent=activeMsgs[mi];},2200);
   try{
     let endpoint=tripType==='multicity'?'/api/multi-stop':'/api/tripsync';
     const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
@@ -972,7 +1020,7 @@ async function searchTrip(){
     }
     const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType};
     const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    clearInterval(iv);
+    stopLoadingAnimations();
     
     let errorData = null;
     try { errorData = await resp.json(); } catch(e) {}
@@ -1005,8 +1053,19 @@ async function searchTrip(){
     }
     save();renderSidebar();
     renderResults(data.destinations,query,checkIn,checkOut,guests,departCity,currency);
-  }catch(err){clearInterval(iv);showError(err.message);}
+  }catch(err){stopLoadingAnimations();showError(err.message);}
 }
+
+const TRAVEL_TIPS = [
+  'Book flights at least 6–8 weeks in advance for the best economy fares.',
+  'Traveling mid-week (Tuesday or Wednesday) is often 15–20% cheaper.',
+  'A VPN set to your destination can unlock lower hotel rates on local sites.',
+  'Most travel insurance is cheapest when purchased within 24 hours of booking.',
+  'Shoulder season (just before or after peak) offers the best value + fewer crowds.',
+  'Airport taxes and fees can add 30–40% to advertised flight prices — always check totals.',
+  'Google Flights\' price calendar view can save hundreds on flexible trips.',
+  'A local SIM card at your destination is almost always cheaper than roaming.',
+];
 
 function showLoading(){
   const currentMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
@@ -1018,8 +1077,36 @@ function showLoading(){
   document.getElementById('loadingState').style.display='flex';
   document.getElementById('errorState').style.display='none';
   document.getElementById('destinationsOutput').innerHTML='';
-  document.getElementById('loadingText').textContent=activeMsgs[0];
   document.getElementById('searchBtn').disabled=true;
+
+  // Set progress bar duration based on mode
+  const duration = (currentMode === 'gemma' || currentMode === 'local') ? '28s' : '3s';
+  const fill = document.getElementById('loadingProgressFill');
+  if(fill){ fill.style.setProperty('--progress-duration', duration); fill.style.animation='none'; void fill.offsetWidth; fill.style.animation=''; }
+
+  // Rotate subline messages
+  let mi = 0;
+  document.getElementById('loadingText').textContent = activeMsgs[mi];
+  window._loadingMsgIv = setInterval(()=>{
+    mi = (mi+1) % activeMsgs.length;
+    const el = document.getElementById('loadingText');
+    if(el) el.textContent = activeMsgs[mi];
+  }, 2200);
+
+  // Rotate travel tips
+  let ti = Math.floor(Math.random() * TRAVEL_TIPS.length);
+  const tipEl = document.getElementById('loadingTipText');
+  if(tipEl) tipEl.textContent = TRAVEL_TIPS[ti];
+  window._loadingTipIv = setInterval(()=>{
+    ti = (ti+1) % TRAVEL_TIPS.length;
+    const el = document.getElementById('loadingTipText');
+    if(el){ el.style.opacity='0'; setTimeout(()=>{ el.textContent=TRAVEL_TIPS[ti]; el.style.opacity='1'; },300); }
+  }, 5000);
+}
+
+function stopLoadingAnimations(){
+  if(window._loadingMsgIv){ clearInterval(window._loadingMsgIv); window._loadingMsgIv=null; }
+  if(window._loadingTipIv){ clearInterval(window._loadingTipIv); window._loadingTipIv=null; }
 }
 function showWelcome(){
   document.getElementById('welcomeState').style.display='flex';

@@ -328,8 +328,8 @@
     // Budget
     const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
     let badgeHtml = '';
-    if (aiMode === 'local') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">🔒 Curated locally by Gemma 4</span>';
-    else if (aiMode === 'gemma') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ Powered by Gemma 4 API</span>';
+    if (aiMode === 'local') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ AI Estimated</span>';
+    else if (aiMode === 'gemma') badgeHtml = ' <span style="font-size:0.6rem;background:var(--teal);color:white;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:8px">✨ AI Estimated</span>';
 
     document.getElementById('totalBudget').innerHTML = `${currency} ${data.total_budget_estimate || 'N/A'}` + badgeHtml;
 
