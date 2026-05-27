@@ -237,7 +237,7 @@ footer a:hover{color:var(--rust-light)}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:0.7rem 1.4rem;border-radius:6px;font-size:0.83rem;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--sand);border-radius:3px}
-.btn-sidebar-toggle{display:none;background:none;border:none;color:var(--paper);font-size:1.3rem;cursor:pointer;padding:0.2rem}
+.btn-sidebar-toggle{display:block;background:none;border:none;color:var(--paper);font-size:1.3rem;cursor:pointer;padding:0.2rem}
 @media(max-width:768px){
   header{padding:0 0.75rem; height: 56px;}
   .header-actions{gap:0.25rem}
@@ -246,47 +246,11 @@ footer a:hover{color:var(--rust-light)}
   .ai-mode-select { display: none; } /* Hide from header on mobile */
   .header-stats-btn { display: none; } /* Hide from header on mobile */
   
-  .sidebar {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: -320px;
-      width: 320px;
-      background: var(--ink);
-      color: white;
-      overflow-y: auto;
-      z-index: 2000;
-      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-    }
-    .sidebar.open { left: 0; }
-    .sidebar-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1500;
-      display: none;
-      backdrop-filter: blur(4px);
-    }
-    .sidebar-overlay.open { display: block; }
-
-    .main {
-      flex: 1;
-      padding: 2rem;
-      transition: margin-left 0.3s ease;
-    }
-
-    @media(min-width: 1024px) {
-      .sidebar {
-        position: fixed; /* Keep it fixed but toggleable */
-        box-shadow: none;
-        border-right: 1px solid rgba(255,255,255,0.1);
-      }
-      .sidebar-overlay { display: none !important; } /* No overlay on desktop */
-      .app-body.sidebar-open .main { margin-left: 320px; }
-      .app-body.sidebar-open .sidebar { left: 0; }
-      .sidebar { left: -320px; }
-    }
+  .main {
+    flex: 1;
+    padding: 2rem;
+    transition: margin-left 0.3s ease;
+  }
   @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
   
   .sidebar-mobile-only { display: block !important; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -299,8 +263,57 @@ footer a:hover{color:var(--rust-light)}
   .results-area{padding:0.75rem}
   .destinations-grid{grid-template-columns:1fr; gap: 1rem;}
   .install-banner{padding:0.6rem 0.75rem}
-  .btn-sidebar-toggle{display:block}
-  
+}
+
+/* Tablet & Mobile Sidebar Overlay System (Under 1024px) */
+@media(max-width: 1023px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -320px;
+    width: 320px;
+    background: var(--ink);
+    color: white;
+    overflow-y: auto;
+    z-index: 2000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1500;
+    display: none;
+    backdrop-filter: blur(4px);
+  }
+  .sidebar-overlay.open { display: block; }
+}
+
+/* Desktop Sidebar Push System (1024px and up) */
+@media(min-width: 1024px) {
+  .sidebar {
+    position: fixed; /* Keep it fixed but toggleable */
+    top: 0;
+    bottom: 0;
+    left: -320px;
+    width: 320px;
+    background: var(--ink);
+    color: white;
+    overflow-y: auto;
+    z-index: 2000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar-overlay { display: none !important; } /* No overlay on desktop */
+  .app-body.sidebar-open .main { margin-left: 320px; }
+  .app-body.sidebar-open .sidebar { left: 0; }
+}
+
+@media(max-width:768px) {
   .prefs-row{flex-direction:column;align-items:stretch;gap:0.5rem}
   .param-input, .param-select, .depart-input{width:100% !important;min-height:40px; font-size: 0.85rem;}
   .depart-label{margin-bottom:0.1rem;display:block; font-size: 0.65rem;}
@@ -1058,12 +1071,13 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     const flightBlock=d.flight_estimate?`<div class="flight-block" style="${isMissingOrigin ? 'border-style:dashed; background:rgba(255,255,255,0.5)' : ''}">
       <div class="flight-icon">✈️</div>
       <div class="flight-info">
-        <div class="flight-price" style="${isMissingOrigin ? 'font-size:0.85rem; color:var(--muted)' : ''}">${d.flight_estimate}</div>
-        <div class="flight-detail">${d.flight_duration && !isMissingOrigin ? '~'+d.flight_duration+' travel time ' : ''}${fromLabel}</div>
+        <div class="flight-price" id="flight-price-${i}" style="${isMissingOrigin ? 'font-size:0.85rem; color:var(--muted)' : ''}">${d.flight_estimate}</div>
+        <div class="flight-detail" id="flight-detail-${i}">${d.flight_duration && !isMissingOrigin ? '~'+d.flight_duration+' travel time ' : ''}${fromLabel}</div>
       </div>
       <a href="${isMissingOrigin ? '#tripInput' : googleFlightsUrl}" 
          target="${isMissingOrigin ? '_self' : '_blank'}" 
          class="flight-link" 
+         id="flight-link-${i}"
          style="${isMissingOrigin ? 'background:var(--muted)' : ''}"
          onclick="${isMissingOrigin ? "window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('departCity').focus(), 500); return false;" : `track('google_flights','${cityRaw}')`}">
          ${isMissingOrigin ? 'Add Origin' : 'Check Live Price'}
@@ -1153,6 +1167,64 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     </div>
     <div class="destinations-grid">${cards}</div>
     ${badgeHtml}`;
+
+  // Progressive real-time flight checks
+  const flightClass = document.getElementById('flightClass').value || 'economy';
+  destinations.forEach((d, i) => {
+    const isMissingOrigin = d.flight_estimate && d.flight_estimate.includes("Set origin");
+    if (!isMissingOrigin && departCity && d.city && checkIn) {
+      fetchFlightPriceRealTime(i, departCity, d.city, checkIn, checkOut, flightClass, currency);
+    }
+  });
+}
+
+async function fetchFlightPriceRealTime(idx, origin, destination, depDate, retDate, flightClass, currency) {
+  if (!origin || !destination || !depDate) return;
+  
+  const elPrice = document.getElementById(`flight-price-${idx}`);
+  const elDetail = document.getElementById(`flight-detail-${idx}`);
+  const elLink = document.getElementById(`flight-link-${idx}`);
+  
+  try {
+    const resp = await fetch('/api/flight-prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origin: origin,
+        destination: destination,
+        departureDate: depDate,
+        returnDate: retDate,
+        flightClass: flightClass,
+        currency: currency
+      })
+    });
+    
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data && data.price) {
+        const symbol = getCurrencySymbol(currency);
+        elPrice.innerHTML = `<span style="color:var(--rust); font-weight:800;">Live: ${symbol}${data.price}</span>`;
+        
+        let airlineText = data.airline_name ? `on ${data.airline_name}` : '';
+        elDetail.textContent = `Lowest live fare ${airlineText}`;
+        
+        elLink.href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination)}%20from%20${encodeURIComponent(origin)}%20on%20${depDate}${retDate ? '%20through%20' + retDate : ''}`;
+        elLink.textContent = "Book Live Deal";
+        elLink.style.background = "var(--rust)";
+        elLink.style.borderColor = "var(--rust)";
+        elLink.style.color = "white";
+      }
+    }
+  } catch (e) {
+    console.warn("Unable to fetch real-time price, keeping AI estimate:", e);
+  }
+}
+
+function getCurrencySymbol(currency) {
+  const symbols = {
+    USD: '$', EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', SGD: 'S$', AED: 'د.إ', JPY: '¥', INR: '₹', MXN: '$', BRL: 'R$', ZAR: 'R'
+  };
+  return symbols[currency] || currency;
 }
 
 function toggleCardDetails(idx, btn) {

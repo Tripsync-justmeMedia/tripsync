@@ -226,15 +226,16 @@ We have a dedicated tracker for all monetization partners:
 
 ## What's Next 🔜
 
-**Immediate (Public Beta Phase):**
-- [ ] **June 4, 2026: Product Hunt Launch** (Tracked in [ROADMAP.md](file:///Users/williamcommu/tripsync/docs/ROADMAP.md))
+**Immediate (V2 Launch Phase):**
+- [x] **Product Hunt Launch** (Completed May 20, 2026!)
+- [ ] Integrate **Amadeus API** for real-time flight prices (V2 Phase 1).
+- [ ] Sign up for **WayAway** (Travelpayouts) as a high-approval flight alternative.
+- [ ] Update placeholder IDs for Agoda/Expedia once approved on Awin.
+- [ ] Buy **gettripsync.com** domain and connect to Render.
+
+**Short term / Growth:**
 - [ ] Share with "Friends & Family" and gather first usage stats.
 - [ ] Monitor the "Stats" modal to see which travel partners get the most clicks.
-- [ ] Sign up for **WayAway** (Travelpayouts) as a high-approval flight alternative.
-
-**Short term:**
-- [ ] Buy **gettripsync.com** domain and connect to Render.
-- [ ] Update placeholder IDs for Agoda/Expedia once approved.
 - [ ] First TikTok/Reel screen recording showing the "Interactive Planner" magic.
 - [ ] **SEO Landing Page**: Create city-specific landing pages for organic traffic.
 - [ ] **Email Capture**: "Save this plan to email" to build a mailing list.

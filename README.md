@@ -6,11 +6,13 @@ TripSync is a high-performance, AI-driven travel planning application designed t
 
 ## 🌟 Key Features
 
+*   **Smart Deal Optimizer**: Built-in intelligence that automatically analyzes booking timing, currency arbitrage (e.g., BRL/INR savings), and travel day patterns to find the best rates.
+*   **Precision Flight Engine**: Eliminates AI "hallucinations" by requiring origin data for accurate intercontinental flight pricing and durations.
 *   **3-Tier AI Orchestration**: Choose between high-speed Cloud AI, deep Reasoning (Gemma 4 Expert), or complete Privacy (Local AI).
-*   **Interactive Planner**: Don't just get a list—edit your activities, refine with AI instructions, and build the perfect trip day-by-day.
-*   **Real-Time Price Matching**: Integrated flight and hotel booking links with live availability from partners like Booking.com and Google Flights.
-*   **Viral Sharing**: One-click sharing to WhatsApp, X (Twitter), and Facebook.
-*   **PWA Ready**: Install TripSync as a native app on iOS and Android for offline access and better performance.
+*   **Modern PWA Experience**: Native-feel mobile bottom navigation, frosted-glass aesthetics, and "One-Touch Resume" to pick up where you left off.
+*   **Minimalist UI**: Deeply cleaned search interface with collapsible preference panels, designed for speed on mobile devices.
+*   **Interactive Planner**: Build detailed itineraries day-by-day with AI refinement.
+*   **Real-Time Price Matching**: Integrated booking links with live availability from partners like Booking.com, Google Flights, and Skyscanner.
 
 ## 🧠 AI Architecture (The "3 Brains")
 

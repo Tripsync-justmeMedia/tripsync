@@ -158,6 +158,11 @@
     <aside class="sidebar">
       <div class="sidebar-widget" id="flightWidget">
         <div class="widget-title">✈️ Book Flights</div>
+        <div id="liveFlightPrice" style="display:none; background:var(--sky); border:1px solid rgba(26,107,107,0.15); border-radius:8px; padding:0.75rem; margin-bottom:1rem; text-align:center;">
+          <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); font-weight:700">Live Flight Deal</div>
+          <div id="livePriceValue" style="font-size:1.4rem; font-weight:800; color:var(--rust); margin-top:0.25rem;"></div>
+          <div id="livePriceDetail" style="font-size:0.75rem; color:var(--muted); margin-top:0.15rem;"></div>
+        </div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Secure your travel dates before finalizing hotels.</div>
         <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
           <a id="googleFlightsLink" href="#" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1">Google Flights</a>
@@ -424,6 +429,9 @@
     if(from && ci){
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(from)}/to/${encodedDest}/`;
+       
+       // Asynchronously trigger live flight price updates
+       fetchLiveFlightPricePlanner(from, destination, ci, co, flightClass, currency);
     } else {
        document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/anywhere/to/${encodedDest}/`;
@@ -559,6 +567,47 @@
     if (!input) return;
     input.value = text;
     refineItinerary();
+  }
+
+  async function fetchLiveFlightPricePlanner(origin, destination, depDate, retDate, flightClass, currency) {
+    try {
+      const resp = await fetch('/api/flight-prices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origin: origin,
+          destination: destination,
+          departureDate: depDate,
+          returnDate: retDate,
+          flightClass: flightClass,
+          currency: currency
+        })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.price) {
+          const symbol = getCurrencySymbol(currency);
+          document.getElementById('liveFlightPrice').style.display = 'block';
+          document.getElementById('livePriceValue').textContent = `${symbol}${data.price}`;
+          
+          let airlineText = data.airline_name ? `on ${data.airline_name}` : '';
+          document.getElementById('livePriceDetail').textContent = `Cheapest live fare ${airlineText}`;
+          
+          const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination)}%20from%20${encodeURIComponent(origin)}%20on%20${depDate}${retDate ? '%20through%20' + retDate : ''}`;
+          document.getElementById('googleFlightsLink').href = googleFlightsUrl;
+          document.getElementById('googleFlightsLink').textContent = `Book Live Deal (${symbol}${data.price})`;
+        }
+      }
+    } catch(e) {
+      console.warn("Unable to fetch live prices in planner:", e);
+    }
+  }
+
+  function getCurrencySymbol(currency) {
+    const symbols = {
+      USD: '$', EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', SGD: 'S$', AED: 'د.إ', JPY: '¥', INR: '₹', MXN: '$', BRL: 'R$', ZAR: 'R'
+    };
+    return symbols[currency] || currency;
   }
 
   init();

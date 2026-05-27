@@ -25,6 +25,34 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
+# --- Amadeus Configurations ---
+AMADEUS_CLIENT_ID = os.environ.get("AMADEUS_CLIENT_ID")
+AMADEUS_CLIENT_SECRET = os.environ.get("AMADEUS_CLIENT_SECRET")
+AMADEUS_BASE_URL = "https://test.api.amadeus.com"
+
+_amadeus_token = None
+_amadeus_token_expires = 0  # timestamp
+
+IATA_FALLBACKS = {
+    "toronto": "YYZ", "tokyo": "NRT", "new york": "JFK", "london": "LHR", "paris": "CDG",
+    "lisbon": "LIS", "rome": "FCO", "bangkok": "BKK", "singapore": "SIN", "barcelona": "BCN",
+    "amsterdam": "AMS", "sydney": "SYD", "los angeles": "LAX", "chicago": "ORD",
+    "miami": "MIA", "san francisco": "SFO", "vancouver": "YVR", "dubai": "DXB",
+    "hong kong": "HKG", "munich": "MUC", "frankfurt": "FRA", "reykjavik": "KEF",
+    "bali": "DPS", "denpasar": "DPS", "phuket": "HKT", "honolulu": "HNL", "cancun": "CUN"
+}
+
+AIRLINE_NAMES = {
+    "AA": "American Airlines", "DL": "Delta Air Lines", "UA": "United Airlines",
+    "LH": "Lufthansa", "BA": "British Airways", "AF": "Air France",
+    "KL": "KLM", "EK": "Emirates", "QR": "Qatar Airways", "SQ": "Singapore Airlines",
+    "CX": "Cathay Pacific", "AC": "Air Canada", "WS": "WestJet", "EI": "Aer Lingus",
+    "IB": "Iberia", "AZ": "ITA Airways", "TK": "Turkish Airlines", "NH": "ANA",
+    "JL": "Japan Airlines", "KE": "Korean Air", "QF": "Qantas", "NZ": "Air New Zealand",
+    "B6": "JetBlue", "AS": "Alaska Airlines", "WN": "Southwest Airlines",
+    "FR": "Ryanair", "U2": "EasyJet", "TP": "TAP Air Portugal", "LX": "Swiss"
+}
+
 # --- Database ---
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -38,10 +66,196 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         destination TEXT, platform TEXT, project_name TEXT,
         timestamp INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS flight_price_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        origin TEXT,
+        destination TEXT,
+        departure_date TEXT,
+        return_date TEXT,
+        flight_class TEXT,
+        currency TEXT,
+        price_data TEXT,
+        cached_at INTEGER)''')
     conn.commit()
     conn.close()
 
 init_db()
+
+# --- SQLite Cache Handlers ---
+def get_cached_flight_price(origin, destination, dep_date, ret_date, flight_class, currency):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("""
+            SELECT price_data, cached_at FROM flight_price_cache 
+            WHERE origin=? AND destination=? AND departure_date=? AND return_date=? AND flight_class=? AND currency=?
+        """, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper()))
+        row = c.fetchone()
+        conn.close()
+        
+        if row:
+            price_data, cached_at = row
+            # If less than 6 hours old (6 * 3600 = 21600 seconds)
+            if time.time() - cached_at < 21600:
+                return json.loads(price_data)
+    except Exception as e:
+        logging.error(f"Error checking cached flight price: {e}")
+    return None
+
+def cache_flight_price(origin, destination, dep_date, ret_date, flight_class, currency, data):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        # Delete any existing stale entry
+        c.execute("""
+            DELETE FROM flight_price_cache 
+            WHERE origin=? AND destination=? AND departure_date=? AND return_date=? AND flight_class=? AND currency=?
+        """, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper()))
+        
+        # Insert new entry
+        c.execute("""
+            INSERT INTO flight_price_cache (origin, destination, departure_date, return_date, flight_class, currency, price_data, cached_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper(), json.dumps(data), int(time.time())))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error caching flight price: {e}")
+
+# --- Amadeus OAuth ---
+def get_amadeus_token():
+    global _amadeus_token, _amadeus_token_expires
+    if not AMADEUS_CLIENT_ID or not AMADEUS_CLIENT_SECRET:
+        logging.warning("Amadeus Client ID or Secret not set")
+        return None
+    
+    now = time.time()
+    # If token exists and is not expired (with 10-second buffer)
+    if _amadeus_token and now < _amadeus_token_expires - 10:
+        return _amadeus_token
+        
+    url = f"{AMADEUS_BASE_URL}/v1/security/oauth2/token"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {
+        "grant_type": "client_credentials",
+        "client_id": AMADEUS_CLIENT_ID,
+        "client_secret": AMADEUS_CLIENT_SECRET
+    }
+    
+    try:
+        resp = requests.post(url, headers=headers, data=data, timeout=10)
+        if resp.status_code == 200:
+            res_data = resp.json()
+            _amadeus_token = res_data.get("access_token")
+            expires_in = res_data.get("expires_in", 1799)
+            _amadeus_token_expires = now + expires_in
+            return _amadeus_token
+        else:
+            logging.error(f"Failed to get Amadeus token: {resp.status_code} {resp.text}")
+    except Exception as e:
+        logging.error(f"Error fetching Amadeus token: {e}")
+        
+    return None
+
+# --- Amadeus IATA Resolver ---
+def resolve_iata_code(keyword):
+    token = get_amadeus_token()
+    if not token:
+        return None
+        
+    url = f"{AMADEUS_BASE_URL}/v1/reference-data/locations"
+    headers = {"Authorization": f"Bearer {token}"}
+    params = {
+        "subType": "CITY",
+        "keyword": keyword,
+        "page[limit]": 1
+    }
+    
+    try:
+        resp = requests.get(url, headers=headers, params=params, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            if "data" in data and len(data["data"]) > 0:
+                return data["data"][0].get("iataCode")
+    except Exception as e:
+        logging.error(f"Error resolving IATA for keyword {keyword}: {e}")
+        
+    return None
+
+# --- Amadeus Flight Offers Search Client ---
+def fetch_flight_price(origin_city, dest_city, departure_date, return_date=None, travel_class="ECONOMY", currency="USD"):
+    # Resolve IATA codes
+    origin_iata = IATA_FALLBACKS.get(origin_city.lower())
+    if not origin_iata:
+        origin_iata = resolve_iata_code(origin_city)
+        
+    dest_iata = IATA_FALLBACKS.get(dest_city.lower())
+    if not dest_iata:
+        dest_iata = resolve_iata_code(dest_city)
+        
+    if not origin_iata or not dest_iata:
+        logging.warning(f"Could not resolve IATA for {origin_city} -> {dest_city}")
+        return None
+        
+    token = get_amadeus_token()
+    if not token:
+        return None
+        
+    url = f"{AMADEUS_BASE_URL}/v2/shopping/flight-offers"
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    amadeus_class = "ECONOMY"
+    if travel_class:
+        tc = travel_class.upper().replace(" ", "_")
+        if tc in ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"]:
+            amadeus_class = tc
+            
+    params = {
+        "originLocationCode": origin_iata,
+        "destinationLocationCode": dest_iata,
+        "departureDate": departure_date,
+        "adults": 1,
+        "currencyCode": currency,
+        "travelClass": amadeus_class,
+        "max": 5
+    }
+    
+    if return_date:
+        params["returnDate"] = return_date
+        
+    try:
+        resp = requests.get(url, headers=headers, params=params, timeout=12)
+        if resp.status_code == 200:
+            res_data = resp.json()
+            if "data" in res_data and len(res_data["data"]) > 0:
+                offers = res_data["data"]
+                cheapest_offer = offers[0]
+                price = cheapest_offer.get("price", {}).get("total")
+                
+                airline_code = None
+                try:
+                    itineraries = cheapest_offer.get("itineraries", [])
+                    if itineraries:
+                        segments = itineraries[0].get("segments", [])
+                        if segments:
+                            airline_code = segments[0].get("carrierCode")
+                except:
+                    pass
+                    
+                return {
+                    "price": float(price) if price else None,
+                    "airline_code": airline_code,
+                    "currency": currency,
+                    "origin_iata": origin_iata,
+                    "dest_iata": dest_iata
+                }
+        else:
+            logging.error(f"Amadeus Flight Offer Search failed: {resp.status_code} {resp.text}")
+    except Exception as e:
+        logging.error(f"Error calling Amadeus Flight Offer Search: {e}")
+        
+    return None
+
 
 # --- JSON extractor (Enhanced) ---
 def extract_json_safe(text):
@@ -494,6 +708,41 @@ def refine_itinerary():
     result_text = call_groq(prompt, max_tokens=4000)
     result = extract_json_safe(result_text)
     return jsonify(result)
+
+# --- Flight prices ---
+@app.route('/api/flight-prices', methods=['POST'])
+def get_flight_prices():
+    data = request.get_json() or {}
+    origin = data.get('origin', '').strip()
+    destination = data.get('destination', '').strip()
+    dep_date = data.get('departureDate', '').strip() # YYYY-MM-DD
+    ret_date = data.get('returnDate', '').strip() # YYYY-MM-DD (optional)
+    flight_class = data.get('flightClass', 'economy').strip()
+    currency = data.get('currency', 'USD').strip()
+    
+    if not origin or not destination or not dep_date:
+        return jsonify({"error": "Missing required fields (origin, destination, departureDate)"}), 400
+        
+    # Check cache first
+    cached = get_cached_flight_price(origin, destination, dep_date, ret_date, flight_class, currency)
+    if cached:
+        logging.info(f"Returning cached flight price for {origin} -> {destination}")
+        return jsonify(cached)
+        
+    # Fetch from Amadeus
+    logging.info(f"Fetching fresh flight price for {origin} -> {destination}")
+    fresh = fetch_flight_price(origin, destination, dep_date, ret_date, flight_class, currency)
+    
+    if fresh:
+        airline_code = fresh.get("airline_code")
+        airline_name = AIRLINE_NAMES.get(airline_code, airline_code or "Unknown Airline")
+        fresh["airline_name"] = airline_name
+        
+        # Cache the result
+        cache_flight_price(origin, destination, dep_date, ret_date, flight_class, currency, fresh)
+        return jsonify(fresh)
+        
+    return jsonify({"error": "No flights found or API limits exceeded"}), 404
 
 # --- Click tracking ---
 @app.route('/api/track-click', methods=['POST'])
