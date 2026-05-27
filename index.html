@@ -1455,9 +1455,9 @@ function showStats(){
       <div style="margin-top:1rem;font-weight:700;text-align:right">Total Interactions: ${state.clickLog.length}</div>
       
       <div style="margin-top:2rem;padding-top:1.5rem;border-top:2px solid var(--cream)">
-        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--rust);font-weight:700;margin-bottom:1rem">⚠️ Danger Zone</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1rem">Wipe all local trip projects, search history, and settings from this device.</div>
-        <button class="btn-create" style="background:var(--rust);width:100%" onclick="masterReset()">Wipe All History & Reset App</button>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--rust);font-weight:700;margin-bottom:1rem">⚙️ Reset Options</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1rem">Clear all saved trip projects, search history, and settings from this device.</div>
+        <button class="btn-create" style="background:var(--rust);width:100%" onclick="masterReset()">Clear Trip History & Reset</button>
       </div>
     `;
   }
@@ -1466,8 +1466,8 @@ function showStats(){
 function closeStatsModal(){document.getElementById('statsModalOverlay').classList.remove('open');}
 function masterReset(){
   pendingDeleteType='reset';
-  document.getElementById('confirmTitle').textContent='🚨 FULL RESET?';
-  document.getElementById('confirmDesc').textContent='WARNING: This will permanently delete ALL your saved trips, projects, and settings. This cannot be undone.';
+  document.getElementById('confirmTitle').textContent='🔄 Reset App & Clear Data?';
+  document.getElementById('confirmDesc').textContent='This will permanently delete all your saved trips, projects, and settings. This action cannot be undone.';
   document.getElementById('confirmModalOverlay').classList.add('open');
 }
 function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
