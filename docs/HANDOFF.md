@@ -205,6 +205,10 @@ How William and AI build TripSync together:
 
 ## What's Done ✅ (Updated May 27)
 
+- **Mobile Preference Grid & Unified PWA Bottom Navigation**:
+  - Reorganized search fields on mobile viewports into a clean, compact 2-column CSS Grid (grouping dates, guests count, and currency side-by-side) to reduce vertical viewport height by 50%.
+  - Eliminated horizontal double-padding margins on mobile viewports, allowing destination cards to span the full screen width smoothly.
+  - Added a synchronized PWA bottom navigation bar on both search and planner pages, wiring up redirectional parameters (`?openSidebar=1` & `?showStats=1`) to automatically open historical projects or click analytics overlays on load.
 - **UX Overhaul & Progressive Disclosure**: Collapsed detailed destination card elements (budgets, season, visa, flight block, and hotel book links) behind an animated, expandable `[ Details ➔ ]` accordion wrapper. This reduces vertical page scrolling by 70% and drastically streamlines the mobile experience.
 - **Warm & Simplified Planner**:
   - Restructured `planner.html` to collapse daily lists dynamically by default (keeping Day 1 open to seamlessly guide travelers on arrival).

@@ -71,7 +71,7 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 .ceq{font-size:0.78rem;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cet{font-size:0.65rem;color:var(--muted)}
 .sidebar-empty{padding:1.5rem 1.25rem;text-align:center;color:var(--muted);font-size:0.8rem;line-height:1.6}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;transition:margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)}
 /* Search area */
 .search-area{background:var(--cream);border-bottom:1px solid var(--sand);padding:1.25rem 2rem}
 .project-label{font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;font-weight:600}
@@ -286,8 +286,7 @@ footer a:hover{color:var(--rust-light)}
   
   .main {
     flex: 1;
-    padding: 2rem;
-    transition: margin-left 0.3s ease;
+    padding: 0;
   }
   @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
   
@@ -352,9 +351,14 @@ footer a:hover{color:var(--rust-light)}
 }
 
 @media(max-width:768px) {
-  .prefs-row{flex-direction:column;align-items:stretch;gap:0.5rem}
-  .param-input, .param-select, .depart-input{width:100% !important;min-height:40px; font-size: 0.85rem;}
-  .depart-label{margin-bottom:0.1rem;display:block; font-size: 0.65rem;}
+  .prefs-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;align-items:end}
+  .prefs-row > select#tripType,
+  .prefs-row > .depart-input,
+  .prefs-row > .depart-label,
+  #extraPrefs .prefs-row > input#budget,
+  #extraPrefs .prefs-row > .depart-label {grid-column:span 2}
+  .param-input, .param-select, .depart-input{width:100% !important;min-height:40px; font-size: 0.85rem; margin:0 !important;}
+  .depart-label{margin-bottom:0;display:block; font-size: 0.7rem;}
   
   .search-box{flex-direction:column; gap: 0.5rem;}
   textarea#tripInput{min-height: 50px; padding: 0.6rem;}
@@ -798,6 +802,15 @@ function init(){
   document.getElementById('aiModeSelectMain').value = savedMode;
   
   renderSidebar();
+  
+  // Handle incoming bottom-nav redirect shortcuts
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('openSidebar') === '1') {
+    localStorage.setItem('tripsync_sidebar_open', '1');
+  }
+  if (urlParams.get('showStats') === '1') {
+    setTimeout(() => { showStats(); }, 200);
+  }
   
   // Restore Sidebar state
   const sidebarSaved = localStorage.getItem('tripsync_sidebar_open');
