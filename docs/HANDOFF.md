@@ -9,8 +9,8 @@
 ## What TripSync Is
 AI-powered travel destination finder. User describes their dream trip in plain English. TripSync returns 3 detailed destination cards with real prices, flight estimates, visa info, and direct booking links to Booking.com, Agoda, and Expedia. Monetizes through affiliate commissions on every hotel and flight click. Features a dual-mode AI engine (Cloud via Groq / Local Private AI via Gemma 4).
 
-**Live URL:** https://tripsync-ilao.onrender.com  
-**Target Domain:** gettripsync.com (not yet purchased)  
+**Live URL:** https://tripsync.ca  
+**Target Domain:** tripsync.ca (Purchased & Live on Namecheap/Render)  
 **GitHub Repo:** https://github.com/Tripsync-justmeMedia/tripsync  
 
 ---
@@ -195,7 +195,7 @@ How William and AI build TripSync together:
 3. **William approves** — gives the go-ahead before any code is touched
 4. **AI edits the files** — makes targeted changes to `index.html`, `planner.html`, `server.py`, etc.
 5. **AI pushes to GitHub** — `git add → commit → push` in one command
-6. **Render auto-deploys** — live at https://tripsync-ilao.onrender.com within ~2 min
+6. **Render auto-deploys** — live at https://tripsync.ca within ~2 min
 7. **William tests live** — real browser, real AI calls, real affiliate links
 8. **HANDOFF.md is updated** — log what was done so future AI sessions have full context
 
@@ -277,7 +277,7 @@ TripSync is now a fully qualified **PWA (Progressive Web App)**. To submit it to
 1.  **Preparation**: Ensure you have an icon (done) and manifest (done).
 2.  **Tooling**: Use [PWABuilder.com](https://www.pwabuilder.com/).
 3.  **Process**:
-    *   Enter `https://tripsync-ilao.onrender.com` (or your custom domain).
+    *   Enter `https://tripsync.ca` (or your custom domain).
     *   Download the "Android Wrapper" (`.apk` / `.aab`).
     *   Download the "iOS Wrapper" (requires a Mac and Xcode).
 4.  **Hosting**: **CRITICAL** — Upgrade Render to the **Starter Plan ($7/mo)**. On the free plan, the app will "sleep," and Apple will likely reject it for taking too long to load.
@@ -301,7 +301,7 @@ TripSync is now a fully qualified **PWA (Progressive Web App)**. To submit it to
 
 Paste this at the start of any new conversation:
 
-> "I'm William from Just Me Media. I'm building TripSync — a live AI travel planner at https://tripsync-ilao.onrender.com. GitHub: https://github.com/Tripsync-justmeMedia/tripsync. Files are at ~/tripsync/ on my Mac. Built with Flask + Groq AI + plain HTML. Deployed on Render, auto-deploys from GitHub. Here is the full handoff doc: [paste this file]"
+> "I'm William from Just Me Media. I'm building TripSync — a live AI travel planner at https://tripsync.ca. GitHub: https://github.com/Tripsync-justmeMedia/tripsync. Files are at ~/tripsync/ on my Mac. Built with Flask + Groq AI + plain HTML. Deployed on Render, auto-deploys from GitHub. Here is the full handoff doc: [paste this file]"
 
 ---
 

@@ -8,7 +8,7 @@
   "description": "AI-powered travel planner for destinations and itineraries.",
   "icons": [
     {
-      "src": "https://tripsync-ilao.onrender.com/icon.png",
+      "src": "https://tripsync.ca/icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

@@ -2,7 +2,7 @@
 
 TripSync is a high-performance, AI-driven travel planning application designed to turn complex itineraries into seamless experiences. Built with a focus on speed, privacy, and "Zero-Downtime" reliability.
 
-**Live App:** [https://tripsync-ilao.onrender.com](https://tripsync-ilao.onrender.com)
+**Live App:** [https://tripsync.ca](https://tripsync.ca)
 
 ## 🌟 Key Features
 
