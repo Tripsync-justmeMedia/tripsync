@@ -1236,9 +1236,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
   let badgeHtml = '';
   if (aiMode === 'local') {
-    badgeHtml = `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">🔒 Curated locally by Gemma 4</div>`;
+    badgeHtml = `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">✨ AI Estimated</div>`;
   } else if (aiMode === 'gemma') {
-    badgeHtml = `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">✨ Powered by Gemma 4 API</div>`;
+    badgeHtml = `<div style="text-align:center;margin-top:2rem;font-size:0.85rem;color:var(--teal);font-weight:700">✨ AI Estimated</div>`;
   }
 
   document.getElementById('destinationsOutput').innerHTML=`
