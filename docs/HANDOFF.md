@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 26, 2026  
+**Last Updated:** May 27, 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
 **Developer Contact:** [refer to gitignored docs/PRIVATE_HANDOFF.md]  
@@ -185,7 +185,24 @@ All active affiliate accounts are configured locally. For precise network creden
 
 ---
 
-## What's Done ✅ (Updated May 26)
+## AI Working Process 🤖→🚀
+
+How William and AI build TripSync together:
+
+1. **Discuss the change** — describe what needs fixing or building in chat
+2. **AI proposes the plan** — reviews code, explains what it will change and why
+3. **William approves** — gives the go-ahead before any code is touched
+4. **AI edits the files** — makes targeted changes to `index.html`, `planner.html`, `server.py`, etc.
+5. **AI pushes to GitHub** — `git add → commit → push` in one command
+6. **Render auto-deploys** — live at https://tripsync-ilao.onrender.com within ~2 min
+7. **William tests live** — real browser, real AI calls, real affiliate links
+8. **HANDOFF.md is updated** — log what was done so future AI sessions have full context
+
+> **Rule:** No code is pushed without William's explicit approval. AI proposes, William decides.
+
+---
+
+## What's Done ✅ (Updated May 27)
 
 - **UX Overhaul & Progressive Disclosure**: Collapsed detailed destination card elements (budgets, season, visa, flight block, and hotel book links) behind an animated, expandable `[ Details ➔ ]` accordion wrapper. This reduces vertical page scrolling by 70% and drastically streamlines the mobile experience.
 - **Warm & Simplified Planner**:
@@ -212,6 +229,10 @@ All active affiliate accounts are configured locally. For precise network creden
     - **Local AI (Ollama)**: Integrated for on-device inference (`gemma4`).
     - **Zero-Downtime Reliability**: Implemented a silent fallback in `server.py`. If Gemma takes longer than 25s, it silently hands off to Groq.
     - **Smart JSON Parsing**: Robust parser that strips AI conversation, fixes trailing commas, and handles key renames automatically.
+- **UX Polish (May 27 — pushed live)**:
+    - **Premium Loading Screen**: Replaced bare spinner with a full travel-themed loading experience — floating globe, Playfair headline, teal→rust gradient progress bar (3s Fast / 28s Deep), 3 shimmer skeleton destination cards, and 8 rotating travel tips that fade in/out every 5 seconds.
+    - **Removed Redundant Footnote**: Deleted the `* ⚡ Fast = instant ideas · ✨ Deep = ...` text below the Find Destinations button — the AI Engine dropdown already explains this.
+    - **Consumer-Friendly AI Badge**: Swapped `Powered by Gemma 4 API` and `Curated locally by Gemma 4` labels on the planner budget card to `✨ AI Estimated` — simpler and less technical for end users.
 
 ---
 
