@@ -425,6 +425,57 @@ def ping():
 def index():
     return send_from_directory('.', 'index.html')
 
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('.', 'robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml')
+
+@app.route('/planner.html')
+def planner():
+    destination = request.args.get('destination', '').strip()
+    days = request.args.get('days', '5').strip()
+    
+    try:
+        with open('planner.html', 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        if destination:
+            title = f"{destination} {days}-Day Travel Itinerary — TripSync"
+            desc = f"Explore a detailed {days}-day travel itinerary for {destination} on TripSync. View flight deals, recommended hotels, tours, transfers, and budgets."
+            
+            content = content.replace(
+                '<title>Trip Planner — TripSync</title>',
+                f'<title>{title}</title>'
+            )
+            content = content.replace(
+                '<meta property="og:title" content="Trip Planner — TripSync">',
+                f'<meta property="og:title" content="{title}">'
+            )
+            content = content.replace(
+                '<meta property="twitter:title" content="Trip Planner — TripSync">',
+                f'<meta property="twitter:title" content="{title}">'
+            )
+            content = content.replace(
+                '<meta name="description" content="View your detailed travel itinerary, flight suggestions, hotels, and custom transfers on TripSync — the AI Travel Planner.">',
+                f'<meta name="description" content="{desc}">'
+            )
+            content = content.replace(
+                '<meta property="og:description" content="View your detailed travel itinerary, flight suggestions, hotels, and custom transfers on TripSync — the AI Travel Planner.">',
+                f'<meta property="og:description" content="{desc}">'
+            )
+            content = content.replace(
+                '<meta property="twitter:description" content="View your detailed travel itinerary, flight suggestions, hotels, and custom transfers on TripSync — the AI Travel Planner.">',
+                f'<meta property="twitter:description" content="{desc}">'
+            )
+        return content
+    except Exception as e:
+        logging.error(f"Error pre-rendering dynamic planner metadata: {e}")
+        
+    return send_from_directory('.', 'planner.html')
+
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('.', 'manifest.json')

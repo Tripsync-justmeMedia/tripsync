@@ -205,6 +205,10 @@ How William and AI build TripSync together:
 
 ## What's Done ✅ (Updated May 27)
 
+- **Technical SEO, JSON-LD Schema & Dynamic Share Cards**:
+  - Built an explicit `/planner.html` Flask router in `server.py` that intercepts sharing requests (e.g. `/planner.html?destination=Lisbon`) and pre-renders custom `<title>` and `<meta>` preview tags on the backend. This allows messaging and social bots (WhatsApp, iMessage, Twitter, Facebook) to show beautiful, customized preview cards for shared itineraries.
+  - Injected standardized Google JSON-LD `SoftwareApplication` search Schema markup into the homepage head to facilitate star ratings and software snippet indexing.
+  - Designed and deployed standard `robots.txt` and `sitemap.xml` crawl guidance assets in the root folder, and registered explicit routes in Flask for reliable indexing.
 - **Mobile Preference Grid & Unified PWA Bottom Navigation**:
   - Reorganized search fields on mobile viewports into a clean, compact 2-column CSS Grid (grouping dates, guests count, and currency side-by-side) to reduce vertical viewport height by 50%.
   - Eliminated horizontal double-padding margins on mobile viewports, allowing destination cards to span the full screen width smoothly.
