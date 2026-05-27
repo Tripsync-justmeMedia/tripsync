@@ -178,8 +178,9 @@ All active affiliate accounts are configured locally. For precise network creden
 ### Integration Status & Fallback Targets
 * **Search & Click Tracking**: ✅ **VERIFIED** (Logs client click-throughs to the `click_log` SQLite table).
 * **Accommodation Partnerships**: Booking.com is active (refer to private files for Affiliate ID). Agoda and Expedia applications are pending via Awin (using code placeholders).
-* **Tours & Activities**: Viator tours are active (refer to private files for code).
-* **Target Program Checklist**: See [PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/02_ACTIVE_PROJECTS/TripSync/docs/PRIVATE_HANDOFF.md) for sign-up links for **WayAway** (Travelpayouts flights), **GetYourGuide** (tours), **Discover Cars** (rental vehicles), **SafetyWing** (nomad medical insurance), and **Hostelworld** (budget properties).
+* **Tours & Activities**: Viator tours are active. **Klook** activities and **Tiqets** attractions are now **fully active** via the Travelpayouts integration!
+* **Ground Logistics & Protection**: **GetRentacar.com** car rentals, **Kiwitaxi** & **Welcome Pickups** airport transfers, **EKTA Travel Insurance**, and **AirHelp** claim checks are now **fully active** via Travelpayouts!
+* **Target Program Checklist**: See [PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/02_ACTIVE_PROJECTS/TripSync/docs/PRIVATE_HANDOFF.md) for remaining target signups (GetYourGuide, Discover Cars, SafetyWing, Hostelworld).
 
 *Conversion analytics are plotted inside the dashboard via the **Stats** (📊) icon.*
 
@@ -233,6 +234,11 @@ How William and AI build TripSync together:
     - **Premium Loading Screen**: Replaced bare spinner with a full travel-themed loading experience — floating globe, Playfair headline, teal→rust gradient progress bar (3s Fast / 28s Deep), 3 shimmer skeleton destination cards, and 8 rotating travel tips that fade in/out every 5 seconds.
     - **Removed Redundant Footnote**: Deleted the `* ⚡ Fast = instant ideas · ✨ Deep = ...` text below the Find Destinations button — the AI Engine dropdown already explains this.
     - **Consumer-Friendly AI Badge**: Swapped `Powered by Gemma 4 API` and `Curated locally by Gemma 4` labels on the planner budget card to `✨ AI Estimated` — simpler and less technical for end users.
+- **Travelpayouts Integration (May 27 — pushed live)**:
+    - **Aviasales Flight Search**: Placed orange-branded Aviasales (40% commission flight partner) buttons next to Google Flights & Skyscanner in both `index.html` card drawers and `planner.html` sidebar.
+    - **Klook & Tiqets Attractions**: Added side-by-side booking links for Klook activities and Tiqets attractions in both `index.html` search details and `planner.html` sidebar.
+    - **GetRentacar.com**: Placed direct GetRentacar.com links under a new "Car Rental" section inside destination cards.
+    - **🛡️ Travel Extras & Transfers Sidebar Widget**: Designed and added a beautiful transfers, car hire, and travel insurance widget directly in `planner.html` featuring Kiwitaxi, Welcome Pickups, GetRentacar.com, EKTA Insurance, and AirHelp claim checks.
 
 ---
 
@@ -241,7 +247,7 @@ How William and AI build TripSync together:
 **Immediate (V2 Launch Phase):**
 - [x] **Product Hunt Launch** (Completed May 20, 2026!)
 - [ ] Integrate **Amadeus API** for real-time flight prices (V2 Phase 1).
-- [ ] Sign up for **WayAway** (Travelpayouts) as a high-approval flight alternative.
+- [x] **Sign up for Travelpayouts / WayAway** and integrate high-approval flight & logistics partners (Completed May 27, 2026!).
 - [ ] Update placeholder IDs for Agoda/Expedia once approved on Awin.
 - [ ] Buy **gettripsync.com** domain and connect to Render.
 
