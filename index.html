@@ -1133,7 +1133,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   const fromLabel=departCity?`from ${departCity}`:'';
   
   const tripType = document.getElementById('tripType').value;
-  const flightClass = document.getElementById('flightClass').value;
+  let flightClass = document.getElementById('flightClass').value;
   const hotelRating = document.getElementById('hotelRating').value;
   
   let filterHtml = '';
