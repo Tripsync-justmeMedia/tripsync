@@ -17,19 +17,18 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 
 ## Accounts & Logins
 
-| Service | Login | Notes |
-|---|---|---|
-| GitHub | wcommu@gmail.com (Google SSO) | @Tripsync-justmeMedia org |
-| Render.com | wcommu@gmail.com | Free tier, auto-deploys from GitHub |
-| UptimeRobot | wcommu@gmail.com | Pings every 5 min to keep Render alive |
-| Groq API | wcommu@gmail.com | Free tier, llama-3.3-70b-versatile |
-| Google Play | wcommu@gmail.com | Org account active |
-| Apple Developer | wcommu@gmail.com | Converting individual → org (Registration Docs Submitted) |
-
-**Affiliate accounts (PENDING — not yet applied):**
-- Booking.com → partners.booking.com
-- Agoda → partners.agoda.com  
-- Expedia → expediagroup.com/partners
+| Service | Login Email | Portal Link | Notes |
+|---|---|---|---|
+| **GitHub** | wcommu@gmail.com | [github.com](https://github.com) | @Tripsync-justmeMedia organization repository |
+| **Render.com** | wcommu@gmail.com | [dashboard.render.com](https://dashboard.render.com) | Flask API hosting with GitHub auto-deploy |
+| **UptimeRobot** | wcommu@gmail.com | [uptimerobot.com](https://uptimerobot.com) | Automated 5-min ping checker |
+| **Groq API** | wcommu@gmail.com | [console.groq.com](https://console.groq.com) | Llama-3.3 Cloud AI engine keys |
+| **Google Play** | wcommu@gmail.com | [play.google.com/console](https://play.google.com/console) | Active publisher developer account |
+| **Apple Developer** | wcommu@gmail.com | [developer.apple.com](https://developer.apple.com) | Org transfer pending review |
+| **Booking.com** | wcommu@gmail.com | [partners.booking.com](https://partners.booking.com) | ✅ LIVE (aid: 2884913) |
+| **Agoda** | wcommu@gmail.com | [partners.agoda.com](https://partners.agoda.com) | ⏳ PENDING approval on Awin network |
+| **Expedia** | wcommu@gmail.com | [expediagroup.com/partners](https://www.expediagroup.com/partners) | ⏳ PENDING approval on Awin network |
+| **Viator** | wcommu@gmail.com | [partnerize.com](https://www.partnerize.com) | ⏳ PENDING approval on Partnerize network |
 
 ---
 
@@ -181,16 +180,36 @@ GET  /sw.js         → service worker (needs adding)
 ---
 
 ## Affiliate Tracking & IDs
-We have a dedicated tracker for all monetization partners:
-*Internal Affiliate Tracking Document*
+All accounts registered under: **wcommu@gmail.com** (Just Me Media).
 
-**Current Status:**
-- Search Tracking: ✅ **VERIFIED** (Logs to `click_log` table in SQLite)
-- Booking.com: ✅ **LIVE** (aid: 2884913)
-- Agoda/Expedia: ⏳ Applied (Awin) - Placeholders active
-- Viator: ⏳ Applied (Partnerize)
-- Skyscanner: ❌ Re-apply after traffic grows
-- **Conversion Data**: Visible via the "Stats" (📊) icon in the sidebar (Client-side `showStats()`).
+### Current Integration Status
+- **Search & Click Tracking**: ✅ **VERIFIED** (Client clicks are sent to `/api/track-click` and saved to `click_log` SQLite table).
+- **Booking.com**: ✅ **LIVE** — Partner Portal: [partners.booking.com](https://partners.booking.com) (Active Affiliate ID: `2884913`).
+- **Agoda**: ⏳ **PENDING** — Portal: [partners.agoda.com](https://partners.agoda.com) (Applied via Awin network; current placeholders active).
+- **Expedia**: ⏳ **PENDING** — Portal: [expediagroup.com/partners](https://www.expediagroup.com/partners) (Applied via Awin network; placeholders active).
+- **Viator**: ⏳ **PENDING** — Portal: [partnerize.com](https://www.partnerize.com) (Applied via Partnerize network; placeholder tour code active).
+- **Skyscanner**: ❌ **RE-APPLY** — Portal: [partners.skyscanner.net](https://partners.skyscanner.net) (Re-submit application after public beta traffic has scaled).
+
+### High-Value Target Partnerships to Register
+Apply for these travel affiliate programs under `wcommu@gmail.com` to capture other highly profitable segments:
+
+1. **WayAway / Travelpayouts** (Flights)
+   - **Signup URL**: [travelpayouts.com](https://www.travelpayouts.com)
+   - **Why**: Excellent flight comparison meta-search tool with high approval rates, instant setup, and great flight cookie commissions. Excellent fallback flight partner.
+2. **GetYourGuide** (Tours & Activities)
+   - **Signup URL**: [partner.getyourguide.com](https://partner.getyourguide.com)
+   - **Why**: Excellent alternative or addition to Viator for local day tickets, skip-the-line passes, and city tours with massive global inventory.
+3. **Discover Cars** (Car Rental)
+   - **Signup URL**: [discovercars.com/affiliates](https://www.discovercars.com/affiliates)
+   - **Why**: Very high conversion rates and high commissions (up to 70% of car rental profit margin). Ideal to replace basic car placeholders.
+4. **SafetyWing** (Travel Insurance)
+   - **Signup URL**: [safetywing.com/nomad-insurance/partner](https://safetywing.com/nomad-insurance/partner)
+   - **Why**: Highly popular and affordable travel medical insurance for digital nomads and long-term backpackers. High recurring commissions.
+5. **Hostelworld** (Budget Stays)
+   - **Signup URL**: [hostelworld.com/affiliates](https://www.hostelworld.com/affiliates/)
+   - **Why**: Ideal accommodation match for budget/backpacking destinations where users want youth hostels rather than standard Booking.com hotel listings.
+
+*Conversion click logs are viewable locally via the **Stats** (📊) icon on the dashboard sidebar.*
 
 ---
 
