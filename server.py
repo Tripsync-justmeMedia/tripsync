@@ -63,7 +63,7 @@ INFLUENCER_IPS = {}
 
 def send_smtp_email(to_email, subject, html_content):
     smtp_user = os.environ.get('SMTP_USER', 'william@justmemedia.ca')
-    smtp_password = os.environ.get('SMTP_APP_PASSWORD', os.environ.get('GMAIL_APP_PASSWORD', 'rnceluromtoiifwr')).replace(" ", "")
+    smtp_password = (os.environ.get('SMTP_APP_PASSWORD') or os.environ.get('GMAIL_APP_PASSWORD') or '').replace(" ", "")
     
     if not smtp_password:
         logging.warning("SMTP App Password is not configured. Email notification skipped.")
