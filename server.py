@@ -4,11 +4,17 @@ import sqlite3
 import logging
 import re
 import time
+import hashlib
+import random
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import datetime
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, make_response
 from dotenv import load_dotenv
 import requests
 import google.generativeai as genai
+from sheets import sheets_helper
 
 load_dotenv()
 
@@ -52,6 +58,115 @@ AIRLINE_NAMES = {
     "B6": "JetBlue", "AS": "Alaska Airlines", "WN": "Southwest Airlines",
     "FR": "Ryanair", "U2": "EasyJet", "TP": "TAP Air Portugal", "LX": "Swiss"
 }
+
+INFLUENCER_IPS = {}
+
+def send_smtp_email(to_email, subject, html_content):
+    smtp_user = os.environ.get('SMTP_USER', 'william@justmemedia.ca')
+    smtp_password = os.environ.get('SMTP_APP_PASSWORD', os.environ.get('GMAIL_APP_PASSWORD', 'rnceluromtoiifwr')).replace(" ", "")
+    
+    if not smtp_password:
+        logging.warning("SMTP App Password is not configured. Email notification skipped.")
+        return False
+        
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"TripSync <{smtp_user}>"
+        msg['To'] = to_email
+        
+        part = MIMEText(html_content, 'html')
+        msg.attach(part)
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, to_email, msg.as_string())
+        server.quit()
+        logging.info(f"Successfully sent email to {to_email} with subject: {subject}")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to send SMTP email: {e}")
+        return False
+
+def send_registration_emails(influencer_email, display_name, handle, pin):
+    # Email to Influencer
+    subject_influencer = "Welcome to the TripSync Influencer Family! 🎉"
+    html_influencer = f"""
+    <html>
+      <body style="font-family: 'DM Sans', Arial, sans-serif; background-color: #faf9f6; color: #1a1a1a; padding: 20px; line-height: 1.6;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border: 1px solid #f4f1ea; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+          <h2 style="font-family: 'Playfair Display', serif; color: #1a6b6b; font-size: 24px; margin-bottom: 10px;">Welcome to TripSync, {display_name}!</h2>
+          <p>We are thrilled to welcome you to our zero-friction, auto-approved influencer partner program. Your profile is <strong>live instantly</strong> and ready to generate revenue.</p>
+          
+          <hr style="border: none; border-top: 1px solid #f4f1ea; margin: 20px 0;">
+          
+          <div style="background-color: #eaf4f4; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 0; font-size: 14px; font-weight: bold; color: #1a6b6b; text-transform: uppercase; letter-spacing: 1px;">Your Referral Public Page</p>
+            <p style="margin: 5px 0 0; font-size: 18px; font-family: monospace; font-weight: bold;"><a href="https://tripsync.ca/@{handle}" style="color: #1a6b6b; text-decoration: none;">https://tripsync.ca/@{handle}</a></p>
+          </div>
+          
+          <div style="background-color: #faf9f6; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #f4f1ea;">
+            <p style="margin: 0; font-size: 14px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;">Access Your Private Dashboard</p>
+            <p style="margin: 5px 0 0; font-size: 15px;">Dashboard URL: <a href="https://tripsync.ca/dashboard.html?handle={handle}" style="color: #1a6b6b; font-weight: bold;">dashboard.html?handle={handle}</a></p>
+            <p style="margin: 5px 0 0; font-size: 15px;">Your 4-Digit Login PIN: <strong style="font-size: 16px; letter-spacing: 2px;">{pin}</strong></p>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #f4f1ea; margin: 20px 0;">
+          
+          <h3 style="color: #1a6b6b; font-size: 16px; margin-bottom: 10px;">Signed Electronic Agreement Summary:</h3>
+          <div style="font-size: 12px; color: #666; background: #faf9f6; padding: 15px; border-radius: 8px; border: 1px solid #f4f1ea; max-height: 180px; overflow-y: auto;">
+            <strong>1. Responsibility of Offers:</strong> The influencer is completely responsible for the validity, accuracy, and expiration timelines of all custom deals, promo codes, and text descriptions they post.<br><br>
+            <strong>2. TripSync Indemnity:</strong> TripSync is a free travel planner and is not liable for false, expired, or invalid hotel, flight, or tour offers posted by partners.<br><br>
+            <strong>3. Commission Split:</strong> TripSync splits all net commissions earned from referenced bookings 50/50 with the referring influencer.<br><br>
+            <strong>4. Payment Timeline:</strong> Commissions are manual payouts generated 30-90 days following a completed booking (when TripSync receives commissions from partners). TripSync only pays commissions actually received.<br><br>
+            <strong>5. Minimum Payout:</strong> Payout requests require a minimum balance of $50 USD.
+          </div>
+          
+          <p style="font-size: 13px; color: #888; margin-top: 25px; text-align: center;">
+            &copy; 2026 TripSync by Just Me Media &middot; william@justmemedi.ca
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+    
+    send_smtp_email(influencer_email, subject_influencer, html_influencer)
+    
+    # Email to William (Admin Alert)
+    subject_admin = f"🚨 New Influencer Registered: @{handle}"
+    html_admin = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #faf9f6; color: #1a1a1a; padding: 20px; line-height: 1.6;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border: 1px solid #f4f1ea; border-radius: 12px; padding: 30px;">
+          <h2 style="color: #c25e4d; font-size: 22px; margin-bottom: 10px;">New Influencer Registration Alert</h2>
+          <p>A new influencer partner has joined TripSync. The profile has been auto-approved and recorded in Google Sheets.</p>
+          
+          <hr style="border: none; border-top: 1px solid #f4f1ea; margin: 20px 0;">
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold; color: #1a6b6b; width: 150px;">Display Name:</td>
+              <td style="padding: 8px 0;">{display_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold; color: #1a6b6b;">Handle:</td>
+              <td style="padding: 8px 0;"><a href="https://tripsync.ca/@{handle}" style="color: #1a6b6b; font-weight: bold;">@{handle}</a></td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold; color: #1a6b6b;">Email:</td>
+              <td style="padding: 8px 0;"><a href="mailto:{influencer_email}" style="color: #1a6b6b;">{influencer_email}</a></td>
+            </tr>
+          </table>
+          
+          <hr style="border: none; border-top: 1px solid #f4f1ea; margin: 20px 0;">
+          <p style="font-size: 13px; color: #666;">This is an automated operational alert from your TripSync backend system.</p>
+        </div>
+      </body>
+    </html>
+    """
+    
+    send_smtp_email("william@justmemedi.ca", subject_admin, html_admin)
 
 # --- Database ---
 def init_db():
@@ -536,6 +651,301 @@ def planner():
         
     return send_from_directory('.', 'planner.html')
 
+@app.route('/affiliate')
+def serve_affiliate():
+    return send_from_directory('.', 'affiliate.html')
+
+@app.route('/dashboard')
+def serve_dashboard_clean():
+    return send_from_directory('.', 'dashboard.html')
+
+@app.route('/@<handle>')
+def serve_influencer_profile(handle):
+    return send_from_directory('.', 'handle.html')
+
+@app.route('/api/affiliate/register', methods=['POST'])
+def affiliate_register():
+    data = request.get_json() or {}
+    handle = data.get('handle', '').strip().lower()
+    email = data.get('email', '').strip()
+    display_name = data.get('display_name', '').strip()
+    payment_method = data.get('payment_method', '').strip()
+    payment_account = data.get('payment_account', '').strip()
+    pin = data.get('pin', '').strip()
+    social_instagram = data.get('social_instagram', '').strip()
+    social_tiktok = data.get('social_tiktok', '').strip()
+
+    if not handle or not email or not display_name or not payment_method or not payment_account or not pin:
+        return jsonify({'error': 'Missing required registration fields'}), 400
+
+    if not re.match(r'^[a-zA-Z0-9_]+$', handle):
+        return jsonify({'error': 'Handle must contain only letters, numbers, and underscores'}), 400
+
+    if len(pin) != 4 or not pin.isdigit():
+        return jsonify({'error': 'PIN must be exactly 4 digits'}), 400
+
+    pin_hash = hashlib.sha256(pin.encode('utf-8')).hexdigest()
+
+    success, msg = sheets_helper.register_influencer(
+        handle=handle,
+        email=email,
+        display_name=display_name,
+        payment_method=payment_method,
+        payment_account=payment_account,
+        pin_hash=pin_hash,
+        social_instagram=social_instagram,
+        social_tiktok=social_tiktok
+    )
+
+    if not success:
+        return jsonify({'error': msg}), 400
+
+    # Trigger transactional SMTP emails safely
+    send_registration_emails(email, display_name, handle, pin)
+
+    return jsonify({'success': True, 'message': 'Registration successful and auto-approved!'})
+
+@app.route('/api/affiliate/dashboard/<handle>', methods=['GET'])
+def affiliate_dashboard(handle):
+    handle = handle.strip().lower()
+    pin = request.args.get('pin', '').strip()
+
+    if not pin:
+        return jsonify({'error': 'PIN is required to unlock the dashboard'}), 401
+
+    influencer = sheets_helper.get_influencer(handle)
+    if not influencer:
+        return jsonify({'error': 'Influencer profile not found'}), 404
+
+    pin_hash = hashlib.sha256(pin.encode('utf-8')).hexdigest()
+    stored_hash = str(influencer.get('pin_hash', ''))
+    if pin_hash != stored_hash:
+        return jsonify({'error': 'Incorrect 4-digit PIN code'}), 401
+
+    # Record/cache influencer IP to exclude self-clicks
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ip:
+        client_ip = ip.split(',')[0].strip()
+        INFLUENCER_IPS[handle] = client_ip
+        logging.info(f"Registered session IP for influencer @{handle}: {client_ip}")
+
+    deals = sheets_helper.get_influencer_deals(handle)
+
+    return jsonify({
+        'affiliate': {
+            'handle': influencer.get('handle'),
+            'display_name': influencer.get('display_name'),
+            'bio': influencer.get('bio'),
+            'profile_image': influencer.get('profile_image'),
+            'total_clicks': influencer.get('total_clicks', 0),
+            'total_bookings': influencer.get('total_bookings', 0),
+            'total_earned': influencer.get('total_earned', 0.0),
+            'paid_earned': influencer.get('paid_earned', 0.0),
+            'pending_earned': influencer.get('pending_earned', 0.0)
+        },
+        'deals': deals
+    })
+
+@app.route('/api/affiliate/update-deal', methods=['POST'])
+def affiliate_update_deal():
+    data = request.get_json() or {}
+    handle = data.get('handle', '').strip().lower()
+    pin = data.get('pin', '').strip()
+    action = data.get('action', '').strip()
+
+    if not handle or not pin:
+        return jsonify({'error': 'Authentication required'}), 401
+
+    influencer = sheets_helper.get_influencer(handle)
+    if not influencer:
+        return jsonify({'error': 'Influencer profile not found'}), 404
+
+    pin_hash = hashlib.sha256(pin.encode('utf-8')).hexdigest()
+    if pin_hash != str(influencer.get('pin_hash', '')):
+        return jsonify({'error': 'Incorrect PIN code'}), 401
+
+    if action == 'add':
+        title = data.get('title', '').strip()
+        original_url = data.get('original_url', '').strip()
+        code = data.get('code', '').strip()
+        category = data.get('category', 'hotel').strip()
+
+        if not title or not original_url:
+            return jsonify({'error': 'Title and original link are required'}), 400
+
+        deal_id = "DEAL_" + str(int(time.time() * 1000))
+        wrapped_url = f"/go/{handle}/{deal_id}"
+
+        res_id = sheets_helper.add_deal(
+            handle=handle,
+            title=title,
+            original_url=original_url,
+            wrapped_url=wrapped_url,
+            code=code,
+            category=category
+        )
+
+        if not res_id:
+            return jsonify({'error': 'Failed to save deal in Sheets database'}), 500
+
+        return jsonify({'success': True, 'deal_id': res_id, 'wrapped_url': wrapped_url})
+
+    elif action == 'delete':
+        deal_id = data.get('deal_id', '').strip()
+        if not deal_id:
+            return jsonify({'error': 'Deal ID is required to delete'}), 400
+
+        success = sheets_helper.delete_deal(handle, deal_id)
+        if not success:
+            return jsonify({'error': 'Failed to delete deal'}), 500
+
+        return jsonify({'success': True})
+
+    elif action == 'request_payout':
+        total_earned = float(influencer.get('total_earned', 0.0))
+        paid_earned = float(influencer.get('paid_earned', 0.0))
+        unpaid_balance = total_earned - paid_earned
+
+        if unpaid_balance < 50.0:
+            return jsonify({'error': f'Minimum payout balance is $50.00 USD. Your unpaid balance is ${unpaid_balance:.2f} USD'}), 400
+
+        payment_method = influencer.get('payment_method', 'PayPal')
+        payment_account = influencer.get('payment_account', '')
+
+        success = sheets_helper.request_payout(
+            handle=handle,
+            amount=unpaid_balance,
+            payment_method=payment_method,
+            payment_account=payment_account
+        )
+
+        if not success:
+            return jsonify({'error': 'Failed to submit payout request in Sheets database'}), 500
+
+        # Send SMTP alert to William (Admin)
+        payout_subject = f"💸 Payout Requested: @{handle} - ${unpaid_balance:.2f} USD"
+        payout_html = f"""
+        <html>
+          <body style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #1a1a1a;">
+            <h2>Payout Request Pending Review</h2>
+            <p>An influencer partner has requested a manual payout. Please verify their click stats and issue payment.</p>
+            <hr style="border: none; border-top: 1px solid #f4f1ea;">
+            <p><strong>Handle:</strong> @{handle}</p>
+            <p><strong>Display Name:</strong> {influencer.get('display_name')}</p>
+            <p><strong>Payout Amount:</strong> ${unpaid_balance:.2f} USD</p>
+            <p><strong>Method:</strong> {payment_method}</p>
+            <p><strong>Account:</strong> {payment_account}</p>
+            <hr style="border: none; border-top: 1px solid #f4f1ea;">
+            <p style="font-size: 12px; color: #888;">TripSync Affiliate Operations</p>
+          </body>
+        </html>
+        """
+        send_smtp_email("william@justmemedi.ca", payout_subject, payout_html)
+
+        return jsonify({'success': True, 'amount_requested': unpaid_balance})
+
+    return jsonify({'error': 'Invalid action'}), 400
+
+@app.route('/api/affiliate/stats/<handle>', methods=['GET'])
+def affiliate_stats(handle):
+    handle = handle.strip().lower()
+    influencer = sheets_helper.get_influencer(handle)
+    if not influencer:
+        return jsonify({'error': 'Influencer profile not found'}), 404
+
+    deals = sheets_helper.get_influencer_deals(handle)
+
+    return jsonify({
+        'affiliate': {
+            'handle': influencer.get('handle'),
+            'display_name': influencer.get('display_name'),
+            'bio': influencer.get('bio'),
+            'profile_image': influencer.get('profile_image')
+        },
+        'deals': deals
+    })
+
+@app.route('/go/<handle>/<deal_id>')
+def redirect_deal(handle, deal_id):
+    handle = handle.strip().lower()
+    deal = sheets_helper.get_deal(handle, deal_id)
+    if not deal:
+        logging.warning(f"Wrapped deal {deal_id} for handle @{handle} not found. Redirecting to homepage.")
+        return make_response(send_from_directory('.', 'index.html'))
+
+    original_url = deal.get('original_url', '').strip()
+    deal_title = deal.get('title', 'Curated Deal')
+
+    # Get client IP securely
+    ip_header = request.headers.get('X-Forwarded-For', request.remote_addr)
+    client_ip = ip_header.split(',')[0].strip() if ip_header else ""
+
+    # Generate unique click_id (e.g. jess_1782392)
+    rand_id = random.randint(1000000, 9999999)
+    click_id = f"{handle}_{rand_id}"
+
+    # Self-click exclusion filter
+    is_self_click = False
+    saved_ip = INFLUENCER_IPS.get(handle)
+    if saved_ip and client_ip == saved_ip:
+        is_self_click = True
+        logging.info(f"Self-click detected for influencer @{handle} from IP {client_ip}. Click logging skipped.")
+
+    if not is_self_click:
+        sheets_helper.log_affiliate_click(
+            click_id=click_id,
+            handle=handle,
+            deal_title=deal_title,
+            ip=client_ip
+        )
+
+    # Dynamic Partner Tracking Loop & URL Cleaning
+    target_url = original_url
+    
+    # 1. Booking.com
+    if "booking.com" in target_url.lower():
+        cleaned_url = re.sub(r'[\?&]aid=[^&]*', '', target_url)
+        cleaned_url = re.sub(r'[\?&]label=[^&]*', '', cleaned_url)
+        sep = "&" if "?" in cleaned_url else "?"
+        target_url = f"{cleaned_url}{sep}aid=2884913&label={click_id}"
+
+    # 2. Travelpayouts Campaigns (Klook, Tiqets, Viator, Klook etc.)
+    elif any(tp_domain in target_url.lower() for tp_domain in ["klook.com", "tiqets.com", "viator.com", "getrentacar.com", "aviasales.com", "kiwitaxi.com", "welcomepickups.com", "ektatraveling.com"]):
+        cleaned_url = re.sub(r'[\?&]marker=[^&]*', '', target_url)
+        cleaned_url = re.sub(r'[\?&]trs=[^&]*', '', cleaned_url)
+        cleaned_url = re.sub(r'[\?&]subid=[^&]*', '', cleaned_url)
+        sep = "&" if "?" in cleaned_url else "?"
+        target_url = f"{cleaned_url}{sep}marker=733310&subid={click_id}&trs=533550"
+
+    # Make the redirection response and set a 90-day cookie
+    resp = make_response(f"""
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="0; url={target_url}">
+        <title>Redirecting to Partner...</title>
+        <style>
+          body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #faf9f6; color: #1a1a1a; }}
+          .spinner {{ border: 4px solid rgba(26, 107, 107, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #1a6b6b; animation: spin 1s linear infinite; margin-bottom: 20px; }}
+          @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
+          .card {{ text-align: center; }}
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="spinner" style="margin: 0 auto 15px;"></div>
+          <p>Redirecting you securely to our partner page...</p>
+        </div>
+      </body>
+    </html>
+    """)
+
+    resp.set_cookie('tripsync_referral', handle, max_age=90*24*60*60)
+    return resp
+
+@app.route('/assistant.html')
+def assistant():
+    return send_from_directory('.', 'assistant.html')
+
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('.', 'manifest.json')
@@ -543,6 +953,271 @@ def manifest():
 @app.route('/sw.js')
 def sw():
     return send_from_directory('.', 'sw.js')
+
+@app.route('/api/verify-key', methods=['POST'])
+def verify_key():
+    data = request.get_json()
+    key = data.get('key', '').strip()
+    provider = data.get('provider', 'deepseek').strip()
+    
+    if not key:
+        return jsonify({'valid': False, 'error': 'No key provided'}), 400
+        
+    try:
+        if provider == 'deepseek':
+            url = "https://api.deepseek.com/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "deepseek-chat",
+                "messages": [{"role": "user", "content": "ping"}],
+                "max_tokens": 5
+            }
+            resp = requests.post(url, headers=headers, json=payload, timeout=8)
+            if resp.status_code == 200:
+                return jsonify({'valid': True})
+            else:
+                try: err_msg = resp.json().get('error', {}).get('message', 'Invalid key')
+                except: err_msg = f"Status code {resp.status_code}"
+                return jsonify({'valid': False, 'error': err_msg}), 400
+                
+        elif provider == 'groq':
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": "ping"}],
+                "max_tokens": 5
+            }
+            resp = requests.post(url, headers=headers, json=payload, timeout=8)
+            if resp.status_code == 200:
+                return jsonify({'valid': True})
+            else:
+                try: err_msg = resp.json().get('error', {}).get('message', 'Invalid key')
+                except: err_msg = f"Status code {resp.status_code}"
+                return jsonify({'valid': False, 'error': err_msg}), 400
+                
+        elif provider == 'gemini':
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+            payload = {"contents": [{"parts": [{"text": "ping"}]}]}
+            resp = requests.post(url, json=payload, timeout=8)
+            if resp.status_code == 200:
+                return jsonify({'valid': True})
+            else:
+                try: err_msg = resp.json().get('error', {}).get('message', 'Invalid key')
+                except: err_msg = f"Status code {resp.status_code}"
+                return jsonify({'valid': False, 'error': err_msg}), 400
+                
+        return jsonify({'valid': False, 'error': 'Unknown provider'}), 400
+    except Exception as e:
+        return jsonify({'valid': False, 'error': str(e)}), 500
+
+import base64
+
+def decrypt_key(encrypted_key, email=""):
+    try:
+        # Base64 decode
+        obfuscated = base64.b64decode(encrypted_key).decode('utf-8')
+        # Get composite secret
+        salt = "TS-2026-FLY-Sync-Secure-0A1B2C3D"
+        secret = f"{email.strip().lower()}_{salt}" if email else salt
+        
+        # XOR decryption
+        plain_chars = []
+        for i in range(len(obfuscated)):
+            char_code = ord(obfuscated[i])
+            salt_code = ord(secret[i % len(secret)])
+            plain_chars.append(chr(char_code ^ salt_code))
+            
+        return "".join(plain_chars)
+    except Exception as e:
+        logging.error(f"Failed key decryption: {e}")
+        return None
+
+def call_deepseek_history(decrypted_key, system_prompt, history_messages):
+    url = "https://api.deepseek.com/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {decrypted_key}", "Content-Type": "application/json"}
+    
+    # Format messages
+    messages = [{"role": "system", "content": system_prompt}]
+    for msg in history_messages:
+        messages.append({"role": msg.get("role"), "content": msg.get("content")})
+        
+    payload = {
+        "model": "deepseek-chat",
+        "messages": messages,
+        "max_tokens": 1500,
+        "temperature": 0.7
+    }
+    
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=12)
+        if resp.status_code == 200:
+            return resp.json()['choices'][0]['message']['content'], False
+        else:
+            logging.warning(f"DeepSeek failed with status code {resp.status_code}: {resp.text}")
+            return None, True
+    except Exception as e:
+        logging.error(f"DeepSeek connection error: {e}")
+        return None, True
+
+def call_groq_history(system_prompt, history_messages):
+    if not GROQ_KEY:
+        logging.error("No server-side GROQ_API_KEY for failover")
+        return None
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
+    
+    messages = [{"role": "system", "content": system_prompt}]
+    for msg in history_messages:
+        messages.append({"role": msg.get("role"), "content": msg.get("content")})
+        
+    payload = {
+        "model": GROQ_MODEL,
+        "messages": messages,
+        "max_tokens": 1500,
+        "temperature": 0.7
+    }
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=12)
+        if resp.status_code == 200:
+            return resp.json()['choices'][0]['message']['content']
+        else:
+            logging.error(f"Groq history endpoint failed: {resp.status_code} {resp.text}")
+    except Exception as e:
+        logging.error(f"Groq history error: {e}")
+    return None
+
+def call_gemini_history(system_prompt, history_messages):
+    if not GEMINI_API_KEY:
+        logging.error("No server-side GEMINI_API_KEY for failover")
+        return None
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    
+    # Format messages for Gemini API (Gemini uses 'user' and 'model' roles)
+    contents = []
+    for msg in history_messages:
+        role = "user" if msg.get("role") == "user" else "model"
+        contents.append({
+            "role": role,
+            "parts": [{"text": msg.get("content")}]
+        })
+        
+    payload = {
+        "contents": contents,
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 1500
+        }
+    }
+    try:
+        resp = requests.post(url, json=payload, timeout=12)
+        if resp.status_code == 200:
+            data = resp.json()
+            if "candidates" in data and len(data["candidates"]) > 0:
+                return data["candidates"][0]["content"]["parts"][0]["text"]
+        else:
+            logging.error(f"Gemini history endpoint failed: {resp.status_code} {resp.text}")
+    except Exception as e:
+        logging.error(f"Gemini history error: {e}")
+    return None
+
+@app.route('/api/llm/proxy', methods=['POST'])
+def llm_proxy():
+    data = request.get_json()
+    prompt = data.get('prompt', '').strip()
+    encrypted_key = data.get('encrypted_key', '').strip()
+    email = data.get('email', '').strip()
+    provider = data.get('provider', 'deepseek').strip()
+    destination = data.get('destination', '').strip()
+    history = data.get('history', [])
+
+    if not prompt:
+        return jsonify({'error': 'No prompt message provided'}), 400
+
+    decrypted_key = decrypt_key(encrypted_key, email)
+    if not decrypted_key:
+        return jsonify({'error': 'Invalid key decrypt challenge'}), 400
+
+    system_prompt = f"You are TripSync, a premium AI travel curate assistant. Let's refine the trip to {destination} step-by-step. Keep responses structured, concise, friendly, and under 3-4 paragraphs. Incorporate helpful advice and bullet points where applicable."
+
+    # Priority Order list for Auto Failover:
+    # 1. Active User Key (either DeepSeek, Groq, or Gemini)
+    # 2. Server Groq
+    # 3. Server Gemini
+    
+    failover_triggered = False
+    failover_provider = None
+    response_text = None
+
+    if provider == 'deepseek':
+        response_text, failed = call_deepseek_history(decrypted_key, system_prompt, history)
+        if failed:
+            logging.warning("DeepSeek API failed. Triggering auto-failover to Groq (Tier 2)")
+            failover_triggered = True
+            failover_provider = 'groq'
+            response_text = call_groq_history(system_prompt, history)
+            if not response_text:
+                logging.warning("Groq backup failed. Triggering auto-failover to Gemini (Tier 3)")
+                failover_provider = 'gemini'
+                response_text = call_gemini_history(system_prompt, history)
+    
+    elif provider == 'groq':
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {decrypted_key}", "Content-Type": "application/json"}
+        messages = [{"role": "system", "content": system_prompt}]
+        for msg in history:
+            messages.append({"role": msg.get("role"), "content": msg.get("content")})
+        payload = {"model": GROQ_MODEL, "messages": messages, "max_tokens": 1500, "temperature": 0.7}
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=12)
+            if resp.status_code == 200:
+                response_text = resp.json()['choices'][0]['message']['content']
+        except Exception as e:
+            logging.error(f"User Groq call failed: {e}")
+        
+        if not response_text:
+            logging.warning("User Groq failed. Triggering auto-failover to Server Groq")
+            response_text = call_groq_history(system_prompt, history)
+            if not response_text:
+                logging.warning("Server Groq failed. Triggering auto-failover to Server Gemini")
+                failover_triggered = True
+                failover_provider = 'gemini'
+                response_text = call_gemini_history(system_prompt, history)
+
+    elif provider == 'gemini':
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={decrypted_key}"
+        contents = []
+        for msg in history:
+            role = "user" if msg.get("role") == "user" else "model"
+            contents.append({"role": role, "parts": [{"text": msg.get("content")}]})
+        payload = {"contents": contents, "systemInstruction": {"parts": [{"text": system_prompt}]}, "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500}}
+        try:
+            resp = requests.post(url, json=payload, timeout=12)
+            if resp.status_code == 200:
+                data = resp.json()
+                if "candidates" in data and len(data["candidates"]) > 0:
+                    response_text = data["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception as e:
+            logging.error(f"User Gemini call failed: {e}")
+            
+        if not response_text:
+            logging.warning("User Gemini failed. Triggering auto-failover to Server Gemini")
+            response_text = call_gemini_history(system_prompt, history)
+            if not response_text:
+                logging.warning("Server Gemini failed. Triggering auto-failover to Server Groq")
+                failover_triggered = True
+                failover_provider = 'groq'
+                response_text = call_groq_history(system_prompt, history)
+
+    if not response_text:
+        return jsonify({'error': 'All LLM failovers exhausted. API keys may be blocked or offline.'}), 502
+
+    return jsonify({
+        'response': response_text,
+        'failover_triggered': failover_triggered,
+        'failover_provider': failover_provider
+    })
 
 @app.route('/api/tripsync', methods=['POST'])
 def tripsync():

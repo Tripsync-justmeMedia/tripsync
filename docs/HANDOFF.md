@@ -203,9 +203,18 @@ How William and AI build TripSync together:
 
 ---
 
-## What's Done ✅ (Updated May 27)
+## What's Done ✅ (Updated May 29)
 
-- **Technical SEO, JSON-LD Schema & Dynamic Share Cards**:
+- **TripSync V2: AI Assistant & Influencer Affiliate System (May 29)**:
+  - **Local Cipher Core Storage & User Key Obfuscation**: Created `static/js/storage.js` and `static/js/encryption.js` to obfuscate plain-text BYO API keys in `localStorage` using a composite XOR cipher salted dynamically with the user's email: `email + "_TS-2026-FLY-Sync-Secure-0A1B2C3D"`.
+  - **Multi-LLM Failover Orchestration Proxy**: Wired a resilient proxy `/api/llm/proxy` inside `server.py` that decrypts user credentials and silently transitions from the client's key to server backups (DeepSeek ➔ Groq ➔ Gemini) upon rate-limit triggers.
+  - **AI Assistant Chat & PWA Workspaces (`assistant.html`)**: Renders conversational workspaces with active LLM selectors, JSON export/import functions, checklists, and dynamic percentage progress bars.
+  - **Zero-Cost Influencer Affiliate Network**: Deployed a complete auto-approved influencer signup portal (`/affiliate`), a secure, PIN-locked dashboard UI (`/dashboard`), and custom public pages (`/@handle`).
+  - **Google Sheets live Database Integrations (`sheets_helper.py`)**: Connects using service account keys (`credentials.json`), supporting five transaction sheets, with an automatic local fallback file-based DB mode (`mock_sheets_db.json`) during unconfigured setups.
+  - **URL wrapping Redirect Engine (`/go/<handle>/<deal_id>`)**: Cleans affiliate parameters, generates unique `click_id` keys (`{handle}_{random_digits}`), sets 90-day referral cookies, and filters out self-clicks by caching IP addresses of logged-in dashboard sessions.
+  - **Free SMTP Transactions**: Employs standard Python `smtplib` over secure port `587` with William's business Gmail App Password, automating HTML operational agreement dispatches and payout admin alerts for $0 cost.
+
+- **Technical SEO, JSON-LD Schema & Dynamic Share Cards (May 27)**:
   - Built an explicit `/planner.html` Flask router in `server.py` that intercepts sharing requests (e.g. `/planner.html?destination=Lisbon`) and pre-renders custom `<title>` and `<meta>` preview tags on the backend. This allows messaging and social bots (WhatsApp, iMessage, Twitter, Facebook) to show beautiful, customized preview cards for shared itineraries.
   - Injected standardized Google JSON-LD `SoftwareApplication` search Schema markup into the homepage head to facilitate star ratings and software snippet indexing.
   - Designed and deployed standard `robots.txt` and `sitemap.xml` crawl guidance assets in the root folder, and registered explicit routes in Flask for reliable indexing.

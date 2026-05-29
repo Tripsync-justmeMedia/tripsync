@@ -35,6 +35,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <script src="static/js/storage.js"></script>
+  <script src="static/js/encryption.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-3K845T64RP"></script>
   <script>
@@ -181,9 +183,98 @@
       .bottom-nav { display: flex; }
       body { padding-bottom: 70px; } /* Space for bottom nav */
     }
+    
+    /* --- TripSync V2 Modal Styles --- */
+    .ts-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .ts-modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ts-modal-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      border: 1px solid var(--cream);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .ts-modal-overlay.active .ts-modal-card {
+      transform: translateY(0);
+    }
+    .ts-modal-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      color: var(--ink);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ts-modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+
+  <!-- TripSync V2 Modal Overlay -->
+  <div class="ts-modal-overlay" id="assistantModal">
+    <div class="ts-modal-card">
+      <div class="ts-modal-header">
+        <span>🤖 AI Assistant Setup</span>
+        <button class="ts-modal-close" onclick="closeAssistantModal()">×</button>
+      </div>
+      <div id="modalStep1">
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1.5rem; line-height:1.5;">
+          Upgrade to the Interactive AI Assistant. Enter your email to begin your free secure activation.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <input type="email" id="assistantEmail" class="input-mini" style="padding:0.75rem; font-size:0.9rem;" placeholder="your.name@example.com">
+          <button onclick="submitAssistantEmail()" class="btn-primary" style="margin:0;">Continue</button>
+        </div>
+      </div>
+      <div id="modalStep2" style="display:none;">
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1rem; line-height:1.5;">
+          TripSync V2 is free and local-first. Bring your own free API key to unlock unlimited premium day-by-day travel planning chats.
+        </p>
+        <div style="margin-bottom:1.25rem;">
+          <label style="font-size:0.75rem; font-weight:700; color:var(--teal); text-transform:uppercase; display:block; margin-bottom:0.4rem;">Select AI Provider</label>
+          <select id="modalProviderSelect" class="input-mini" style="width:100%; padding:0.6rem; font-weight:700;" onchange="updateProviderInstructions()">
+            <option value="deepseek">DeepSeek (Primary - Recommended)</option>
+            <option value="groq">Groq (Backup 1)</option>
+            <option value="gemini">Gemini (Backup 2)</option>
+          </select>
+        </div>
+        <div id="providerInstructions" style="font-size:0.8rem; background:var(--sky); border-radius:8px; padding:1rem; margin-bottom:1.25rem; line-height:1.6; border:1px solid rgba(26,107,107,0.1);">
+          <!-- Dynamic instructions go here -->
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <input type="password" id="assistantApiKey" class="input-mini" style="padding:0.75rem; font-family:monospace; font-size:0.8rem;" placeholder="Paste API Key here...">
+          <button onclick="verifyAndSaveKey()" id="modalVerifyBtn" class="btn-primary" style="margin:0;">Verify &amp; Activate Key</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
@@ -210,6 +301,20 @@
     </main>
 
     <aside class="sidebar">
+      <!-- AI Assistant Banner Widget -->
+      <div class="sidebar-widget" id="aiAssistantWidget" style="border: 1.5px solid var(--teal); background: var(--sky); position: relative; overflow: hidden; animation: fadeIn 0.4s ease both;">
+        <div style="position: absolute; top: -10px; right: -10px; width: 45px; height: 45px; background: rgba(26,107,107,0.06); border-radius: 50%;"></div>
+        <div class="widget-title" style="border-bottom: 2px solid rgba(26,107,107,0.1); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--teal); font-weight: bold;">
+          🤖 AI Travel Assistant
+        </div>
+        <div style="font-size:0.82rem; color:var(--ink); margin-bottom:1rem; line-height: 1.5;">
+          Unlock day-by-day interactive chats, live travel modifications, and secure offline key convenience.
+        </div>
+        <button onclick="triggerAIAssistant()" class="btn-primary" style="margin:0; width:100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          Try AI Assistant ➔
+        </button>
+      </div>
+
       <div class="sidebar-widget" id="flightWidget">
         <div class="widget-title">✈️ Book Flights</div>
         <div id="liveFlightPrice" style="display:none; background:var(--sky); border:1px solid rgba(26,107,107,0.15); border-radius:8px; padding:0.75rem; margin-bottom:1rem; text-align:center;">
@@ -713,6 +818,124 @@
       USD: '$', EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', SGD: 'S$', AED: 'د.إ', JPY: '¥', INR: '₹', MXN: '$', BRL: 'R$', ZAR: 'R'
     };
     return symbols[currency] || currency;
+  }
+
+  // --- TripSync V2 AI Assistant Modal Handlers ---
+  function triggerAIAssistant() {
+    const modal = document.getElementById('assistantModal');
+    modal.classList.add('active');
+
+    // Reset view steps
+    document.getElementById('modalStep1').style.display = 'block';
+    document.getElementById('modalStep2').style.display = 'none';
+
+    // If profile email is already present, skip to Step 2
+    if (window.TripSyncStorage && window.TripSyncStorage.hasProfile()) {
+      const profile = window.TripSyncStorage.getProfile();
+      document.getElementById('assistantEmail').value = profile.email;
+      submitAssistantEmail();
+    }
+  }
+
+  function closeAssistantModal() {
+    document.getElementById('assistantModal').classList.remove('active');
+  }
+
+  function submitAssistantEmail() {
+    const email = document.getElementById('assistantEmail').value.trim();
+    if (!email || !email.includes('@')) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+    
+    // Save profile details
+    if (window.TripSyncStorage) {
+      window.TripSyncStorage.saveProfile(email);
+    }
+    
+    // Go to step 2
+    document.getElementById('modalStep1').style.display = 'none';
+    document.getElementById('modalStep2').style.display = 'block';
+    updateProviderInstructions();
+  }
+
+  function updateProviderInstructions() {
+    const provider = document.getElementById('modalProviderSelect').value;
+    const box = document.getElementById('providerInstructions');
+    
+    let html = '';
+    if (provider === 'deepseek') {
+      html = `
+        <strong>Guided DeepSeek Setup (60s):</strong><br>
+        1. Click <a href="https://platform.deepseek.com/" target="_blank" style="color:var(--teal); font-weight:700; text-decoration:underline;">here to open DeepSeek Console</a>.<br>
+        2. Create a free account (no credit card required).<br>
+        3. Go to <strong>API Keys</strong> ➔ <strong>Create API Key</strong>.<br>
+        4. Copy the key and paste it below.
+      `;
+    } else if (provider === 'groq') {
+      html = `
+        <strong>Guided Groq Setup (60s):</strong><br>
+        1. Click <a href="https://console.groq.com/" target="_blank" style="color:var(--teal); font-weight:700; text-decoration:underline;">here to open Groq Console</a>.<br>
+        2. Sign in and navigate to <strong>API Keys</strong>.<br>
+        3. Click <strong>Create API Key</strong>, copy it and paste below.
+      `;
+    } else if (provider === 'gemini') {
+      html = `
+        <strong>Guided Gemini Setup (60s):</strong><br>
+        1. Click <a href="https://aistudio.google.com/" target="_blank" style="color:var(--teal); font-weight:700; text-decoration:underline;">here to open Google AI Studio</a>.<br>
+        2. Click <strong>Get API Key</strong> in top left.<br>
+        3. Select <strong>Create API Key</strong>, copy it and paste below.
+      `;
+    }
+    box.innerHTML = html;
+  }
+
+  async function verifyAndSaveKey() {
+    const key = document.getElementById('assistantApiKey').value.trim();
+    const provider = document.getElementById('modalProviderSelect').value;
+    const btn = document.getElementById('modalVerifyBtn');
+    
+    if (!key) {
+      alert("Please paste your API key.");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Verifying API Key...';
+
+    try {
+      const resp = await fetch('/api/verify-key', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ key, provider })
+      });
+      
+      const res = await resp.json();
+      if (!resp.ok || !res.valid) {
+        throw new Error(res.error || 'Invalid API Key');
+      }
+
+      // Success! Encrypt and save key
+      const profile = window.TripSyncStorage.getProfile();
+      const email = profile ? profile.email : '';
+      const encryptedKey = window.TripSyncCipher.encrypt(key, email);
+      
+      window.TripSyncStorage.saveKeys(encryptedKey, provider, true);
+      
+      showToast("🎉 Key Verified & Activated!");
+      closeAssistantModal();
+      
+      // Redirect to Chat Assistant page!
+      const params = new URLSearchParams(window.location.search);
+      const destination = params.get('destination') || '';
+      window.location.href = `assistant.html?destination=${encodeURIComponent(destination)}`;
+      
+    } catch(e) {
+      alert("Verification Failed: " + e.message + ". Please verify you copied the key correctly and try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Verify & Activate Key';
+    }
   }
 
   init();

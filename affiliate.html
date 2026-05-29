@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a6b6b">
+  <link rel="icon" type="image/png" href="icon.png">
+  <title>Influencer Partner Program — TripSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #1a6b6b; --teal-light: #2d8f8f; --ink: #1a1a1a;
+      --muted: #666; --cream: #f4f1ea; --paper: #faf9f6;
+      --rust: #c25e4d; --gold: #b8962e; --sky: #eaf4f4;
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); line-height:1.6; }
+    
+    header { background:white; padding:1.5rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--cream); position:sticky; top:0; z-index:100; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--teal); }
+    .btn-outline { background:none; border:1.5px solid var(--teal); color:var(--teal); padding:0.6rem 1.2rem; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-outline:hover { background:var(--sky); }
+
+    .hero { background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)), url('https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=1600&q=80'); background-size:cover; background-position:center; padding:7rem 2rem; text-align:center; color:white; }
+    .hero-title { font-family:'Playfair Display',serif; font-size:3.5rem; font-weight:900; margin-bottom:0.5rem; text-shadow:0 4px 10px rgba(0,0,0,0.2); }
+    .hero-sub { font-size:1.1rem; opacity:0.9; font-weight:500; letter-spacing:1px; text-transform:uppercase; }
+
+    .container { max-width:800px; margin:3rem auto; padding:0 2rem; }
+    
+    .panel { background:white; border-radius:16px; padding:3rem; box-shadow:var(--shadow); border:1px solid var(--cream); }
+    
+    .form-group { margin-bottom:1.5rem; }
+    label { font-size:0.75rem; font-weight:700; color:var(--teal); text-transform:uppercase; display:block; margin-bottom:0.4rem; }
+    .input-field { width:100%; padding:0.85rem 1rem; border:1px solid var(--cream); border-radius:8px; font-family:inherit; font-size:0.95rem; outline:none; transition:all 0.2s; }
+    .input-field:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(26,107,107,0.1); }
+    
+    .handle-input-container { display:flex; align-items:center; background:white; border:1px solid var(--cream); border-radius:8px; overflow:hidden; }
+    .handle-prefix { padding:0.85rem 0.5rem 0.85rem 1rem; color:var(--muted); font-weight:700; font-size:0.95rem; background:var(--paper); border-right:1px solid var(--cream); }
+    .handle-input { flex:1; padding:0.85rem 1rem; border:none; outline:none; font-family:inherit; font-size:0.95rem; }
+    
+    .social-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    
+    .agreement-box { background:var(--paper); border:1px solid var(--cream); border-radius:8px; padding:1.5rem; font-size:0.8rem; color:var(--muted); max-height:180px; overflow-y:auto; margin-bottom:1.5rem; line-height:1.6; }
+    .agreement-title { font-weight:700; color:var(--ink); margin-bottom:0.5rem; }
+
+    .checkbox-row { display:flex; align-items:flex-start; gap:0.5rem; margin-bottom:2rem; }
+    .checkbox-row input { margin-top:0.25rem; cursor:pointer; }
+    .checkbox-label { font-size:0.85rem; color:var(--ink); font-weight:500; cursor:pointer; }
+
+    .btn-primary { background:var(--teal); color:white; border:none; padding:1.1rem; border-radius:8px; font-weight:700; width:100%; cursor:pointer; font-size:1rem; text-align:center; text-decoration:none; display:block; transition:all 0.2s; }
+    .btn-primary:hover { background:var(--teal-light); transform:translateY(-1px); }
+
+    /* Success Card Styles */
+    .success-card { text-align:center; display:none; animation: fadeIn 0.4s ease both; }
+    .success-icon { font-size:4rem; color:#00a86b; margin-bottom:1.5rem; }
+    .success-title { font-family:'Playfair Display', serif; font-size:2rem; font-weight:900; margin-bottom:0.75rem; }
+    .link-container { background:var(--sky); border:1px solid rgba(26,107,107,0.15); border-radius:8px; padding:1rem; margin:1.5rem 0; font-family:monospace; font-weight:700; color:var(--teal); font-size:1.1rem; word-break:break-all; }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width:768px) {
+      .hero-title { font-size:2.2rem; }
+      .panel { padding:2rem 1.25rem; }
+      .social-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">Trip<span>Sync</span></a>
+  <a href="index.html" class="btn-outline">Go to TripSync</a>
+</header>
+
+<section class="hero">
+  <p class="hero-sub">Auto-Approved Partner Program</p>
+  <h1 class="hero-title">Monetize Your Influence</h1>
+</section>
+
+<div class="container">
+  <div class="panel">
+    
+    <!-- Registration Form -->
+    <form id="affiliateForm" onsubmit="executeRegister(event)">
+      <div style="margin-bottom:2rem;">
+        <h2 style="font-family:'Playfair Display'; margin-bottom:0.4rem;">Create Partner Profile</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">Join the TripSync affiliate system instantly. Sign up, create your dashboard, and earn 50% on all bookings from your audience.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="displayName">Display Name</label>
+        <input type="text" id="displayName" class="input-field" placeholder="e.g. Jessica Miller" required>
+      </div>
+
+      <div class="form-group">
+        <label for="handle">Custom Referral Handle</label>
+        <div class="handle-input-container">
+          <span class="handle-prefix">tripsync.ca/@</span>
+          <input type="text" id="handle" class="handle-input" placeholder="jessica" required oninput="sanitizeHandle(this)">
+        </div>
+        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem; display:block;">Your unique page will live at: <strong>tripsync.ca/@[handle]</strong></span>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" class="input-field" placeholder="jessica@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label>Social Handles (Instagram / TikTok / YouTube)</label>
+        <div class="social-grid">
+          <input type="text" id="socialInstagram" class="input-field" placeholder="Instagram (e.g. jess_travels)">
+          <input type="text" id="socialTiktok" class="input-field" placeholder="TikTok (e.g. jess_vlogs)">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label style="color:var(--teal)">Payment Details (For Manual Payouts)</label>
+        <div class="social-grid" style="grid-template-columns: 140px 1fr;">
+          <select id="paymentMethod" class="input-field" style="font-weight:700;" required>
+            <option value="PayPal">PayPal</option>
+            <option value="Venmo">Venmo</option>
+            <option value="Bank">Bank Transfer</option>
+          </select>
+          <input type="text" id="paymentAccount" class="input-field" placeholder="Payment email or account number" required>
+        </div>
+        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem; display:block;">Payouts are generated manually once account balance reaches <strong>$50 USD</strong>.</span>
+      </div>
+
+      <div class="form-group" style="max-width:200px;">
+        <label for="pin">Create 4-Digit Login PIN</label>
+        <input type="text" id="pin" class="input-field" placeholder="1234" maxlength="4" pattern="\d{4}" style="letter-spacing:4px; font-weight:700; text-align:center;" required>
+        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem; display:block;">Numeric PIN to log into your dashboard.</span>
+      </div>
+
+      <div class="agreement-box">
+        <div class="agreement-title">TRIPSYNC INFLUENCER AGREEMENT & TERMS</div>
+        1. <strong>Responsibility of Offers</strong>: The influencer is completely responsible for the validity, accuracy, and expiration timelines of all custom deals, promo codes, and text descriptions they post.<br><br>
+        2. <strong>TripSync Indemnity</strong>: TripSync is a free travel planner and is not liable for false, expired, or invalid hotel, flight, or tour offers posted by partners.<br><br>
+        3. <strong>Commission Split</strong>: TripSync splits all net commissions earned from referenced bookings 50/50 with the referring influencer.<br><br>
+        4. <strong>Payment Timeline</strong>: Commissions are manual payouts generated 30-90 days following a completed booking (when TripSync receives commissions from hotel/flight partners). TripSync only pays commissions actually received.<br><br>
+        5. <strong>Minimum Payout</strong>: Payout requests require a minimum balance of $50 USD.
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="termsCheck" required>
+        <label for="termsCheck" class="checkbox-label">I agree to the TripSync Influencer Agreement and terms, and authorize my electronic sign-off.</label>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn-primary">Register &amp; Create Profile</button>
+    </form>
+
+    <!-- Success Card Overlay -->
+    <div class="success-card" id="successCard">
+      <div class="success-icon">🎉</div>
+      <h2 class="success-title">Welcome to the TripSync Team!</h2>
+      <p style="color:var(--muted); margin-bottom:1.5rem;">Your partner profile has been auto-approved instantly. We have logged your details in Google Sheets and sent your electronic agreement copy to your inbox!</p>
+      
+      <div style="font-size:0.85rem; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.25rem;">Your Referral Public Page</div>
+      <div class="link-container" id="successPublicUrl">tripsync.ca/@jessica</div>
+      
+      <div style="display:flex; flex-direction:column; gap:0.5rem; max-width:400px; margin:2rem auto 0;">
+        <a id="successDashboardLink" href="#" class="btn-primary">Go to Dashboard</a>
+        <a href="index.html" class="btn-primary" style="background:#e5e7eb; color:var(--ink); border:none; margin:0;">Back to Homepage</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer style="background:var(--ink);color:var(--muted);text-align:center;padding:2rem;font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:4rem">
+  &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; william@justmemedi.ca
+</footer>
+
+<script>
+  function sanitizeHandle(input) {
+    // Only allow alphanumeric characters and underscores
+    input.value = input.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+  }
+
+  async function executeRegister(e) {
+    e.preventDefault();
+    
+    const displayName = document.getElementById('displayName').value.trim();
+    const handle = document.getElementById('handle').value.trim().toLowerCase();
+    const email = document.getElementById('email').value.trim();
+    const instagram = document.getElementById('socialInstagram').value.trim();
+    const tiktok = document.getElementById('socialTiktok').value.trim();
+    const method = document.getElementById('paymentMethod').value;
+    const account = document.getElementById('paymentAccount').value.trim();
+    const pin = document.getElementById('pin').value.trim();
+    const termsChecked = document.getElementById('termsCheck').checked;
+
+    if (!termsChecked) {
+      alert("You must agree to the Influencer Agreement.");
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Registering Partner...';
+
+    try {
+      const resp = await fetch('/api/affiliate/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          handle, email, display_name: displayName,
+          payment_method: method, payment_account: account,
+          pin, social_instagram: instagram, social_tiktok: tiktok
+        })
+      });
+
+      const res = await resp.json();
+      if (!resp.ok) {
+        throw new Error(res.error || 'Failed registration');
+      }
+
+      // Hide Form, show Success
+      document.getElementById('affiliateForm').style.display = 'none';
+      document.getElementById('successCard').style.display = 'block';
+      
+      document.getElementById('successPublicUrl').textContent = `https://tripsync.ca/@${handle}`;
+      document.getElementById('successDashboardLink').href = `dashboard.html?handle=${handle}`;
+      
+    } catch(e) {
+      alert("Registration Failed: " + e.message);
+      btn.disabled = false;
+      btn.textContent = 'Register & Create Profile';
+    }
+  }
+</script>
+
+</body>
+</html>

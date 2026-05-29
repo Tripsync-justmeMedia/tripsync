@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a6b6b">
+  <link rel="icon" type="image/png" href="icon.png">
+  <title>AI Travel Assistant — TripSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <script src="static/js/storage.js"></script>
+  <script src="static/js/encryption.js"></script>
+  <style>
+    :root {
+      --teal: #1a6b6b; --teal-light: #2d8f8f; --ink: #1a1a1a;
+      --muted: #666; --cream: #f4f1ea; --paper: #faf9f6;
+      --rust: #c25e4d; --gold: #b8962e; --sky: #eaf4f4;
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+    
+    header { background:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--cream); flex-shrink:0; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--teal); }
+    .btn-outline { background:none; border:1.5px solid var(--teal); color:var(--teal); padding:0.5rem 1rem; border-radius:6px; font-weight:700; font-size:0.8rem; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-outline:hover { background:var(--sky); }
+
+    .main-layout { display:grid; grid-template-columns:300px 1fr 340px; flex:1; overflow:hidden; }
+
+    /* Left Sidebar: Trips & Provider Settings */
+    .left-bar { background:white; border-right:1px solid var(--cream); padding:1.5rem; display:flex; flex-direction:column; gap:1.5rem; overflow-y:auto; }
+    .bar-title { font-family:'Playfair Display', serif; font-size:1rem; font-weight:900; border-bottom:2px solid var(--sky); padding-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem; }
+    
+    .trip-list-item { padding:0.75rem; border-radius:8px; border:1px solid var(--cream); margin-bottom:0.5rem; cursor:pointer; font-size:0.85rem; font-weight:500; transition:all 0.2s; }
+    .trip-list-item:hover, .trip-list-item.active { border-color:var(--teal); background:var(--sky); }
+
+    .provider-status { background:var(--sky); padding:1rem; border-radius:10px; border:1px solid rgba(26,107,107,0.1); font-size:0.8rem; }
+    .status-indicator { display:inline-block; width:8px; height:8px; border-radius:50%; background:#00a86b; margin-right:6px; animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0% { transform:scale(0.95); box-shadow:0 0 0 0 rgba(0,168,107,0.4); } 70% { transform:scale(1); box-shadow:0 0 0 6px rgba(0,168,107,0); } 100% { transform:scale(0.95); box-shadow:0 0 0 0 rgba(0,168,107,0); } }
+
+    /* Center Panel: Chat Interface */
+    .chat-panel { display:flex; flex-direction:column; background:var(--paper); overflow:hidden; }
+    .chat-header { background:white; padding:1rem 2rem; border-bottom:1px solid var(--cream); display:flex; justify-content:space-between; align-items:center; }
+    .chat-destination { font-family:'Playfair Display', serif; font-size:1.35rem; font-weight:900; }
+    
+    .chat-messages { flex:1; padding:2rem; overflow-y:auto; display:flex; flex-direction:column; gap:1.5rem; }
+    .message { display:flex; flex-direction:column; max-width:75%; }
+    .message.user { align-self:flex-end; }
+    .message.assistant { align-self:flex-start; }
+    
+    .bubble { padding:1rem 1.25rem; border-radius:16px; font-size:0.95rem; line-height:1.5; box-shadow:0 2px 10px rgba(0,0,0,0.02); }
+    .message.user .bubble { background:var(--teal); color:white; border-bottom-right-radius:2px; }
+    .message.assistant .bubble { background:white; color:var(--ink); border:1px solid var(--cream); border-bottom-left-radius:2px; }
+    
+    .message-meta { font-size:0.75rem; color:var(--muted); margin-top:0.4rem; padding:0 0.4rem; }
+    .message.user .message-meta { align-self:flex-end; }
+
+    .chat-input-bar { background:white; padding:1.25rem 2rem; border-top:1px solid var(--cream); display:flex; gap:1rem; align-items:center; }
+    .chat-input { flex:1; padding:0.85rem 1.25rem; border:1px solid var(--cream); border-radius:30px; font-family:inherit; font-size:0.95rem; outline:none; transition:border-color 0.2s; }
+    .chat-input:focus { border-color:var(--teal); }
+    .btn-send { background:var(--teal); color:white; border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:all 0.2s; }
+    .btn-send:hover { background:var(--teal-light); transform: scale(1.05); }
+
+    /* Right Sidebar: Booking Checklist & Progress */
+    .right-bar { background:white; border-left:1px solid var(--cream); padding:1.5rem; display:flex; flex-direction:column; gap:1.5rem; overflow-y:auto; }
+    
+    .progress-widget { text-align:center; background:var(--sky); border-radius:12px; padding:1.25rem; }
+    .progress-bar-container { background:rgba(26,107,107,0.1); height:8px; border-radius:4px; margin:0.75rem 0; overflow:hidden; }
+    .progress-bar-fill { background:var(--teal); height:100%; width:0%; transition:width 0.5s ease; }
+    
+    .checklist-list { display:flex; flex-direction:column; gap:0.75rem; list-style:none; }
+    .checklist-item { display:flex; align-items:center; justify-content:space-between; padding:0.75rem; border-radius:8px; border:1px solid var(--cream); font-size:0.85rem; font-weight:500; }
+    .checklist-item.booked { background:rgba(0,168,107,0.04); border-color:rgba(0,168,107,0.15); }
+    .checklist-left { display:flex; align-items:center; gap:0.5rem; }
+    .checklist-check { color:#00a86b; font-size:1.1rem; cursor:pointer; }
+    .checklist-pending { color:var(--muted); font-size:1.1rem; cursor:pointer; }
+    
+    .badge { font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:2px 6px; border-radius:4px; }
+    .badge.booked { background:rgba(0,168,107,0.1); color:#00a86b; }
+    .badge.pending { background:rgba(194,94,77,0.1); color:var(--rust); }
+
+    .input-mini { width:100%; padding:0.5rem 0.75rem; border:1px solid var(--cream); border-radius:6px; font-family:inherit; font-size:0.8rem; outline:none; }
+    .btn-primary { background:var(--teal); color:white; border:none; padding:0.75rem 1rem; border-radius:8px; font-weight:700; width:100%; cursor:pointer; font-size:0.85rem; display:block; text-align:center; text-decoration:none; transition:all 0.2s; }
+    .btn-primary:hover { background:var(--teal-light); }
+
+    .failover-banner { background:var(--rust); color:white; font-size:0.8rem; padding:0.6rem 1.5rem; text-align:center; display:none; animation: slideDown 0.3s ease both; }
+    @keyframes slideDown { from { transform:translateY(-100%); } to { transform:translateY(0); } }
+
+    /* Detail / Booking Confirmation Modal */
+    .ts-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:2000; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
+    .ts-modal-overlay.active { opacity:1; pointer-events:auto; }
+    .ts-modal-card { background:white; border-radius:16px; padding:2rem; width:100%; max-width:420px; box-shadow:0 10px 40px rgba(0,0,0,0.15); border:1px solid var(--cream); transform:translateY(20px); transition:transform 0.3s ease; }
+    .ts-modal-overlay.active .ts-modal-card { transform:translateY(0); }
+    .ts-modal-header { font-family:'Playfair Display', serif; font-size:1.35rem; font-weight:900; margin-bottom:1rem; color:var(--ink); display:flex; justify-content:space-between; align-items:center; }
+    .ts-modal-close { background:none; border:none; font-size:1.5rem; color:var(--muted); cursor:pointer; }
+
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .left-bar, .right-bar { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">Trip<span>Sync</span></a>
+  <a href="planner.html" id="backToPlannerBtn" class="btn-outline">⬅️ Planner</a>
+</header>
+
+<div class="failover-banner" id="failoverBanner">
+  ⚠️ Primary model rate limit reached. Switched to backup provider. Your conversation continues automatically.
+</div>
+
+<div class="main-layout">
+  
+  <!-- Left Panel: Trips & Provider Settings -->
+  <aside class="left-bar">
+    <div>
+      <div class="bar-title">🗂️ Active Trip Projects</div>
+      <div id="tripList" style="margin-top:1rem;">
+        <!-- Loaded via storage.js -->
+      </div>
+    </div>
+
+    <div class="provider-status">
+      <div style="font-weight:700; margin-bottom:0.4rem; display:flex; align-items:center;">
+        <span class="status-indicator"></span>
+        <span>AI Engine Settings</span>
+      </div>
+      <div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.75rem; line-height:1.4;">
+        Option C Active: Automatic failover is on by default, with manual provider override available.
+      </div>
+      <div>
+        <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:0.25rem;">Active LLM Override</label>
+        <select id="llmOverrideSelect" class="input-mini" onchange="handleOverrideSelect()" style="font-weight:700; color:var(--teal);">
+          <option value="auto">Automatic (Auto Failover)</option>
+          <option value="deepseek">Force DeepSeek (Primary)</option>
+          <option value="groq">Force Groq (Backup 1)</option>
+          <option value="gemini">Force Gemini (Backup 2)</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Center Panel: Chat Interface -->
+  <main class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-destination" id="chatTitle">AI travel assistant</div>
+      <span style="font-size:0.75rem; background:var(--sky); border:1px solid rgba(26,107,107,0.15); color:var(--teal); padding:4px 8px; border-radius:30px; font-weight:700;">Local Key Secured 🔒</span>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <!-- Conversation history dynamically populated -->
+    </div>
+
+    <div class="chat-input-bar">
+      <input type="text" id="chatInputField" class="chat-input" placeholder="Ask your AI Assistant (e.g. 'Recommend mid-range hotels' or 'Adjust Day 2...')" onkeydown="handleChatKeydown(event)">
+      <button class="btn-send" onclick="sendChatInput()">➔</button>
+    </div>
+  </main>
+
+  <!-- Right Panel: Checklist & Booking Statuses -->
+  <aside class="right-bar">
+    <div class="progress-widget">
+      <div style="font-size:0.75rem; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:1px;">Trip Booked Status</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div style="font-size:0.8rem; font-weight:700; color:var(--ink);" id="progressText">0% Complete</div>
+    </div>
+
+    <div>
+      <div class="bar-title">📋 Travel Checklist</div>
+      <ul class="checklist-list" style="margin-top:1rem;" id="checklistContainer">
+        <!-- Checklist items: Flights, Hotel, Activities, Transfers, Insurance -->
+      </ul>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:auto;">
+      <button class="btn-primary" onclick="exportTripBackup()" style="background:#e5e7eb; color:var(--ink); border:none;">💾 Export Backup JSON</button>
+      <button class="btn-primary" onclick="importTripModal()" style="background:var(--sky); color:var(--teal); border:none; margin:0;">📥 Import Itinerary</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Booking Confirmation Modal -->
+<div class="ts-modal-overlay" id="bookingModal">
+  <div class="ts-modal-card">
+    <div class="ts-modal-header">
+      <span id="bookingModalTitle">Confirm Booking</span>
+      <button class="ts-modal-close" onclick="closeBookingModal()">×</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <p style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+        Mark this item as booked and save your confirmation code, supplier details, or pricing locally on your browser.
+      </p>
+      <div>
+        <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:0.25rem;">Confirmation / Notes</label>
+        <textarea id="bookingNotes" class="input-mini" style="height:80px; resize:none; font-size:0.85rem; padding:0.5rem;" placeholder="e.g. Booking code: ABC123D, Cost: $140 CAD"></textarea>
+      </div>
+      <button onclick="saveBookingConfirmation()" class="btn-primary" style="margin:0;">Save Confirmation</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="ts-modal-overlay" id="importModal">
+  <div class="ts-modal-card">
+    <div class="ts-modal-header">
+      <span>Import Backup</span>
+      <button class="ts-modal-close" onclick="closeImportModal()">×</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <p style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+        Paste your TripSync V2 JSON backup code below to restore your full trip itinerary, checklist, and conversation logs.
+      </p>
+      <div>
+        <textarea id="importJsonText" class="input-mini" style="height:120px; resize:none; font-family:monospace; font-size:0.75rem;" placeholder="Paste JSON here..."></textarea>
+      </div>
+      <button onclick="executeImport()" class="btn-primary" style="margin:0;">Import Itinerary</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let activeTrip = null;
+  let activeChecklistItem = null;
+
+  async function loadAssistant() {
+    // 1. Verify User Profile & Decrypt API Credentials
+    if (!window.TripSyncStorage || !window.TripSyncStorage.hasProfile()) {
+      alert("Verification Error: Profile email missing. Redirecting to setup...");
+      window.location.href = 'planner.html';
+      return;
+    }
+
+    const profile = window.TripSyncStorage.getProfile();
+    const keys = window.TripSyncStorage.getKeys();
+    
+    if (!keys || Object.keys(keys).length === 0) {
+      alert("Activation Error: API credentials missing. Redirecting to setup...");
+      window.location.href = 'planner.html';
+      return;
+    }
+
+    // 2. Fetch or Create Current Trip
+    const params = new URLSearchParams(window.location.search);
+    const destination = params.get('destination') || '';
+    
+    let trip = window.TripSyncStorage.getCurrentTrip();
+    
+    // If destination does not match loaded trip, or no loaded trip, initialize a new sandbox
+    if (!trip || (destination && trip.destination.toLowerCase() !== destination.toLowerCase())) {
+      trip = {
+        id: 'TRIP_' + Date.now(),
+        destination: destination || 'My Perfect Destination',
+        dates: { start: '', end: '' },
+        items: {
+          flights: { status: 'pending', details: null },
+          hotel: { status: 'pending', details: null },
+          activities: { status: 'pending', details: null },
+          transfers: { status: 'pending', details: null },
+          insurance: { status: 'pending', details: null }
+        },
+        checklist: [],
+        conversation_history: [
+          { role: 'assistant', content: `Hi there! I am your AI Travel Assistant. Your DeepSeek keys are encrypted and saved locally in your browser 🔒.<br><br>Let's refine your dream trip to **${destination || 'your destination'}** step-by-step! Tell me: where are you departing from, and what is your absolute target budget?`, timestamp: new Date().toISOString() }
+        ]
+      };
+      window.TripSyncStorage.saveCurrentTrip(trip);
+    }
+
+    activeTrip = trip;
+    document.getElementById('chatTitle').textContent = activeTrip.destination;
+    
+    // Set active back link destination
+    document.getElementById('backToPlannerBtn').href = `planner.html?destination=${encodeURIComponent(activeTrip.destination)}`;
+
+    // 3. Render sidebars & history
+    renderTripList();
+    renderChecklist();
+    renderConversation();
+  }
+
+  function renderTripList() {
+    const list = document.getElementById('tripList');
+    const history = window.TripSyncStorage.getTripHistory();
+    if (history.length === 0) {
+      list.innerHTML = `<div style="font-size:0.8rem; color:var(--muted)">No trip sandboxes yet.</div>`;
+      return;
+    }
+    list.innerHTML = history.map(t => `
+      <div class="trip-list-item ${t.id === activeTrip.id ? 'active' : ''}" onclick="switchTrip('${t.id}')">
+        🌍 <strong>${t.destination}</strong><br>
+        <span style="font-size:0.7rem; color:var(--muted);">${new Date(t.id.split('_')[1] * 1).toLocaleDateString()}</span>
+      </div>
+    `).join('');
+  }
+
+  function switchTrip(tripId) {
+    const history = window.TripSyncStorage.getTripHistory();
+    const trip = history.find(t => t.id === tripId);
+    if (trip) {
+      window.TripSyncStorage.saveCurrentTrip(trip);
+      window.location.href = `assistant.html?destination=${encodeURIComponent(trip.destination)}`;
+    }
+  }
+
+  function renderChecklist() {
+    const items = activeTrip.items || {};
+    const container = document.getElementById('checklistContainer');
+    
+    const categories = [
+      { key: 'flights', label: 'Book Flights', emoji: '✈️' },
+      { key: 'hotel', label: 'Suggested Hotel', emoji: '🏨' },
+      { key: 'activities', label: 'Tours & Activities', emoji: '🎭' },
+      { key: 'transfers', label: 'Transfers & Taxi', emoji: '🚕' },
+      { key: 'insurance', label: 'Travel Insurance', emoji: '🛡️' }
+    ];
+
+    let bookedCount = 0;
+    container.innerHTML = categories.map(cat => {
+      const item = items[cat.key] || { status: 'pending', details: null };
+      const isBooked = item.status === 'booked';
+      if (isBooked) bookedCount++;
+
+      return `
+        <li class="checklist-item ${isBooked ? 'booked' : ''}">
+          <div class="checklist-left">
+            <span class="${isBooked ? 'checklist-check' : 'checklist-pending'}" onclick="toggleChecklistItem('${cat.key}')">
+              ${isBooked ? '✅' : '⭕'}
+            </span>
+            <span>${cat.emoji} ${cat.label}</span>
+          </div>
+          <div>
+            <span class="badge ${isBooked ? 'booked' : 'pending'}">${item.status}</span>
+          </div>
+        </li>
+        ${item.details ? `
+          <div style="font-size:0.75rem; background:var(--sky); padding:0.5rem 0.75rem; border-radius:6px; margin:-0.4rem 0 0.4rem 1.75rem; color:var(--teal); line-height:1.4;">
+            📝 ${item.details}
+          </div>
+        ` : ''}
+      `;
+    }).join('');
+
+    // Update progress bar
+    const progress = Math.round((bookedCount / categories.length) * 100);
+    document.getElementById('progressBarFill').style.width = `${progress}%`;
+    document.getElementById('progressText').textContent = `${progress}% Complete`;
+  }
+
+  function toggleChecklistItem(category) {
+    const items = activeTrip.items || {};
+    const currentItem = items[category] || { status: 'pending', details: null };
+
+    if (currentItem.status === 'booked') {
+      // Revert to pending
+      window.TripSyncStorage.updateTripItem(category, 'pending', null);
+      activeTrip = window.TripSyncStorage.getCurrentTrip();
+      renderChecklist();
+    } else {
+      // Trigger confirmation modal
+      activeChecklistItem = category;
+      document.getElementById('bookingModalTitle').textContent = `Mark ${category.toUpperCase()} Booked`;
+      document.getElementById('bookingNotes').value = '';
+      document.getElementById('bookingModal').classList.add('active');
+    }
+  }
+
+  function closeBookingModal() {
+    document.getElementById('bookingModal').classList.remove('active');
+  }
+
+  function saveBookingConfirmation() {
+    const notes = document.getElementById('bookingNotes').value.trim();
+    if (activeChecklistItem) {
+      window.TripSyncStorage.updateTripItem(activeChecklistItem, 'booked', notes || 'Booked locally');
+      activeTrip = window.TripSyncStorage.getCurrentTrip();
+      renderChecklist();
+    }
+    closeBookingModal();
+    
+    // Automatically trigger booking conversion tracking!
+    fetch('/api/track-booking', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        destination: activeTrip.destination,
+        booking_type: activeChecklistItem,
+        amount: notes ? (parseFloat(notes.match(/\d+/)) || 0) : 0
+      })
+    }).catch(err => console.warn("Failed tracking booking conversion offline:", err));
+  }
+
+  function renderConversation() {
+    const chatMessages = document.getElementById('chatMessages');
+    const history = activeTrip.conversation_history || [];
+    
+    chatMessages.innerHTML = history.map(msg => `
+      <div class="message ${msg.role}">
+        <div class="bubble">${msg.content}</div>
+        <div class="message-meta">${msg.role === 'user' ? 'You' : 'TripSync AI'} &middot; ${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+      </div>
+    `).join('');
+
+    // Auto scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function handleChatKeydown(e) {
+    if (e.key === 'Enter') {
+      sendChatInput();
+    }
+  }
+
+  async function sendChatInput() {
+    const field = document.getElementById('chatInputField');
+    const val = field.value.trim();
+    if (!val) return;
+
+    field.value = '';
+    field.disabled = true;
+
+    // Add user message to history
+    const userMsg = { role: 'user', content: val, timestamp: new Date().toISOString() };
+    activeTrip.conversation_history.push(userMsg);
+    window.TripSyncStorage.saveCurrentTrip(activeTrip);
+    renderConversation();
+
+    // Render loading indicator bubble
+    const chatMessages = document.getElementById('chatMessages');
+    const loadingBubble = document.createElement('div');
+    loadingBubble.className = 'message assistant';
+    loadingBubble.id = 'chatLoadingBubble';
+    loadingBubble.innerHTML = `
+      <div class="bubble" style="display:flex; align-items:center; gap:0.5rem; color:var(--teal)">
+        <span style="animation: pulse 1s infinite">🧠</span> Thinking...
+      </div>
+    `;
+    chatMessages.appendChild(loadingBubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Retrieve encrypted key and profile info
+    const profile = window.TripSyncStorage.getProfile();
+    const keys = window.TripSyncStorage.getKeys();
+    
+    const email = profile ? profile.email : '';
+    const activeProvider = document.getElementById('llmOverrideSelect').value === 'auto' 
+      ? (keys.active_provider || 'deepseek') 
+      : document.getElementById('llmOverrideSelect').value;
+      
+    const encryptedKey = keys[activeProvider] || Object.values(keys)[0];
+
+    try {
+      const resp = await fetch('/api/llm/proxy', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          prompt: val,
+          encrypted_key: encryptedKey,
+          email: email,
+          provider: activeProvider,
+          destination: activeTrip.destination,
+          history: activeTrip.conversation_history.slice(0, -1) // pass all except current user msg
+        })
+      });
+
+      const res = await resp.json();
+      
+      // Remove loading bubble
+      document.getElementById('chatLoadingBubble').remove();
+
+      if (!resp.ok) {
+        throw new Error(res.error || 'Server error proxying request');
+      }
+
+      // Check if failover was triggered on backend
+      if (res.failover_triggered) {
+        triggerFailoverBanner(res.failover_provider);
+      }
+
+      // Save assistant message to local history
+      const assistantMsg = {
+        role: 'assistant',
+        content: res.response || 'Unable to fetch response from proxy.',
+        timestamp: new Date().toISOString()
+      };
+      
+      activeTrip.conversation_history.push(assistantMsg);
+      window.TripSyncStorage.saveCurrentTrip(activeTrip);
+      renderConversation();
+
+    } catch (e) {
+      if (document.getElementById('chatLoadingBubble')) {
+        document.getElementById('chatLoadingBubble').remove();
+      }
+      alert("Error: " + e.message + ". Please verify your API key limits or override settings.");
+    } finally {
+      field.disabled = false;
+      field.focus();
+    }
+  }
+
+  function triggerFailoverBanner(newProvider) {
+    const banner = document.getElementById('failoverBanner');
+    banner.textContent = `⚠️ Rate limit reached. Successfully switched to ${newProvider.toUpperCase()} automatically.`;
+    banner.style.display = 'block';
+    setTimeout(() => {
+      banner.style.display = 'none';
+    }, 6000);
+  }
+
+  function handleOverrideSelect() {
+    const val = document.getElementById('llmOverrideSelect').value;
+    if (val !== 'auto') {
+      showToast(`Forced AI Provider: ${val.toUpperCase()}`);
+    } else {
+      showToast(`AI Provider: Auto Failover Active`);
+    }
+  }
+
+  function exportTripBackup() {
+    const trip = window.TripSyncStorage.getCurrentTrip();
+    if (!trip) return;
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trip, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `TripSync_Backup_${trip.destination.replace(/\s+/g, '_')}.json`);
+    dlAnchorElem.click();
+    showToast("💾 Backup JSON downloaded!");
+  }
+
+  function importTripModal() {
+    document.getElementById('importJsonText').value = '';
+    document.getElementById('importModal').classList.add('active');
+  }
+
+  function closeImportModal() {
+    document.getElementById('importModal').classList.remove('active');
+  }
+
+  function executeImport() {
+    const jsonText = document.getElementById('importJsonText').value.trim();
+    if (!jsonText) return;
+
+    try {
+      const trip = JSON.parse(jsonText);
+      if (!trip.id || !trip.destination) {
+        throw new Error("Invalid TripSync format. ID and Destination required.");
+      }
+
+      window.TripSyncStorage.saveCurrentTrip(trip);
+      showToast("📥 Itinerary imported successfully!");
+      closeImportModal();
+      window.location.reload();
+    } catch(e) {
+      alert("Import Failed: " + e.message);
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.style = "position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:white;padding:0.75rem 1.5rem;border-radius:8px;z-index:3000;font-size:0.85rem;box-shadow:var(--shadow)";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3000);
+  }
+
+  loadAssistant();
+</script>
+
+</body>
+</html>

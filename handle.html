@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a6b6b">
+  <link rel="icon" type="image/png" href="icon.png">
+  <title>Partner Profile — TripSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #1a6b6b; --teal-light: #2d8f8f; --ink: #1a1a1a;
+      --muted: #666; --cream: #f4f1ea; --paper: #faf9f6;
+      --rust: #c25e4d; --gold: #b8962e; --sky: #eaf4f4;
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); line-height:1.6; }
+    
+    header { background:white; padding:1.5rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--cream); position:sticky; top:0; z-index:100; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--teal); }
+    .btn-outline { background:none; border:1.5px solid var(--teal); color:var(--teal); padding:0.6rem 1.2rem; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-outline:hover { background:var(--sky); }
+
+    /* Profile Header */
+    .profile-hero { background:linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80'); background-size:cover; background-position:center; padding:5rem 2rem; text-align:center; color:white; }
+    .profile-img { width:100px; height:100px; border-radius:50%; border:3px solid white; object-fit:cover; margin-bottom:1rem; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+    .profile-name { font-family:'Playfair Display', serif; font-size:2.2rem; font-weight:900; margin-bottom:0.25rem; }
+    .profile-handle { font-size:0.85rem; letter-spacing:1px; text-transform:uppercase; opacity:0.85; font-weight:700; background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:4px; display:inline-block; }
+
+    .container { max-width:800px; margin:3rem auto; padding:0 2rem; }
+    .bio-panel { text-align:center; margin-bottom:2.5rem; }
+    .bio-text { font-size:1.05rem; color:var(--muted); line-height:1.7; max-width:600px; margin:0 auto 1.5rem; font-style:italic; }
+
+    .deals-section-title { font-family:'Playfair Display', serif; font-size:1.4rem; font-weight:900; margin-bottom:1.5rem; border-bottom:2px solid var(--sky); padding-bottom:0.5rem; }
+    
+    .deal-card { background:white; border-radius:12px; padding:1.5rem; box-shadow:var(--shadow); border:1px solid var(--cream); margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; transition:transform 0.2s, box-shadow 0.2s; }
+    .deal-card:hover { transform:translateY(-2px); box-shadow:0 6px 25px rgba(0,0,0,0.08); }
+    .deal-left { display:flex; flex-direction:column; gap:0.25rem; flex:1; padding-right:1.5rem; }
+    .deal-badge { display:inline-block; font-size:0.65rem; font-weight:700; text-transform:uppercase; color:var(--teal); background:var(--sky); padding:2px 6px; border-radius:4px; width:fit-content; }
+    .deal-title { font-family:'Playfair Display', serif; font-size:1.25rem; font-weight:800; color:var(--ink); margin-top:0.25rem; }
+    .deal-desc { font-size:0.88rem; color:var(--muted); line-height:1.5; margin-top:0.25rem; }
+    
+    .deal-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem; }
+    .promo-pill { font-size:0.75rem; font-weight:700; color:var(--gold); border:1.5px dashed var(--gold); padding:4px 8px; border-radius:4px; font-family:monospace; }
+
+    .btn-deal { background:var(--teal); color:white; border:none; padding:0.75rem 1.5rem; border-radius:8px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block; font-size:0.85rem; transition:all 0.2s; }
+    .btn-deal:hover { background:var(--teal-light); }
+
+    .disclaimer { font-size:0.75rem; color:var(--muted); background:var(--paper); border:1px solid var(--cream); padding:1.5rem; border-radius:8px; text-align:center; line-height:1.6; margin-top:4rem; }
+    .disclaimer a { color:var(--teal); font-weight:700; text-decoration:underline; }
+
+    .loading-block { text-align:center; padding:4rem; font-size:1.1rem; color:var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">Trip<span>Sync</span></a>
+  <a href="/affiliate.html" class="btn-outline">Join Affiliate Program</a>
+</header>
+
+<!-- Dynamic Profile Header -->
+<section class="profile-hero" id="profileHero" style="display:none;">
+  <img id="profileImage" class="profile-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Profile Image">
+  <h1 id="profileName" class="profile-name"> Jessica Miller </h1>
+  <span class="profile-handle">@<span id="profileHandle">jessica</span></span>
+</section>
+
+<div class="container">
+  
+  <div class="loading-block" id="loadingBlock">
+    <span>🧠 Loading Partner Profile...</span>
+  </div>
+
+  <div id="profileContent" style="display:none;">
+    
+    <!-- Bio block -->
+    <div class="bio-panel">
+      <p id="profileBio" class="bio-text">"Just a travel lover sharing the best deals on flights, premium hotels, and local experiences."</p>
+    </div>
+
+    <!-- Active deals list -->
+    <div>
+      <div class="deals-section-title">🎁 Curated Travel Deals</div>
+      <div id="dealsContainer">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+
+    <!-- Legal disclaimer -->
+    <div class="disclaimer">
+      ⚠️ This page is managed by @<span class="disclaimer-handle">handle</span>. Deals and promo codes are provided by the influencer and are not verified by TripSync. TripSync earns a commission when you book through these links. Your price is unaffected.<br><br>
+      <a href="mailto:william@justmemedi.ca?subject=Report Page: @handle">Report this page</a>
+    </div>
+
+  </div>
+</div>
+
+<footer style="background:var(--ink);color:var(--muted);text-align:center;padding:2rem;font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:4rem">
+  &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; william@justmemedi.ca
+</footer>
+
+<script>
+  let handle = '';
+
+  window.addEventListener('DOMContentLoaded', () => {
+    // Extract handle from pathname tripsync.ca/@handle
+    const path = window.location.pathname;
+    if (path.includes('/@')) {
+      handle = path.split('/@')[1].split('/')[0].toLowerCase().trim();
+    } else {
+      // Query param fallback for local development: handle.html?handle=jessica
+      const params = new URLSearchParams(window.location.search);
+      handle = params.get('handle') || '';
+    }
+
+    if (!handle) {
+      document.getElementById('loadingBlock').textContent = '⚠️ Invalid referral link.';
+      return;
+    }
+
+    loadProfile();
+  });
+
+  async function loadProfile() {
+    try {
+      const resp = await fetch(`/api/affiliate/stats/${handle}`);
+      const res = await resp.json();
+      
+      if (!resp.ok) {
+        throw new Error(res.error || 'Partner not found');
+      }
+
+      document.getElementById('loadingBlock').style.display = 'none';
+      document.getElementById('profileHero').style.display = 'block';
+      document.getElementById('profileContent').style.display = 'block';
+
+      const aff = res.affiliate || {};
+      
+      document.title = `${aff.display_name} — Travel Deals on TripSync`;
+      document.getElementById('profileName').textContent = aff.display_name;
+      document.getElementById('profileHandle').textContent = aff.handle;
+      
+      if (aff.bio) {
+        document.getElementById('profileBio').textContent = `"${aff.bio}"`;
+      }
+      
+      if (aff.profile_image) {
+        document.getElementById('profileImage').src = aff.profile_image;
+      }
+      
+      // Update disclaimer handles
+      document.querySelectorAll('.disclaimer-handle').forEach(el => el.textContent = aff.handle);
+
+      // Render Deals
+      renderDeals(res.deals || []);
+
+    } catch(e) {
+      document.getElementById('loadingBlock').innerHTML = `⚠️ Partner profile <strong>@${handle}</strong> not found. <a href="/" style="color:var(--teal); font-weight:bold;">Go to Homepage</a>`;
+    }
+  }
+
+  function renderDeals(deals) {
+    const container = document.getElementById('dealsContainer');
+    if (deals.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--muted); font-size:0.95rem;">No active travel deals currently listed by this partner. Check back soon!</div>`;
+      return;
+    }
+
+    container.innerHTML = deals.map(d => `
+      <div class="deal-card">
+        <div class="deal-left">
+          <span class="deal-badge">${d.category.toUpperCase()}</span>
+          <h3 class="deal-title">${d.title}</h3>
+          ${d.description ? `<p class="deal-desc">${d.description}</p>` : ''}
+        </div>
+        <div class="deal-right">
+          ${d.code ? `<span class="promo-pill">CODE: ${d.code}</span>` : ''}
+          <a href="${d.wrapped_url}" class="btn-deal" target="_blank">Get Deal ➔</a>
+        </div>
+      </div>
+    `).join('');
+  }
+</script>
+
+</body>
+</html>

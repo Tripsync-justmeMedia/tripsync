@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a6b6b">
+  <link rel="icon" type="image/png" href="icon.png">
+  <title>Influencer Dashboard — TripSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #1a6b6b; --teal-light: #2d8f8f; --ink: #1a1a1a;
+      --muted: #666; --cream: #f4f1ea; --paper: #faf9f6;
+      --rust: #c25e4d; --gold: #b8962e; --sky: #eaf4f4;
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); line-height:1.6; }
+    
+    header { background:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--cream); position:sticky; top:0; z-index:100; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--teal); }
+    .btn-outline { background:none; border:1.5px solid var(--teal); color:var(--teal); padding:0.5rem 1rem; border-radius:6px; font-weight:700; font-size:0.8rem; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-outline:hover { background:var(--sky); }
+
+    .container { max-width:1000px; margin:2.5rem auto; padding:0 1.5rem; display:none; }
+    
+    /* Stats Grid */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:2.5rem; }
+    .stat-card { background:white; border-radius:12px; padding:1.5rem; box-shadow:var(--shadow); border:1px solid var(--cream); text-align:center; }
+    .stat-label { font-size:0.7rem; font-weight:700; color:var(--teal); text-transform:uppercase; margin-bottom:0.25rem; }
+    .stat-val { font-size:2rem; font-family:'Playfair Display', serif; font-weight:900; color:var(--ink); }
+    .stat-val.highlight { color:var(--rust); }
+
+    .layout-grid { display:grid; grid-template-columns:1fr 340px; gap:2rem; }
+    .panel { background:white; border-radius:16px; padding:2rem; box-shadow:var(--shadow); border:1px solid var(--cream); margin-bottom:2rem; }
+    
+    .form-group { margin-bottom:1.25rem; }
+    label { font-size:0.72rem; font-weight:700; color:var(--teal); text-transform:uppercase; display:block; margin-bottom:0.4rem; }
+    .input-field { width:100%; padding:0.75rem 0.85rem; border:1px solid var(--cream); border-radius:8px; font-family:inherit; font-size:0.9rem; outline:none; transition:all 0.2s; }
+    .input-field:focus { border-color:var(--teal); }
+    
+    .btn-primary { background:var(--teal); color:white; border:none; padding:0.85rem 1.25rem; border-radius:8px; font-weight:700; width:100%; cursor:pointer; font-size:0.9rem; text-align:center; text-decoration:none; display:block; transition:all 0.2s; }
+    .btn-primary:hover { background:var(--teal-light); }
+
+    .deal-card { display:flex; justify-content:space-between; align-items:center; padding:1rem; border-radius:8px; border:1px solid var(--cream); margin-bottom:0.75rem; background:white; }
+    .deal-left { display:flex; flex-direction:column; gap:0.2rem; }
+    .deal-title { font-weight:700; font-size:0.95rem; }
+    .deal-link { font-size:0.75rem; font-family:monospace; color:var(--teal); text-decoration:none; font-weight:700; }
+    .deal-btns { display:flex; gap:0.5rem; }
+
+    /* PIN Gate Overlay */
+    .pin-overlay { position:fixed; inset:0; background:var(--paper); z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .pin-card { background:white; padding:3rem; border-radius:16px; border:1px solid var(--cream); box-shadow:var(--shadow); width:100%; max-width:380px; text-align:center; }
+
+    @media (max-width:850px) {
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .layout-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">Trip<span>Sync</span></a>
+  <div style="display:flex; gap:0.75rem; align-items:center;">
+    <a id="publicPageLink" href="#" target="_blank" class="btn-outline">👁️ View Public Page</a>
+    <button class="btn-outline" onclick="logout()" style="border-color:var(--rust); color:var(--rust)">Logout</button>
+  </div>
+</header>
+
+<!-- PIN Gate Screen -->
+<div class="pin-overlay" id="pinGate">
+  <div class="pin-card">
+    <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+    <h2 style="font-family:'Playfair Display'; margin-bottom:0.4rem;" id="pinGateTitle">Affiliate Dashboard</h2>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;" id="pinGateSub">Enter your 4-digit PIN code to manage your travel deals.</p>
+    <div class="form-group">
+      <input type="password" id="pinInput" class="input-field" maxlength="4" pattern="\d{4}" style="letter-spacing:8px; font-weight:700; text-align:center; font-size:1.4rem;" placeholder="••••" onkeydown="handlePinKeydown(event)">
+    </div>
+    <button onclick="verifyPIN()" id="pinVerifyBtn" class="btn-primary">Unlock Dashboard</button>
+  </div>
+</div>
+
+<!-- Main Dashboard Container -->
+<div class="container" id="dashboardContainer">
+  
+  <!-- Header title block -->
+  <div style="margin-bottom:2.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+    <div>
+      <h1 style="font-family:'Playfair Display'; font-size:2rem; font-weight:900;" id="dashboardTitle">Jessica Miller</h1>
+      <span style="font-size:0.85rem; color:var(--muted)">Manage your profile and affiliate link wrap metrics.</span>
+    </div>
+    <div style="background:#e5e7eb; border-radius:8px; padding:0.5rem 1rem; font-size:0.85rem; font-weight:700; color:var(--teal)">
+      Handle: @<span id="dashboardHandle">jessica</span>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Clicks</div>
+      <div class="stat-val" id="statClicks">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Bookings</div>
+      <div class="stat-val" id="statBookings">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Earned</div>
+      <div class="stat-val highlight" id="statPending">$0.00</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Unpaid Balance</div>
+      <div class="stat-val" id="statEarned" style="color:#00a86b;">$0.00</div>
+      <button onclick="requestPayout()" id="payoutBtn" class="btn-primary" style="margin-top:0.75rem; padding:0.4rem; font-size:0.72rem;" disabled>Request Payout</button>
+    </div>
+  </div>
+
+  <div class="layout-grid">
+    
+    <!-- Left column: Deals and Promo codes -->
+    <main>
+      
+      <!-- Custom deals -->
+      <div class="panel">
+        <h2 style="font-family:'Playfair Display'; margin-bottom:1.25rem;">Active Customized Deals</h2>
+        <div id="dealsContainer">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+      
+    </main>
+
+    <!-- Right column: Add Live Deal -->
+    <aside>
+      
+      <div class="panel">
+        <h3 style="font-family:'Playfair Display'; margin-bottom:1rem;">Add Live Deal</h3>
+        <form onsubmit="handleAddDeal(event)">
+          <div class="form-group">
+            <label for="dealTitle">Deal Title</label>
+            <input type="text" id="dealTitle" class="input-field" placeholder="e.g. 10% Off Booking.com" required>
+          </div>
+          <div class="form-group">
+            <label for="dealUrl">Original Affiliate Link</label>
+            <input type="url" id="dealUrl" class="input-field" placeholder="https://booking.com?aid=your_id" required>
+          </div>
+          <div class="form-group">
+            <label for="dealCode">Promo Code (Optional)</label>
+            <input type="text" id="dealCode" class="input-field" placeholder="e.g. JESS10">
+          </div>
+          <div class="form-group">
+            <label for="dealCategory">Category</label>
+            <select id="dealCategory" class="input-field" style="font-weight:700;">
+              <option value="hotel">🏨 Hotel / Stay</option>
+              <option value="flight">✈️ Flight deal</option>
+              <option value="activity">🎭 Tour / Activity</option>
+            </select>
+          </div>
+          <button type="submit" id="addDealBtn" class="btn-primary">Add Live Deal</button>
+        </form>
+      </div>
+
+    </aside>
+  </div>
+
+</div>
+
+<footer style="background:var(--ink);color:var(--muted);text-align:center;padding:2rem;font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:4rem">
+  &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; william@justmemedi.ca
+</footer>
+
+<script>
+  let handle = '';
+  let pin = '';
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    handle = params.get('handle') || '';
+    if (!handle) {
+      alert("Invalid request: handle is missing.");
+      window.location.href = 'affiliate.html';
+      return;
+    }
+    
+    document.getElementById('pinGateTitle').textContent = `@${handle} Dashboard`;
+    document.getElementById('dashboardHandle').textContent = handle;
+    document.getElementById('publicPageLink').href = `/@${handle}`;
+  });
+
+  function handlePinKeydown(e) {
+    if (e.key === 'Enter') {
+      verifyPIN();
+    }
+  }
+
+  async function verifyPIN() {
+    pin = document.getElementById('pinInput').value.trim();
+    if (!pin || pin.length !== 4) {
+      alert("Please enter a valid 4-digit PIN code.");
+      return;
+    }
+
+    const btn = document.getElementById('pinVerifyBtn');
+    btn.disabled = true;
+    btn.textContent = 'Unlocking Dashboard...';
+
+    try {
+      const resp = await fetch(`/api/affiliate/dashboard/${handle}?pin=${pin}`);
+      const res = await resp.json();
+      
+      if (!resp.ok) {
+        throw new Error(res.error || 'Incorrect PIN');
+      }
+
+      // Hide Pin screen, show Dashboard
+      document.getElementById('pinGate').style.display = 'none';
+      document.getElementById('dashboardContainer').style.display = 'block';
+      
+      renderDashboard(res);
+      
+    } catch(e) {
+      alert("Unlock Failed: " + e.message);
+      btn.disabled = false;
+      btn.textContent = 'Unlock Dashboard';
+    }
+  }
+
+  function renderDashboard(data) {
+    const aff = data.affiliate || {};
+    
+    document.getElementById('dashboardTitle').textContent = aff.display_name;
+    document.getElementById('statClicks').textContent = aff.total_clicks || 0;
+    document.getElementById('statBookings').textContent = aff.total_bookings || 0;
+    
+    const totalEarn = parseFloat(aff.total_earned || 0);
+    const paidEarn = parseFloat(aff.paid_earned || 0);
+    const pendingEarn = parseFloat(aff.pending_earned || 0);
+    const unpaidBalance = totalEarn - paidEarn;
+
+    document.getElementById('statPending').textContent = `$${pendingEarn.toFixed(2)}`;
+    document.getElementById('statEarned').textContent = `$${unpaidBalance.toFixed(2)}`;
+
+    // Enable payout request only if balance >= 50
+    const payoutBtn = document.getElementById('payoutBtn');
+    if (unpaidBalance >= 50) {
+      payoutBtn.disabled = false;
+    } else {
+      payoutBtn.disabled = true;
+    }
+
+    // Render Deals
+    renderDeals(data.deals || []);
+  }
+
+  function renderDeals(deals) {
+    const container = document.getElementById('dealsContainer');
+    if (deals.length === 0) {
+      container.innerHTML = `<div style="font-size:0.9rem; color:var(--muted); text-align:center; padding:2rem;">No custom deals added yet. Add your first deal in the right sidebar!</div>`;
+      return;
+    }
+
+    container.innerHTML = deals.map(d => `
+      <div class="deal-card">
+        <div class="deal-left">
+          <div class="deal-title">${d.title} ${d.code ? ` &middot; <span style="font-size:0.75rem; background:var(--sky); border:1px solid rgba(26,107,107,0.15); color:var(--teal); padding:1px 5px; border-radius:4px; font-weight:700;">Code: ${d.code}</span>` : ''}</div>
+          <a class="deal-link" href="${d.wrapped_url}" target="_blank">${d.wrapped_url}</a>
+        </div>
+        <div class="deal-btns">
+          <button onclick="copyWrappedLink('${d.wrapped_url}')" class="btn-outline" style="padding:0.35rem 0.6rem; font-size:0.7rem;">Copy Link</button>
+          <button onclick="deleteInfluencerDeal('${d.deal_id}')" class="btn-outline" style="padding:0.35rem 0.6rem; font-size:0.7rem; border-color:var(--rust); color:var(--rust);">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function copyWrappedLink(url) {
+    navigator.clipboard.writeText(url);
+    showToast("🔗 Wrapped link copied to clipboard!");
+  }
+
+  async function deleteInfluencerDeal(dealId) {
+    if (!confirm("Are you sure you want to delete this custom deal?")) return;
+
+    try {
+      const resp = await fetch('/api/affiliate/update-deal', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ handle, pin, deal_id: dealId, action: 'delete' })
+      });
+
+      if (!resp.ok) {
+        const res = await resp.json();
+        throw new Error(res.error || 'Failed to delete');
+      }
+
+      showToast("❌ Deal deleted successfully!");
+      refreshDashboard();
+    } catch(e) {
+      alert("Delete Failed: " + e.message);
+    }
+  }
+
+  async function handleAddDeal(e) {
+    e.preventDefault();
+    const title = document.getElementById('dealTitle').value.trim();
+    const originalUrl = document.getElementById('dealUrl').value.trim();
+    const code = document.getElementById('dealCode').value.trim();
+    const category = document.getElementById('dealCategory').value;
+
+    const btn = document.getElementById('addDealBtn');
+    btn.disabled = true;
+    btn.textContent = 'Adding Deal...';
+
+    try {
+      const resp = await fetch('/api/affiliate/update-deal', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          handle, pin, action: 'add',
+          title, original_url: originalUrl, code, category
+        })
+      });
+
+      const res = await resp.json();
+      if (!resp.ok) {
+        throw new Error(res.error || 'Failed to add deal');
+      }
+
+      showToast("🎉 Deal added live instantly!");
+      
+      // Reset form
+      document.getElementById('dealTitle').value = '';
+      document.getElementById('dealUrl').value = '';
+      document.getElementById('dealCode').value = '';
+      
+      refreshDashboard();
+    } catch(e) {
+      alert("Add Deal Failed: " + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Add Live Deal';
+    }
+  }
+
+  async function requestPayout() {
+    try {
+      const resp = await fetch('/api/affiliate/update-deal', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ handle, pin, action: 'request_payout' })
+      });
+
+      if (!resp.ok) {
+        const res = await resp.json();
+        throw new Error(res.error || 'Failed request');
+      }
+
+      showToast("💸 Payout requested successfully! William will review.");
+      refreshDashboard();
+    } catch(e) {
+      alert("Payout Request Failed: " + e.message);
+    }
+  }
+
+  async function refreshDashboard() {
+    try {
+      const resp = await fetch(`/api/affiliate/dashboard/${handle}?pin=${pin}`);
+      const res = await resp.json();
+      if (resp.ok) {
+        renderDashboard(res);
+      }
+    } catch(e) {}
+  }
+
+  function logout() {
+    window.location.reload();
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.style = "position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:white;padding:0.75rem 1.5rem;border-radius:8px;z-index:3000;font-size:0.85rem;box-shadow:var(--shadow)";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3000);
+  }
+</script>
+
+</body>
+</html>

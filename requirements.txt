@@ -9,3 +9,5 @@ gunicorn==21.2.0
 simple-websocket==1.1.0
 google-generativeai
 google-api-python-client==2.196.0
+gspread
+google-auth
