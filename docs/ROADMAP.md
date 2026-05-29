@@ -22,8 +22,8 @@ This document tracks launches, marketing events, and development milestones for 
 ## 📈 Post-Launch & V2 Goals
 
 - [/] Phase 1: Real-time Flight Prices (Amadeus Integration)
-- [ ] Phase 2: Supabase User Accounts (Email Auth)
-- [ ] Phase 3: Stripe Subscriptions & Premium Features
+- [x] Phase 2: AI Assistant & Obfuscated Local Key Cipher
+- [x] Phase 3: Zero-Cost Influencer Affiliate Program (Google Sheets + SMTP emailers)
 - [ ] Reach 1,000 active itineraries.
 - [ ] Apply for Viator/Skyscanner official partner programs.
 
