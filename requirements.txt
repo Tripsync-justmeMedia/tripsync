@@ -11,3 +11,4 @@ google-generativeai
 google-api-python-client==2.196.0
 gspread
 google-auth
+flask-limiter==3.8.0

@@ -20,7 +20,21 @@ load_dotenv()
 
 BASE_URL = os.environ.get("BASE_URL", "https://tripsync.ca")
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 app = Flask(__name__, static_url_path='', static_folder='.')
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://"
+)
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "Too many requests. Please wait a moment and try again."}), 429
 
 logging.basicConfig(level=logging.INFO)
 
@@ -1222,6 +1236,7 @@ def llm_proxy():
     })
 
 @app.route('/api/chat', methods=['POST'])
+@limiter.limit("5 per minute")
 def api_chat():
     data = request.get_json() or {}
     destination = data.get('destination', '').strip()
@@ -1252,6 +1267,7 @@ def api_chat():
     return jsonify({'response': response_text})
 
 @app.route('/api/tripsync', methods=['POST'])
+@limiter.limit("5 per minute")
 def tripsync():
     data = request.get_json()
     query       = data.get('query', '').strip()
@@ -1463,6 +1479,7 @@ Return ONLY valid JSON:
     return prompt
 
 @app.route('/api/generate-itinerary', methods=['POST'])
+@limiter.limit("5 per minute")
 def generate_itinerary():
     data        = request.get_json()
     destination = data.get('destination', '')
@@ -1482,6 +1499,7 @@ def generate_itinerary():
     return jsonify(result)
 
 @app.route('/api/generate-itinerary-local', methods=['POST'])
+@limiter.limit("10 per minute")
 def generate_itinerary_local():
     data = request.get_json()
     destination = data.get('destination', '')
@@ -1497,6 +1515,7 @@ def generate_itinerary_local():
     return jsonify(parsed)
 
 @app.route('/api/generate-itinerary-gemma', methods=['POST'])
+@limiter.limit("5 per minute")
 def generate_itinerary_gemma():
     data = request.get_json()
     destination = data.get('destination', '')
@@ -1516,6 +1535,7 @@ def generate_itinerary_gemma():
     return resp
 
 @app.route('/api/refine-itinerary', methods=['POST'])
+@limiter.limit("5 per minute")
 def refine_itinerary():
     data = request.get_json()
     destination = data.get('destination', '')
