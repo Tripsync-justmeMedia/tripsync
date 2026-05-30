@@ -185,42 +185,83 @@ def send_registration_emails(influencer_email, display_name, handle, pin):
     send_smtp_email("william@justmemedi.ca", subject_admin, html_admin)
 
 # --- Database ---
+def get_db_connection():
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url:
+        try:
+            import psycopg2
+            if db_url.startswith("postgres://"):
+                db_url = db_url.replace("postgres://", "postgresql://", 1)
+            return psycopg2.connect(db_url), True
+        except ImportError:
+            logging.error("DATABASE_URL is set but psycopg2 is not installed. Falling back to SQLite.")
+        except Exception as e:
+            logging.error(f"PostgreSQL connection failed: {e}. Falling back to SQLite.")
+    return sqlite3.connect(DB_PATH), False
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS search_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        query TEXT, departure TEXT, currency TEXT,
-        flight_class TEXT, hotel_rating TEXT,
-        timestamp TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS click_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        destination TEXT, platform TEXT, project_name TEXT,
-        timestamp INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS flight_price_cache (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        origin TEXT,
-        destination TEXT,
-        departure_date TEXT,
-        return_date TEXT,
-        flight_class TEXT,
-        currency TEXT,
-        price_data TEXT,
-        cached_at INTEGER)''')
-    conn.commit()
-    conn.close()
+    try:
+        conn, is_pg = get_db_connection()
+        c = conn.cursor()
+        if is_pg:
+            c.execute('''CREATE TABLE IF NOT EXISTS search_log (
+                id SERIAL PRIMARY KEY,
+                query TEXT, departure TEXT, currency TEXT,
+                flight_class TEXT, hotel_rating TEXT,
+                timestamp TEXT)''')
+            c.execute('''CREATE TABLE IF NOT EXISTS click_log (
+                id SERIAL PRIMARY KEY,
+                destination TEXT, platform TEXT, project_name TEXT,
+                timestamp BIGINT, created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP)''')
+            c.execute('''CREATE TABLE IF NOT EXISTS flight_price_cache (
+                id SERIAL PRIMARY KEY,
+                origin TEXT,
+                destination TEXT,
+                departure_date TEXT,
+                return_date TEXT,
+                flight_class TEXT,
+                currency TEXT,
+                price_data TEXT,
+                cached_at BIGINT)''')
+        else:
+            c.execute('''CREATE TABLE IF NOT EXISTS search_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                query TEXT, departure TEXT, currency TEXT,
+                flight_class TEXT, hotel_rating TEXT,
+                timestamp TEXT)''')
+            c.execute('''CREATE TABLE IF NOT EXISTS click_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                destination TEXT, platform TEXT, project_name TEXT,
+                timestamp INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP)''')
+            c.execute('''CREATE TABLE IF NOT EXISTS flight_price_cache (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                origin TEXT,
+                destination TEXT,
+                departure_date TEXT,
+                return_date TEXT,
+                flight_class TEXT,
+                currency TEXT,
+                price_data TEXT,
+                cached_at INTEGER)''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error initializing DB: {e}")
 
 init_db()
 
 # --- SQLite Cache Handlers ---
 def get_cached_flight_price(origin, destination, dep_date, ret_date, flight_class, currency):
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
-        c.execute("""
+        query = """
             SELECT price_data, cached_at FROM flight_price_cache 
             WHERE origin=? AND destination=? AND departure_date=? AND return_date=? AND flight_class=? AND currency=?
-        """, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper()))
+        """
+        if is_pg:
+            query = query.replace('?', '%s')
+        c.execute(query, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper()))
         row = c.fetchone()
         conn.close()
         
@@ -235,19 +276,25 @@ def get_cached_flight_price(origin, destination, dep_date, ret_date, flight_clas
 
 def cache_flight_price(origin, destination, dep_date, ret_date, flight_class, currency, data):
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
         # Delete any existing stale entry
-        c.execute("""
+        query_delete = """
             DELETE FROM flight_price_cache 
             WHERE origin=? AND destination=? AND departure_date=? AND return_date=? AND flight_class=? AND currency=?
-        """, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper()))
+        """
+        if is_pg:
+            query_delete = query_delete.replace('?', '%s')
+        c.execute(query_delete, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper()))
         
         # Insert new entry
-        c.execute("""
+        query_insert = """
             INSERT INTO flight_price_cache (origin, destination, departure_date, return_date, flight_class, currency, price_data, cached_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper(), json.dumps(data), int(time.time())))
+        """
+        if is_pg:
+            query_insert = query_insert.replace('?', '%s')
+        c.execute(query_insert, (origin.lower(), destination.lower(), dep_date, ret_date or "", flight_class.lower(), currency.upper(), json.dumps(data), int(time.time())))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1299,10 +1346,12 @@ def tripsync():
         return jsonify({'error': 'Could not generate destinations. Try again.'}), 500
 
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)",
-            (query, depart_city, currency, datetime.now().isoformat()))
+        query_sql = "INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)"
+        if is_pg:
+            query_sql = query_sql.replace('?', '%s')
+        c.execute(query_sql, (query, depart_city, currency, datetime.now().isoformat()))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1339,10 +1388,12 @@ def tripsync_local():
         return jsonify({'error': 'Local AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href="https://github.com/Tripsync-justmeMedia/tripsync" target="_blank" style="text-decoration: underline; font-weight: bold; color: inherit;">see our GitHub for local instructions!</a>'}), 200
 
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)",
-            (query, depart_city, currency, datetime.now().isoformat()))
+        query_sql = "INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)"
+        if is_pg:
+            query_sql = query_sql.replace('?', '%s')
+        c.execute(query_sql, (query, depart_city, currency, datetime.now().isoformat()))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1391,10 +1442,12 @@ def tripsync_gemma():
         return jsonify({"error": "Missing 'destinations' in response"}), 500
 
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
-        c.execute("INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)",
-            (query, depart_city, currency, datetime.now().isoformat()))
+        query_sql = "INSERT INTO search_log (query,departure,currency,timestamp) VALUES (?,?,?,?)"
+        if is_pg:
+            query_sql = query_sql.replace('?', '%s')
+        c.execute(query_sql, (query, depart_city, currency, datetime.now().isoformat()))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1587,9 +1640,12 @@ def get_flight_prices():
 def track_click():
     data = request.get_json()
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
-        c.execute("INSERT INTO click_log (destination,platform,project_name,timestamp) VALUES (?,?,?,?)",
+        query_sql = "INSERT INTO click_log (destination,platform,project_name,timestamp) VALUES (?,?,?,?)"
+        if is_pg:
+            query_sql = query_sql.replace('?', '%s')
+        c.execute(query_sql,
             (data.get('destination',''), data.get('platform', data.get('link_type','')),
              data.get('project',''), data.get('timestamp', int(time.time()*1000))))
         conn.commit()
@@ -1602,7 +1658,7 @@ def track_click():
 @app.route('/api/stats')
 def stats():
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn, is_pg = get_db_connection()
         c = conn.cursor()
         c.execute("SELECT COUNT(*) FROM search_log")
         searches = c.fetchone()[0]

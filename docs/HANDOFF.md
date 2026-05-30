@@ -60,7 +60,7 @@ AI-powered travel destination finder. User describes their dream trip in plain E
   server.py
   index.html
   requirements.txt
-DB: /tmp/tripsync.db  (ephemeral — resets on redeploy)
+DB: PostgreSQL in production (persistent) / SQLite locally (ephemeral)
 ```
 
 ---
@@ -73,7 +73,7 @@ DB: /tmp/tripsync.db  (ephemeral — resets on redeploy)
 | Backend | Python Flask + Gunicorn |
 | Primary AI | Groq API (llama-3.3-70b-versatile) |
 | Local Private AI | Ollama local (gemma4) — privacy-first local mode for the Gemma 4 Challenge |
-| Database | SQLite (click tracking + search logging) |
+| Database | PostgreSQL in production / SQLite locally (click tracking + search logging) |
 | Hosting | Render.com free tier |
 | Uptime | UptimeRobot (5-min ping) |
 | Version Control | GitHub — Tripsync-justmeMedia org |
@@ -93,6 +93,7 @@ ANTHROPIC_API_KEY=                ← installed, needs credits
 OPENAI_API_KEY=                   ← optional
 GEMINI_API_KEY=AIzaSyBj...          ← Verified & LIVE on Render
 DB_PATH=/tmp/tripsync.db          ← set automatically
+DATABASE_URL=postgresql://...     ← optional, persistent database connection string
 ```
 
 Local `.env` file at `~/tripsync/.env`:
@@ -205,6 +206,11 @@ How William and AI build TripSync together:
 ---
 
 ## What's Done ✅ (Updated May 30)
+
+- **PostgreSQL Production Database Support (May 30)**:
+  - Designed and implemented a dynamic dual-dialect database wrapper `get_db_connection()` that automatically transitions from SQLite to PostgreSQL when `DATABASE_URL` is set in the environment variables (e.g. on Render).
+  - Maintained zero-downtime silent fallback locally: if `psycopg2-binary` or `DATABASE_URL` is missing, the backend seamlessly falls back to the local SQLite database.
+  - Successfully mapped all query executions and table structures dynamically depending on the active database driver (using `SERIAL PRIMARY KEY` for PostgreSQL and standard placeholders translation).
 
 - **Interactive Trip-Aware AI Chat Sidebar (May 30)**:
   - Deployed a POST `/api/chat` route in `server.py` utilizing a trip-aware system prompt, combining destination name, duration, and currency as rich context to deliver highly relevant travel insights instead of generic chat answers.
