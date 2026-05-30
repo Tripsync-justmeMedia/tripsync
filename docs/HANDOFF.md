@@ -123,6 +123,7 @@ GET  /              → serves index.html
 POST /api/tripsync  → main search endpoint
 POST /api/track-click → logs affiliate clicks
 GET  /api/stats     → click + search totals
+POST /api/chat      → interactive trip-aware chat assistant
 GET  /manifest.json → PWA manifest (needs adding)
 GET  /sw.js         → service worker (needs adding)
 ```
@@ -203,7 +204,12 @@ How William and AI build TripSync together:
 
 ---
 
-## What's Done ✅ (Updated May 29)
+## What's Done ✅ (Updated May 30)
+
+- **Interactive Trip-Aware AI Chat Sidebar (May 30)**:
+  - Deployed a POST `/api/chat` route in `server.py` utilizing a trip-aware system prompt, combining destination name, duration, and currency as rich context to deliver highly relevant travel insights instead of generic chat answers.
+  - Configured a seamless auto-failover orchestrator between Server Groq and Server Gemini backups to ensure robust operation under rate limits or offline endpoints.
+  - Upgraded `planner.html` by replacing the static promotional widget in the sidebar with a stunning, real-time message bubble chat experience, fully integrated with session history and smooth scroll layouts.
 
 - **TripSync V2: AI Assistant & Influencer Affiliate System (May 29)**:
   - **Local Cipher Core Storage & User Key Obfuscation**: Created `static/js/storage.js` and `static/js/encryption.js` to obfuscate plain-text BYO API keys in `localStorage` using a composite XOR cipher salted dynamically with the user's email: `email + "_TS-2026-FLY-Sync-Secure-0A1B2C3D"`.
