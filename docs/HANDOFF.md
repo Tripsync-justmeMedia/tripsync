@@ -207,6 +207,11 @@ How William and AI build TripSync together:
 
 ## What's Done ✅ (Updated May 30)
 
+- **Local-First Conversational Chat History Persistence (May 30)**:
+  - Designed and deployed client-side chat log tracking inside `planner.html`.
+  - Conversation histories are automatically saved dynamically to `localStorage` under `tripsync_chat_[destination]` on every message turn.
+  - Successfully wired up redirectional and initial load callbacks to instantly restore the full historical chat logs whenever a traveler refreshes or revisits their trip planner, ensuring zero server costs and 100% data persistence on the free tier.
+
 - **PostgreSQL Production Database Support (May 30)**:
   - Designed and implemented a dynamic dual-dialect database wrapper `get_db_connection()` that automatically transitions from SQLite to PostgreSQL when `DATABASE_URL` is set in the environment variables (e.g. on Render).
   - Maintained zero-downtime silent fallback locally: if `psycopg2-binary` or `DATABASE_URL` is missing, the backend seamlessly falls back to the local SQLite database.
