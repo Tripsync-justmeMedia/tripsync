@@ -18,6 +18,8 @@ from sheets import sheets_helper
 
 load_dotenv()
 
+BASE_URL = os.environ.get("BASE_URL", "https://tripsync.ca")
+
 app = Flask(__name__, static_url_path='', static_folder='.')
 
 logging.basicConfig(level=logging.INFO)
@@ -103,12 +105,12 @@ def send_registration_emails(influencer_email, display_name, handle, pin):
           
           <div style="background-color: #eaf4f4; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 0; font-size: 14px; font-weight: bold; color: #1a6b6b; text-transform: uppercase; letter-spacing: 1px;">Your Referral Public Page</p>
-            <p style="margin: 5px 0 0; font-size: 18px; font-family: monospace; font-weight: bold;"><a href="https://tripsync.ca/@{handle}" style="color: #1a6b6b; text-decoration: none;">https://tripsync.ca/@{handle}</a></p>
+            <p style="margin: 5px 0 0; font-size: 18px; font-family: monospace; font-weight: bold;"><a href="{BASE_URL}/@{handle}" style="color: #1a6b6b; text-decoration: none;">{BASE_URL}/@{handle}</a></p>
           </div>
           
           <div style="background-color: #faf9f6; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #f4f1ea;">
             <p style="margin: 0; font-size: 14px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;">Access Your Private Dashboard</p>
-            <p style="margin: 5px 0 0; font-size: 15px;">Dashboard URL: <a href="https://tripsync.ca/dashboard.html?handle={handle}" style="color: #1a6b6b; font-weight: bold;">dashboard.html?handle={handle}</a></p>
+            <p style="margin: 5px 0 0; font-size: 15px;">Dashboard URL: <a href="{BASE_URL}/dashboard.html?handle={handle}" style="color: #1a6b6b; font-weight: bold;">dashboard.html?handle={handle}</a></p>
             <p style="margin: 5px 0 0; font-size: 15px;">Your 4-Digit Login PIN: <strong style="font-size: 16px; letter-spacing: 2px;">{pin}</strong></p>
           </div>
           
@@ -151,7 +153,7 @@ def send_registration_emails(influencer_email, display_name, handle, pin):
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold; color: #1a6b6b;">Handle:</td>
-              <td style="padding: 8px 0;"><a href="https://tripsync.ca/@{handle}" style="color: #1a6b6b; font-weight: bold;">@{handle}</a></td>
+              <td style="padding: 8px 0;"><a href="{BASE_URL}/@{handle}" style="color: #1a6b6b; font-weight: bold;">@{handle}</a></td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold; color: #1a6b6b;">Email:</td>
@@ -613,7 +615,7 @@ def planner():
         if destination:
             import urllib.parse
             quoted_dest = urllib.parse.quote(destination)
-            full_url = f"https://www.tripsync.ca/planner.html?destination={quoted_dest}&days={days}"
+            full_url = f"{BASE_URL}/planner.html?destination={quoted_dest}&days={days}"
             title = f"{destination} {days}-Day Travel Itinerary — TripSync"
             desc = f"Explore a detailed {days}-day travel itinerary for {destination} on TripSync. View flight deals, recommended hotels, tours, transfers, and budgets."
             
@@ -642,7 +644,7 @@ def planner():
                 f'<meta property="twitter:description" content="{desc}">'
             )
             content = content.replace(
-                '<meta property="og:url" content="https://tripsync.ca/planner.html">',
+                f'<meta property="og:url" content="{BASE_URL}/planner.html">',
                 f'<meta property="og:url" content="{full_url}">'
             )
         return content
@@ -1218,6 +1220,36 @@ def llm_proxy():
         'failover_triggered': failover_triggered,
         'failover_provider': failover_provider
     })
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    data = request.get_json() or {}
+    destination = data.get('destination', '').strip()
+    days = data.get('days', '5').strip()
+    currency = data.get('currency', 'USD').strip()
+    history = data.get('history', [])
+
+    if not history:
+        return jsonify({'error': 'No chat history provided'}), 400
+
+    system_prompt = (
+        f"You are TripSync, a premium AI travel assistant helping plan a {days}-day trip to {destination} in {currency} currency. "
+        f"Provide highly relevant, customized travel advice for this specific trip. Keep responses concise, structured, friendly, and under 3-4 paragraphs. "
+        f"Use bullet points for lists and readability."
+    )
+
+    # Priority Order failover:
+    # 1. Server Groq
+    # 2. Server Gemini
+    response_text = call_groq_history(system_prompt, history)
+    if not response_text:
+        logging.warning("Server Groq failed. Triggering failover to Server Gemini")
+        response_text = call_gemini_history(system_prompt, history)
+
+    if not response_text:
+        return jsonify({'error': 'All LLM failovers exhausted. API keys may be blocked or offline.'}), 502
+
+    return jsonify({'response': response_text})
 
 @app.route('/api/tripsync', methods=['POST'])
 def tripsync():
