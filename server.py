@@ -370,17 +370,8 @@ def fetch_flight_price(origin_city, dest_city, departure_date, return_date=None,
         
     token = os.environ.get("TRAVELPAYOUTS_TOKEN")
     if not token:
-        logging.warning("TRAVELPAYOUTS_TOKEN not set. Generating high-quality mock live flight price for preview.")
-        # Generate realistic seeded price
-        random.seed(hashlib.md5(f"{origin_city}-{dest_city}-{departure_date}".encode()).digest())
-        base_price = random.randint(350, 950)
-        return {
-            "price": float(base_price),
-            "airline_code": random.choice(["AA", "DL", "UA", "LH", "BA", "AF", "KL", "EK"]),
-            "currency": currency,
-            "origin_iata": origin_iata,
-            "dest_iata": dest_iata
-        }
+        logging.warning("TRAVELPAYOUTS_TOKEN environment variable not set. Flight pricing will be skipped.")
+        return None
         
     url = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
     params = {
