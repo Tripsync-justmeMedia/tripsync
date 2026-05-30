@@ -474,6 +474,7 @@
     if (chatDestElement && destination) {
       chatDestElement.textContent = destination;
     }
+    loadChatHistory(destination);
 
     // Fetch dynamic destination image asynchronously
     fetch(`/api/destination-image?query=${encodeURIComponent(destination)}`)
@@ -952,6 +953,38 @@
   // --- Sidebar AI Chat Assistant Handlers ---
   let chatHistory = [];
 
+  function loadChatHistory(destination) {
+    const saved = localStorage.getItem('tripsync_chat_' + destination);
+    if (!saved) return;
+    try {
+      chatHistory = JSON.parse(saved) || [];
+      const container = document.getElementById('chatMessages');
+      
+      // Keep only the welcome bubble
+      const welcomeBubble = container.firstElementChild;
+      container.innerHTML = '';
+      if (welcomeBubble) {
+        container.appendChild(welcomeBubble);
+      }
+      
+      // Render saved history
+      chatHistory.forEach(msg => {
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble ' + msg.role;
+        if (msg.role === 'user') {
+          bubble.style = "align-self: flex-end; background: var(--teal); color: white; padding: 0.6rem 0.8rem; border-radius: 12px 12px 0px 12px; max-width: 85%; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); word-break: break-word;";
+        } else {
+          bubble.style = "align-self: flex-start; background: var(--sky); color: var(--ink); padding: 0.6rem 0.8rem; border-radius: 12px 12px 12px 0px; max-width: 85%; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: pre-line; word-break: break-word;";
+        }
+        bubble.textContent = msg.content;
+        container.appendChild(bubble);
+      });
+      container.scrollTop = container.scrollHeight;
+    } catch (e) {
+      console.warn("Failed to parse saved chat history:", e);
+    }
+  }
+
   async function sendChatMessage() {
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
@@ -971,8 +1004,17 @@
     container.appendChild(userBubble);
     container.scrollTop = container.scrollHeight;
 
+    // Get current trip details from search params
+    const params = new URLSearchParams(window.location.search);
+    const destination = params.get('destination') || 'Queenstown';
+    const currency = params.get('currency') || 'USD';
+    const days = params.get('days') || '5';
+
     // Append to history
     chatHistory.push({ role: 'user', content: message });
+    try {
+      localStorage.setItem('tripsync_chat_' + destination, JSON.stringify(chatHistory));
+    } catch (e) { console.warn("Failed to save user chat step:", e); }
 
     // Disable inputs
     input.disabled = true;
@@ -987,12 +1029,6 @@
     typingBubble.textContent = 'Thinking...';
     container.appendChild(typingBubble);
     container.scrollTop = container.scrollHeight;
-
-    // Get current trip details from search params
-    const params = new URLSearchParams(window.location.search);
-    const destination = params.get('destination') || 'Queenstown';
-    const currency = params.get('currency') || 'USD';
-    const days = params.get('days') || '5';
 
     try {
       const resp = await fetch('/api/chat', {
@@ -1029,6 +1065,9 @@
 
       // Append to history
       chatHistory.push({ role: 'assistant', content: reply });
+      try {
+        localStorage.setItem('tripsync_chat_' + destination, JSON.stringify(chatHistory));
+      } catch (e) { console.warn("Failed to save assistant response step:", e); }
 
     } catch(err) {
       console.error(err);
