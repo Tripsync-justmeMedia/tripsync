@@ -6,3 +6,6 @@ __pycache__/
 docs/PRIVATE_HANDOFF.md
 credentials.json
 mock_sheets_db.json
+
+# Local Netlify folder
+.netlify
