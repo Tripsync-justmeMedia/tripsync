@@ -478,45 +478,41 @@ def call_ollama(prompt):
         time.sleep(1)
     return None
 
-# --- Gemma 4 API (Gemini REST) ---
+# --- Gemini / Gemma API (Google REST) ---
 def call_gemma_api(prompt):
     if not GEMINI_API_KEY:
         logging.error("No GEMINI_API_KEY found")
-        return "Error: No GEMINI_API_KEY found"
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-4-26b-a4b-it:generateContent?key={GEMINI_API_KEY}"
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.7,
-            "maxOutputTokens": 2000
+        return None
+
+    # Try fast flash-lite first, fallback to reasoning gemma
+    models_to_try = ["gemini-flash-lite-latest", "gemma-4-26b-a4b-it"]
+    for model in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 2000
+            }
         }
-    }
-    
-    try:
-        # Reduced timeout to 15s to allow Groq fallback within Render's 30s limit
-        resp = requests.post(url, json=payload, timeout=15)
-        
-        # INSTANT FALLBACK for Rate Limits (429) or Server Errors (502, 503)
-        if resp.status_code in [429, 502, 503]:
-            logging.warning(f"Gemma API returned {resp.status_code}. Triggering instant fallback to Groq.")
-            return call_groq(prompt)
-            
-        if resp.status_code == 200:
-            data = resp.json()
-            if "candidates" in data and len(data["candidates"]) > 0:
-                return data["candidates"][0]["content"]["parts"][0]["text"]
-        
-        # If we get any other non-200 code, still fallback as a safety measure
-        logging.warning(f"Gemma API failed with code {resp.status_code}. Falling back to Groq.")
-        return call_groq(prompt)
-        
-    except requests.exceptions.Timeout:
-        logging.error("Gemma API timed out (25s limit). Falling back to Groq.")
-        return call_groq(prompt)
-    except Exception as e:
-        logging.error(f"Gemma API connection error, falling back to Groq: {e}")
-        return call_groq(prompt)
+        try:
+            resp = requests.post(url, json=payload, timeout=20)
+            if resp.status_code == 200:
+                data = resp.json()
+                if "candidates" in data and len(data["candidates"]) > 0:
+                    parts = data["candidates"][0].get("content", {}).get("parts", [])
+                    # Extract final answer, skipping reasoning thought parts
+                    for p in reversed(parts):
+                        if not p.get("thought") and p.get("text"):
+                            return p["text"]
+                    if parts and "text" in parts[0]:
+                        return parts[0]["text"]
+            else:
+                logging.warning(f"Gemini {model} returned {resp.status_code}: {resp.text[:120]}")
+        except Exception as e:
+            logging.error(f"Gemini {model} error: {e}")
+
+    return None
 
 # --- Build destination search prompt ---
 def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="",
@@ -628,7 +624,7 @@ def destination_image():
 
 @app.route('/api/ping')
 def ping():
-    return jsonify({"status": "online", "timestamp": time.time(), "version": "2.1"})
+    return jsonify({"status": "online", "timestamp": time.time(), "version": "2.2"})
 
 @app.route('/')
 def index():
@@ -1038,7 +1034,7 @@ def verify_key():
                 return jsonify({'valid': False, 'error': err_msg}), 400
                 
         elif provider == 'gemini':
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={key}"
             payload = {"contents": [{"parts": [{"text": "ping"}]}]}
             resp = requests.post(url, json=payload, timeout=8)
             if resp.status_code == 200:
@@ -1132,7 +1128,7 @@ def call_gemini_history(system_prompt, history_messages):
     if not GEMINI_API_KEY:
         logging.error("No server-side GEMINI_API_KEY for failover")
         return None
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={GEMINI_API_KEY}"
     
     # Format messages for Gemini API (Gemini uses 'user' and 'model' roles)
     contents = []
@@ -1227,7 +1223,7 @@ def llm_proxy():
                 response_text = call_gemini_history(system_prompt, history)
 
     elif provider == 'gemini':
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={decrypted_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={decrypted_key}"
         contents = []
         for msg in history:
             role = "user" if msg.get("role") == "user" else "model"
