@@ -41,7 +41,12 @@ logging.basicConfig(level=logging.INFO)
 DB_PATH    = os.environ.get('DB_PATH', '/tmp/tripsync.db')
 GROQ_KEY   = os.environ.get('GROQ_API_KEY')
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODELS = [
+    os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b"),
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "llama-3.3-70b-versatile"
+]
 OLLAMA_URL = "http://localhost:11434/api/generate"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 if GEMINI_API_KEY:
@@ -441,26 +446,29 @@ def extract_json_safe(text):
         
     return None
 
-# --- Groq call with retry ---
+# --- Groq call with multi-model fallback ---
 def call_groq(prompt, max_tokens=2000):
     if not GROQ_KEY:
         logging.error("No GROQ_API_KEY found")
         return None
-    for attempt in range(3):
+    for model in GROQ_MODELS:
         try:
             resp = requests.post(GROQ_URL,
                 headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
-                json={"model": GROQ_MODEL,
+                json={"model": model,
                       "messages": [
                           {"role": "system", "content": "You are a travel expert. Respond with valid JSON only. No markdown, no preamble."},
                           {"role": "user", "content": prompt}],
                       "max_tokens": max_tokens, "temperature": 0.7},
-                timeout=25)
+                timeout=20)
             if resp.status_code == 200:
-                return resp.json()['choices'][0]['message']['content']
+                choices = resp.json().get('choices', [])
+                if choices and 'message' in choices[0] and choices[0]['message'].get('content'):
+                    return choices[0]['message']['content']
+            else:
+                logging.warning(f"Groq {model} returned {resp.status_code}: {resp.text[:100]}")
         except Exception as e:
-            logging.error(f"Groq attempt {attempt+1}: {e}")
-        time.sleep(1)
+            logging.error(f"Groq {model} error: {e}")
     return None
 
 # --- Ollama fallback (local only) ---
@@ -513,6 +521,173 @@ def call_gemma_api(prompt):
             logging.error(f"Gemini {model} error: {e}")
 
     return None
+
+# --- Zero-Downtime Curated Fallback Engine ---
+def get_curated_destinations_fallback(query, depart_city="", currency="USD", budget=""):
+    q = (query or "").lower()
+    
+    # Currency symbols & conversion approximation if needed
+    curr = currency if currency else "USD"
+    origin_text = f" from {depart_city}" if depart_city else ""
+    flight_dur = "4-7 hours" if depart_city else "Duration varies"
+    flight_est = f"350-650 {curr} return{origin_text}" if depart_city else f"Check live fares in {curr}"
+    
+    # Archetype 1: Tropical / Beach / Warm
+    beach_pack = [
+        {
+            "city": "Cancun & Riviera Maya",
+            "country": "Mexico",
+            "description": "Sun-drenched Caribbean turquoise waters, ancient Mayan ruins, and world-class beachfront all-inclusive resorts tailored for couples and beach lovers.",
+            "vibe_tags": ["#Tropical", "#BeachVibes", "#AllInclusive"],
+            "match_score": "9.6/10",
+            "best_season": "December to April",
+            "budget_per_day": f"110-180 {curr} per person",
+            "flight_estimate": flight_est,
+            "flight_duration": flight_dur,
+            "visa": "Visa-free for most North American & European travelers",
+            "highlights": ["Tulum Coastal Ruins", "Cenote Dos Ojos Snorkeling", "Playa Delfines", "Authentic Yucatecan Cuisine"],
+            "smart_deal_insight": "Mid-week Tuesday flights offer up to 20% savings on Mexican Caribbean routes.",
+            "best_time_to_book": "6-8 weeks out"
+        },
+        {
+            "city": "Phuket & Krabi",
+            "country": "Thailand",
+            "description": "Dramatic limestone karsts jutting out of emerald waters, bustling night food markets, and incredible luxury resort value at everyday prices.",
+            "vibe_tags": ["#Exotic", "#IslandLife", "#StreetFood"],
+            "match_score": "9.4/10",
+            "best_season": "November to March",
+            "budget_per_day": f"60-120 {curr} per person",
+            "flight_estimate": f"750-1200 {curr} return{origin_text}" if depart_city else f"Check live fares in {curr}",
+            "flight_duration": "14-18 hours" if depart_city else "Duration varies",
+            "visa": "Visa on arrival / 30-day exemption for 60+ countries",
+            "highlights": ["Phi Phi Islands by Speedboat", "Old Phuket Town Heritage", "Railay Beach", "Wat Chalong"],
+            "smart_deal_insight": "Opt for shoulder season (late October or April) for 40% lower villa tariffs.",
+            "best_time_to_book": "8-12 weeks out"
+        },
+        {
+            "city": "Algarve Coast",
+            "country": "Portugal",
+            "description": "Golden sandstone sea cliffs, hidden sea caves, freshly caught grilled sardines, and some of Southern Europe's sunniest climes.",
+            "vibe_tags": ["#CoastalEurope", "#Seafood", "#GoldenCliffs"],
+            "match_score": "9.3/10",
+            "best_season": "May to October",
+            "budget_per_day": f"95-160 {curr} per person",
+            "flight_estimate": flight_est,
+            "flight_duration": flight_dur,
+            "visa": "Schengen Area (90 days visa-free for USA/Canada/UK)",
+            "highlights": ["Benagil Sea Cave", "Ponta da Piedade Cliffs", "Faro Historic Old Town", "Sagres Sunset Viewpoint"],
+            "smart_deal_insight": "Fly into Lisbon or Faro; regional train connections save substantial airfare markup.",
+            "best_time_to_book": "7-10 weeks out"
+        }
+    ]
+
+    # Archetype 2: European Culture / Romance / Walkable Cities
+    culture_pack = [
+        {
+            "city": "Lisbon",
+            "country": "Portugal",
+            "description": "Cobblestone lanes, yellow vintage trams, soulful Fado melodies, and panoramic miradouros overlooking the Tagus River.",
+            "vibe_tags": ["#Romance", "#Historic", "#CulinaryDelight"],
+            "match_score": "9.5/10",
+            "best_season": "April to June & September to October",
+            "budget_per_day": f"90-150 {curr} per person",
+            "flight_estimate": flight_est,
+            "flight_duration": flight_dur,
+            "visa": "Schengen Area visa-free for 90 days",
+            "highlights": ["Alfama Quarter Walking Tour", "Pastéis de Belém", "Tram 28 Scenic Route", "Sintra Fairytale Palaces"],
+            "smart_deal_insight": "Book regional rail passes for Sintra and Cascais day-trips to save on guided tours.",
+            "best_time_to_book": "6-8 weeks out"
+        },
+        {
+            "city": "Florence & Tuscany",
+            "country": "Italy",
+            "description": "The cradle of Renaissance art, terracotta rooftops, world-renowned Chianti vineyards, and unmatched culinary tradition.",
+            "vibe_tags": ["#ArtAndHistory", "#WineTasting", "#RomanticGetaway"],
+            "match_score": "9.4/10",
+            "best_season": "April to May & September to October",
+            "budget_per_day": f"130-220 {curr} per person",
+            "flight_estimate": flight_est,
+            "flight_duration": flight_dur,
+            "visa": "Schengen 90-day visa exemption",
+            "highlights": ["Duomo Terraces", "Uffizi Gallery", "Ponte Vecchio Sunset", "Tuscan Countryside Wine Tour"],
+            "smart_deal_insight": "Reserve museum entry 3 weeks in advance to bypass 2-hour general admission queues.",
+            "best_time_to_book": "8-10 weeks out"
+        },
+        {
+            "city": "Barcelona",
+            "country": "Spain",
+            "description": "Where whimsical Gaudí architecture meets Mediterranean beaches, world-famous tapas bars, and lively tree-lined boulevards.",
+            "vibe_tags": ["#Gaudí", "#BeachCity", "#TapasCulture"],
+            "match_score": "9.2/10",
+            "best_season": "May to June & September to October",
+            "budget_per_day": f"110-190 {curr} per person",
+            "flight_estimate": flight_est,
+            "flight_duration": flight_dur,
+            "visa": "Schengen visa-free for eligible nationalities",
+            "highlights": ["Sagrada Família", "Park Güell", "Gothic Quarter Stroll", "Barceloneta Beach"],
+            "smart_deal_insight": "Buy the Barcelona Card for unlimited metro transit and bundled museum entry.",
+            "best_time_to_book": "6-8 weeks out"
+        }
+    ]
+
+    # Archetype 3: Asian Adventure / Modern & Tradition
+    asia_pack = [
+        {
+            "city": "Tokyo & Kyoto",
+            "country": "Japan",
+            "description": "Futuristic neon metropolises seamlessly coexisting with thousand-year-old Zen gardens, shinkansen bullet trains, and incredible culinary precision.",
+            "vibe_tags": ["#Futuristic", "#ZenTemples", "#FoodieCapital"],
+            "match_score": "9.7/10",
+            "best_season": "March to May (Cherry Blossoms) & October to November",
+            "budget_per_day": f"100-180 {curr} per person",
+            "flight_estimate": f"850-1400 {curr} return{origin_text}" if depart_city else f"Check live fares in {curr}",
+            "flight_duration": "12-16 hours" if depart_city else "Duration varies",
+            "visa": "Visa-free for 90 days for most nationalities",
+            "highlights": ["Shibuya Crossing & Omoide Yokocho", "Fushimi Inari Shrine", "Arashiyama Bamboo Grove", "Tsukiji Outer Market"],
+            "smart_deal_insight": "Travel IC card (Suica/Pasmo) on mobile wallet simplifies all train and convenience store payments.",
+            "best_time_to_book": "10-14 weeks out"
+        },
+        {
+            "city": "Bangkok",
+            "country": "Thailand",
+            "description": "Gilded riverside temples, world-leading street food stalls, modern rooftop bars, and vibrant water markets.",
+            "vibe_tags": ["#StreetFood", "#Nightlife", "#GoldenTemples"],
+            "match_score": "9.3/10",
+            "best_season": "November to February",
+            "budget_per_day": f"50-95 {curr} per person",
+            "flight_estimate": f"750-1100 {curr} return{origin_text}" if depart_city else f"Check live fares in {curr}",
+            "flight_duration": "15-18 hours" if depart_city else "Duration varies",
+            "visa": "Visa exemption on arrival",
+            "highlights": ["Grand Palace & Wat Pho", "Chao Phraya River Ferry", "Chatuchak Weekend Market", "Chinatown Yaowarat Food Crawl"],
+            "smart_deal_insight": "Use river express boats instead of street taxis during rush hours to avoid gridlock.",
+            "best_time_to_book": "8-10 weeks out"
+        },
+        {
+            "city": "Bali (Ubud & Canggu)",
+            "country": "Indonesia",
+            "description": "Lush emerald rice terraces, spiritual water temples, world-class surf breaks, and healthy wellness cafes.",
+            "vibe_tags": ["#TropicalWellness", "#RiceTerraces", "#IslandSurfing"],
+            "match_score": "9.2/10",
+            "best_season": "April to October",
+            "budget_per_day": f"55-110 {curr} per person",
+            "flight_estimate": f"900-1350 {curr} return{origin_text}" if depart_city else f"Check live fares in {curr}",
+            "flight_duration": "18-22 hours" if depart_city else "Duration varies",
+            "visa": "Visa on Arrival ($35 USD) available online",
+            "highlights": ["Tegalalang Rice Terraces", "Uluwatu Cliffside Temple", "Tirta Empul Holy Springs", "Canggu Sunset Beach Clubs"],
+            "smart_deal_insight": "Hiring a private day driver often costs less than individual app rides between regions.",
+            "best_time_to_book": "8-12 weeks out"
+        }
+    ]
+
+    # Matching logic
+    if any(k in q for k in ["beach", "warm", "sun", "tropical", "ocean", "island", "sea", "resort", "relax", "caribbean", "mexico"]):
+        chosen = beach_pack
+    elif any(k in q for k in ["asia", "japan", "tokyo", "thailand", "vietnam", "bali", "food", "futuristic"]):
+        chosen = asia_pack
+    else:
+        chosen = culture_pack
+
+    return {"destinations": chosen}
 
 # --- Build destination search prompt ---
 def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="",
@@ -627,7 +802,7 @@ def ping():
     return jsonify({
         "status": "online",
         "timestamp": time.time(),
-        "version": "2.3",
+        "version": "2.4",
         "has_groq": bool(GROQ_KEY),
         "has_gemini": bool(GEMINI_API_KEY)
     })
@@ -1329,8 +1504,10 @@ def tripsync():
                 result["destinations"] = result[k]
                 break
 
+    # If all AI providers fail, serve curated resilient fallback so visitor NEVER sees error
     if not result or "destinations" not in result:
-        return jsonify({'error': 'All AI providers are currently unavailable. Please try again in a moment.'}), 503
+        logging.warning("All AI providers unavailable, generating curated destinations fallback")
+        result = get_curated_destinations_fallback(query, depart_city, currency, budget)
 
     try:
         conn, is_pg = get_db_connection()
