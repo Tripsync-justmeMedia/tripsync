@@ -802,7 +802,7 @@ def ping():
     return jsonify({
         "status": "online",
         "timestamp": time.time(),
-        "version": "2.4",
+        "version": "2.5",
         "has_groq": bool(GROQ_KEY),
         "has_gemini": bool(GEMINI_API_KEY)
     })
@@ -1588,22 +1588,21 @@ def tripsync_gemma():
 
     result_text = call_gemma_api(prompt)
     if not result_text or result_text.startswith("Error:"):
-        return jsonify({"error": f"Gemma API unavailable: {result_text}"}), 503
+        logging.info("Gemma unavailable — triggering silent fallback to Groq Cloud AI")
+        result_text = call_groq(prompt)
 
-    result = extract_json_safe(result_text)
-    if not result:
-        logging.error(f"Failed to parse Gemma response: {result_text}")
-        return jsonify({"error": f"Could not parse Gemma response: {result_text[:200]}..."}), 500
-    
+    result = extract_json_safe(result_text) if result_text else None
+
     # Ensure 'destinations' exists even if renamed
-    if "destinations" not in result:
+    if result and "destinations" not in result:
         for k in ["recommendations", "results", "trips", "data"]:
             if k in result:
                 result["destinations"] = result[k]
                 break
-    
-    if "destinations" not in result:
-        return jsonify({"error": "Missing 'destinations' in response"}), 500
+
+    if not result or "destinations" not in result:
+        logging.warning("Gemma & Groq unavailable on /api/tripsync-gemma, using curated fallback")
+        result = get_curated_destinations_fallback(query, depart_city, currency, budget)
 
     try:
         conn, is_pg = get_db_connection()
