@@ -69,14 +69,16 @@ DB: PostgreSQL in production (persistent) / SQLite locally (ephemeral)
 
 | Layer | Technology |
 |---|---|
-| Frontend | Single HTML file, no framework, no build step |
-| Backend | Python Flask + Gunicorn |
-| Primary AI | Groq API (llama-3.3-70b-versatile) |
-| Local Private AI | Ollama local (gemma4) — privacy-first local mode for the Gemma 4 Challenge |
-| Database | PostgreSQL in production / SQLite locally (click tracking + search logging) |
-| Hosting | Render.com free tier |
-| Uptime | UptimeRobot (5-min ping) |
-| Version Control | GitHub — Tripsync-justmeMedia org |
+| Frontend | Vanilla HTML5/CSS3/JS, Glassmorphism, Netlify hosting (`tripsync.ca`) |
+| Backend | Python Flask + Gunicorn (Render Web Service) |
+| Primary AI | Groq Cloud AI (`qwen/qwen3.8-27b` → `openai/gpt-oss-120b` → `openai/gpt-oss-20b`) |
+| Secondary AI | Google Gemini API (`gemini-flash-lite-latest` / `gemma-4-26b-a4b-it`) |
+| Zero-Downtime Engine | Server-side Curated Destination & Itinerary Fallback (never fails visitors) |
+| Local AI Mode | Ollama local (`gemma4`) for local privacy mode |
+| Database | PostgreSQL in production (`DATABASE_URL`) / SQLite locally |
+| Hosting | Render.com Web Service (`promailer@justmemedia.ca`) + Netlify Frontend |
+| Uptime | UptimeRobot (5-min HTTP ping to `/api/ping` prevents cold starts) |
+| Version Control | GitHub — `Tripsync-justmeMedia/tripsync` (Render auto-deploy) |
 | Fonts | Google Fonts: Playfair Display + DM Sans |
 | PDF | jsPDF (CDN) |
 | Image Save | html2canvas (CDN) |
@@ -85,48 +87,54 @@ DB: PostgreSQL in production (persistent) / SQLite locally (ephemeral)
 
 ## Environment Variables
 
-Set in Render dashboard (never in code):
+Set in Render dashboard (`dashboard.render.com` under `promailer@justmemedia.ca`):
 
 ```
-GROQ_API_KEY=your_groq_key        ← required, working
-ANTHROPIC_API_KEY=                ← installed, needs credits
-OPENAI_API_KEY=                   ← optional
-GEMINI_API_KEY=AIzaSyBj...          ← Verified & LIVE on Render
+GROQ_API_KEY=gsk_...              ← required, active (Tier 1 Cloud AI)
+GEMINI_API_KEY=AIzaSy...          ← optional (Tier 2 Reasoning AI)
 DB_PATH=/tmp/tripsync.db          ← set automatically
 DATABASE_URL=postgresql://...     ← optional, persistent database connection string
+PORT=5001                         ← set automatically
 ```
 
 Local `.env` file at `~/tripsync/.env`:
 ```
-GROQ_API_KEY=your_key_here
+GROQ_API_KEY=your_groq_key_here
+GEMINI_API_KEY=your_gemini_key_here
 ```
 
 ---
 
 ## How The Stack Works
 
-### API Flow
+### API Flow (Zero-Downtime Multi-Tier Failover)
 ```
-User types query
-→ POST /api/tripsync
+User types query in index.html or planner.html
+→ POST /api/tripsync (or /api/generate-itinerary)
 → build_prompt() — constructs JSON-forcing prompt with departure city + currency
-→ call_groq() — tries Groq 3x with retry
-→ if fails → call_ollama() — tries local Ollama 2x (local only)
+→ call_groq() — tries active Groq models in sequence (qwen3.8-27b → gpt-oss-120b)
+→ if fails → call_gemma_api() — tries Gemini cloud API (gemini-flash-lite-latest)
+→ if fails → get_curated_destinations_fallback() — instant dynamic fallback tailored to query & city
 → extract_json_safe() — 4-strategy JSON extraction
-→ logs to SQLite search_log
-→ returns { destinations: [...] } to frontend
-→ frontend renders 3 cards
+→ logs to SQLite / PostgreSQL search_log
+→ returns { destinations: [...] } with HTTP 200 OK
+→ frontend renders cards (flight prices calculated from origin city in user's currency)
 ```
 
-### Routes
+### Routes & Diagnostic Endpoints
 ```
 GET  /              → serves index.html
-POST /api/tripsync  → main search endpoint
+GET  /api/ping      → health check with version ("2.6") + has_groq / has_gemini flags
+POST /api/tripsync  → main destination search endpoint
+POST /api/tripsync-gemma → reasoning mode search (silent failover to Groq/curated)
+POST /api/generate-itinerary → day-by-day itinerary generator
+POST /api/generate-itinerary-gemma → reasoning day-by-day itinerary
+POST /api/multi-stop → multi-destination itinerary generator
+POST /api/refine-itinerary → interactive trip adjustments
 POST /api/track-click → logs affiliate clicks
 GET  /api/stats     → click + search totals
-POST /api/chat      → interactive trip-aware chat assistant
-GET  /manifest.json → PWA manifest (needs adding)
-GET  /sw.js         → service worker (needs adding)
+GET  /manifest.json → PWA manifest
+GET  /sw.js         → Service Worker v4 (network-first HTML, scheme filtering)
 ```
 
 ---
