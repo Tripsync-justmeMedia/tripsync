@@ -802,7 +802,7 @@ def ping():
     return jsonify({
         "status": "online",
         "timestamp": time.time(),
-        "version": "2.5",
+        "version": "2.6",
         "has_groq": bool(GROQ_KEY),
         "has_gemini": bool(GEMINI_API_KEY)
     })
@@ -1697,10 +1697,57 @@ Return ONLY valid JSON:
 }}"""
     return prompt
 
+# --- Curated Itinerary Fallback Engine ---
+def build_curated_itinerary_fallback(destination, days=5, currency="USD"):
+    dest = (destination or "Your Destination").title()
+    curr = currency or "USD"
+    try:
+        days_int = int(days)
+    except:
+        days_int = 5
+    if days_int < 1: days_int = 3
+    if days_int > 14: days_int = 14
+    
+    themes = [
+        ("Arrival & Historic Heart", ["Explore central square & historic alleys", "Visit iconic city cathedral or heritage temple", "Welcome dinner at authentic family-run bistro"]),
+        ("Cultural Immersion & Highlights", ["Morning guided tour of premier cultural museum", "Scenic promenade or traditional river ferry crossing", "Sunset panoramic viewpoint & craft cocktail"]),
+        ("Local Flavor & Hidden Secrets", ["Artisan neighborhood walking discovery", "Street market food crawl & regional tastings", "Evening acoustic music or traditional performance"]),
+        ("Day Excursion & Nature", ["Scenic day trip to surrounding hills or coastal caves", "Lunch overlooking the panoramic valley or bay", "Relaxing afternoon spa or botanical garden stroll"]),
+        ("Farewell & Signature Memories", ["Boutique souvenir shopping for local crafts", "Iconic monument photo stop", "Celebratory farewell tasting menu"])
+    ]
+    
+    itinerary_days = []
+    for i in range(1, days_int + 1):
+        idx = (i - 1) % len(themes)
+        title, acts = themes[idx]
+        itinerary_days.append({
+            "day": i,
+            "title": f"Day {i}: {title}",
+            "activities": acts,
+            "meals": {
+                "breakfast": f"Café pastry & roast coffee in {dest}",
+                "lunch": f"Authentic regional dining in {dest}",
+                "dinner": f"Chef-selected evening venue"
+            },
+            "daily_budget": f"90-170 {curr}",
+            "tips": [f"Validate transit passes early and carry small local change for markets in {dest}."]
+        })
+
+    return {
+        "destination": dest,
+        "days": days_int,
+        "total_budget_estimate": f"{days_int * 120}-{days_int * 210} {curr}",
+        "suggested_accommodation": [
+            {"name": f"The Heritage Boutique {dest}", "type": "Boutique / Mid-range", "reason": "Central walkable access with prime guest ratings."},
+            {"name": f"{dest} Urban Comfort Suites", "type": "Comfort / Value", "reason": "Great transport links and quiet neighborhood vibe."}
+        ],
+        "itinerary": itinerary_days
+    }
+
 @app.route('/api/generate-itinerary', methods=['POST'])
 @limiter.limit("5 per minute")
 def generate_itinerary():
-    data        = request.get_json()
+    data        = request.get_json() or {}
     destination = data.get('destination', '')
     days        = data.get('days', 5)
     preferences = data.get('preferences', '')
@@ -1711,16 +1758,20 @@ def generate_itinerary():
 
     result_text = call_groq(prompt, max_tokens=4000)
     if not result_text:
-        return jsonify({"error": "Could not generate itinerary. Try again."}), 503
-    result = extract_json_safe(result_text)
-    if not result:
-        return jsonify({"error": "Could not parse itinerary."}), 500
+        logging.info("Groq failed on itinerary — falling back to Gemini")
+        result_text = call_gemma_api(prompt)
+
+    result = extract_json_safe(result_text) if result_text else None
+    if not result or not result.get("itinerary"):
+        logging.warning("All AI providers unavailable for itinerary, using curated fallback")
+        result = build_curated_itinerary_fallback(destination, days, currency)
+
     return jsonify(result)
 
 @app.route('/api/generate-itinerary-local', methods=['POST'])
 @limiter.limit("10 per minute")
 def generate_itinerary_local():
-    data = request.get_json()
+    data = request.get_json() or {}
     destination = data.get('destination', '')
     days = data.get('days', 5)
     currency = data.get('currency', 'USD')
@@ -1730,24 +1781,27 @@ def generate_itinerary_local():
         return jsonify({"error": "Local AI Mode requires TripSync to be run locally with Ollama (gemma4) installed. Switch to Cloud AI for immediate results, or <a href=\"https://github.com/Tripsync-justmeMedia/tripsync\" target=\"_blank\" style=\"text-decoration: underline; font-weight: bold; color: inherit;\">see our GitHub for local instructions!</a>"}), 200
     parsed = extract_json_safe(result)
     if not parsed:
-        return jsonify({"error": "Could not parse response"}), 500
+        parsed = build_curated_itinerary_fallback(destination, days, currency)
     return jsonify(parsed)
 
 @app.route('/api/generate-itinerary-gemma', methods=['POST'])
 @limiter.limit("5 per minute")
 def generate_itinerary_gemma():
-    data = request.get_json()
+    data = request.get_json() or {}
     destination = data.get('destination', '')
     days = data.get('days', 5)
     currency = data.get('currency', 'USD')
     prompt = build_itinerary_prompt(destination, days, currency)
+    
     result_text = call_gemma_api(prompt)
     if not result_text or result_text.startswith("Error:"):
-        return jsonify({"error": f"Gemma API unavailable: {result_text}"}), 503
-    parsed = extract_json_safe(result_text)
-    if not parsed:
-        logging.error(f"Failed to parse Gemma itinerary: {result_text}")
-        return jsonify({"error": f"Could not parse response: {result_text[:200]}..."}), 500
+        logging.info("Gemma unavailable for itinerary — silent fallback to Groq")
+        result_text = call_groq(prompt, max_tokens=4000)
+
+    parsed = extract_json_safe(result_text) if result_text else None
+    if not parsed or not parsed.get("itinerary"):
+        logging.warning("AI providers unavailable on /api/generate-itinerary-gemma, using curated fallback")
+        parsed = build_curated_itinerary_fallback(destination, days, currency)
     
     resp = jsonify(parsed)
     resp.headers['X-AI-Mode'] = 'gemma'

@@ -2,7 +2,7 @@
 // Strategy: Cache-first for static assets, network-first for HTML pages
 // API calls always go to network (no caching of search results)
 
-const CACHE_NAME = 'tripsync-v3';
+const CACHE_NAME = 'tripsync-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -33,6 +33,11 @@ self.addEventListener('activate', (e) => {
 
 // Fetch — smart routing strategy
 self.addEventListener('fetch', (e) => {
+  // Ignore chrome-extension://, moz-extension://, etc.
+  if (!e.request.url.startsWith('http://') && !e.request.url.startsWith('https://')) {
+    return;
+  }
+
   const url = new URL(e.request.url);
 
   // Never intercept API calls — always go to network for fresh data
