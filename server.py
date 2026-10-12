@@ -624,7 +624,13 @@ def destination_image():
 
 @app.route('/api/ping')
 def ping():
-    return jsonify({"status": "online", "timestamp": time.time(), "version": "2.2"})
+    return jsonify({
+        "status": "online",
+        "timestamp": time.time(),
+        "version": "2.3",
+        "has_groq": bool(GROQ_KEY),
+        "has_gemini": bool(GEMINI_API_KEY)
+    })
 
 @app.route('/')
 def index():
