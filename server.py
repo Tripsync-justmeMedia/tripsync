@@ -41,8 +41,9 @@ logging.basicConfig(level=logging.INFO)
 DB_PATH    = os.environ.get('DB_PATH', '/tmp/tripsync.db')
 GROQ_KEY   = os.environ.get('GROQ_API_KEY')
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 GROQ_MODELS = [
-    os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b"),
+    GROQ_MODEL,
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
     "llama-3.3-70b-versatile"
@@ -1289,20 +1290,23 @@ def call_groq_history(system_prompt, history_messages):
     for msg in history_messages:
         messages.append({"role": msg.get("role"), "content": msg.get("content")})
         
-    payload = {
-        "model": GROQ_MODEL,
-        "messages": messages,
-        "max_tokens": 1500,
-        "temperature": 0.7
-    }
-    try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=12)
-        if resp.status_code == 200:
-            return resp.json()['choices'][0]['message']['content']
-        else:
-            logging.error(f"Groq history endpoint failed: {resp.status_code} {resp.text}")
-    except Exception as e:
-        logging.error(f"Groq history error: {e}")
+    for model in GROQ_MODELS:
+        payload = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": 1500,
+            "temperature": 0.7
+        }
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=12)
+            if resp.status_code == 200:
+                choices = resp.json().get('choices', [])
+                if choices and 'message' in choices[0] and choices[0]['message'].get('content'):
+                    return choices[0]['message']['content']
+            else:
+                logging.warning(f"Groq history model {model} returned {resp.status_code}: {resp.text[:100]}")
+        except Exception as e:
+            logging.error(f"Groq history model {model} error: {e}")
     return None
 
 def call_gemini_history(system_prompt, history_messages):
@@ -1386,7 +1390,8 @@ def llm_proxy():
         messages = [{"role": "system", "content": system_prompt}]
         for msg in history:
             messages.append({"role": msg.get("role"), "content": msg.get("content")})
-        payload = {"model": GROQ_MODEL, "messages": messages, "max_tokens": 1500, "temperature": 0.7}
+        user_model = GROQ_MODEL
+        payload = {"model": user_model, "messages": messages, "max_tokens": 1500, "temperature": 0.7}
         try:
             resp = requests.post(url, headers=headers, json=payload, timeout=12)
             if resp.status_code == 200:
@@ -1440,33 +1445,37 @@ def llm_proxy():
 @app.route('/api/chat', methods=['POST'])
 @limiter.limit("5 per minute")
 def api_chat():
-    data = request.get_json() or {}
-    destination = data.get('destination', '').strip()
-    days = data.get('days', '5').strip()
-    currency = data.get('currency', 'USD').strip()
-    history = data.get('history', [])
+    try:
+        data = request.get_json() or {}
+        destination = data.get('destination', '').strip()
+        days = data.get('days', '5').strip()
+        currency = data.get('currency', 'USD').strip()
+        history = data.get('history', [])
 
-    if not history:
-        return jsonify({'error': 'No chat history provided'}), 400
+        if not history:
+            return jsonify({'error': 'No chat history provided'}), 400
 
-    system_prompt = (
-        f"You are TripSync, a premium AI travel assistant helping plan a {days}-day trip to {destination} in {currency} currency. "
-        f"Provide highly relevant, customized travel advice for this specific trip. Keep responses concise, structured, friendly, and under 3-4 paragraphs. "
-        f"Use bullet points for lists and readability."
-    )
+        system_prompt = (
+            f"You are TripSync, a premium AI travel assistant helping plan a {days}-day trip to {destination} in {currency} currency. "
+            f"Provide highly relevant, customized travel advice for this specific trip. Keep responses concise, structured, friendly, and under 3-4 paragraphs. "
+            f"Use bullet points for lists and readability."
+        )
 
-    # Priority Order failover:
-    # 1. Server Groq
-    # 2. Server Gemini
-    response_text = call_groq_history(system_prompt, history)
-    if not response_text:
-        logging.warning("Server Groq failed. Triggering failover to Server Gemini")
-        response_text = call_gemini_history(system_prompt, history)
+        # Priority Order failover:
+        # 1. Server Groq
+        # 2. Server Gemini
+        response_text = call_groq_history(system_prompt, history)
+        if not response_text:
+            logging.warning("Server Groq failed. Triggering failover to Server Gemini")
+            response_text = call_gemini_history(system_prompt, history)
 
-    if not response_text:
-        return jsonify({'error': 'All LLM failovers exhausted. API keys may be blocked or offline.'}), 502
+        if not response_text:
+            return jsonify({'error': 'All LLM failovers exhausted. API keys may be blocked or offline.'}), 502
 
-    return jsonify({'response': response_text})
+        return jsonify({'response': response_text})
+    except Exception as e:
+        logging.error(f"Error in api_chat: {e}", exc_info=True)
+        return jsonify({'error': f'Chat service temporarily unavailable: {str(e)}'}), 500
 
 @app.route('/api/tripsync', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -1858,7 +1867,7 @@ def get_flight_prices():
         cache_flight_price(origin, destination, dep_date, ret_date, flight_class, currency, fresh)
         return jsonify(fresh)
         
-    return jsonify({"error": "No flights found or API limits exceeded"}), 404
+    return jsonify({"price": None, "message": "No flights found or API limits exceeded"}), 200
 
 # --- Click tracking ---
 @app.route('/api/track-click', methods=['POST'])
