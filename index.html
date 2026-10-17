@@ -458,6 +458,41 @@ footer a:hover{color:var(--rust-light)}
       body { padding-bottom: 70px; } /* Space for bottom nav */
       .header-actions .btn-ghost:not(.header-stats-btn) { display: none; }
     }
+
+    /* ---- Active Trip Pill ---- */
+    .active-trip-pill {
+      display: none; /* shown by JS if active trip exists */
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem 0.3rem 0.55rem;
+      background: linear-gradient(135deg, #e6f9f0, #d1fae5);
+      border: 1px solid #a7f3d0;
+      border-radius: 50px;
+      text-decoration: none;
+      color: #065f46;
+      font-size: 0.73rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background 0.2s, box-shadow 0.2s;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .active-trip-pill:hover {
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      box-shadow: 0 2px 8px rgba(6,95,70,0.18);
+    }
+    .active-trip-pill .pill-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      flex-shrink: 0;
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.75); }
+    }
   </style>
 </head>
 <body>
@@ -477,6 +512,11 @@ footer a:hover{color:var(--rust-light)}
     <div class="logo">Trip<span>Sync</span></div>
   </div>
   <div class="header-actions">
+    <!-- Active trip pill (populated by JS) -->
+    <a id="activeTripPill" class="active-trip-pill" href="planner.html" title="Resume your active trip">
+      <span class="pill-dot"></span>
+      <span id="activeTripPillText">📋 Resume Trip</span>
+    </a>
     <a id="headerPlannerLink" href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:0.5rem">🗂️<span class="mobile-hide"> PLANNER</span></a>
     <button class="btn-ghost" onclick="openModal()">+<span> New Trip</span></button>
     <button class="btn-ghost header-stats-btn" onclick="showStats()">Stats</button>
@@ -837,6 +877,44 @@ function init(){
   if(shouldBeOpen) {
     document.getElementById('sidebar').classList.add('open');
     if(isDesktop) document.querySelector('.app-body').classList.add('sidebar-open');
+  }
+
+  updateActiveTripPill();
+}
+
+/* Show the 'active trip' pill in the header if the user has an in-progress planner session */
+function updateActiveTripPill() {
+  const pill = document.getElementById('activeTripPill');
+  const pillText = document.getElementById('activeTripPillText');
+  if (!pill || !pillText) return;
+
+  // Try to find the most recent planner session from URL stored in the v2 state
+  try {
+    const v2 = JSON.parse(localStorage.getItem('tripsync_v2') || 'null');
+    if (!v2) return;
+    const activeId = v2.activeProjectId;
+    const project = v2.projects && v2.projects[activeId];
+    if (!project || !project.searches || !project.searches.length) return;
+
+    const lastSearch = project.searches[project.searches.length - 1];
+    if (!lastSearch || !lastSearch.results || !lastSearch.results.length) return;
+
+    const dest = lastSearch.results[0].city || lastSearch.results[0].name || '';
+    if (!dest) return;
+
+    // Count how many checklist items are booked for this destination
+    const chkKey = 'tripsync_chk_' + dest.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const chkState = JSON.parse(localStorage.getItem(chkKey) || '{}');
+    const coreKeys = ['flights', 'hotel', 'car', 'tours'];
+    const booked = coreKeys.filter(k => !!chkState[k]).length;
+
+    // Build the planner URL
+    const plannerUrl = `planner.html?destination=${encodeURIComponent(dest)}&currency=${lastSearch.currency || 'USD'}&days=5&from=${encodeURIComponent(lastSearch.departCity || '')}&ci=${lastSearch.checkIn || ''}&co=${lastSearch.checkOut || ''}&guests=${lastSearch.guests || '2'}`;
+    pill.href = plannerUrl;
+    pillText.textContent = `📋 ${dest} (${booked}/4 booked) →`;
+    pill.style.display = 'flex';
+  } catch(e) {
+    // silently ignore — pill stays hidden
   }
 }
 

@@ -510,6 +510,8 @@
     }
     .nav-item.active { color: var(--teal); }
     .nav-icon { font-size: 1.2rem; }
+    /* FAB is mobile-only; hidden by default */
+    .checklist-fab { display: none; }
 
     @media(max-width:768px){
       header{padding:0.75rem 1rem; flex-direction:row; justify-content: space-between; height: 60px; position: sticky; top:0;}
@@ -536,6 +538,32 @@
       
       .bottom-nav { display: flex; }
       body { padding-bottom: 135px; } /* Space for bottom nav + book bar */
+      .checklist-fab { display: flex; } /* show FAB on mobile */
+
+      /* ---- Mobile Checklist FAB ---- */
+      .checklist-fab {
+        position: fixed;
+        bottom: 80px; /* just above bottom nav */
+        right: 16px;
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--teal);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 0.6rem 1rem 0.6rem 0.75rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        box-shadow: 0 4px 16px rgba(26,107,107,0.35);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        letter-spacing: 0.3px;
+      }
+      .checklist-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,107,107,0.45); }
+      .checklist-fab-icon { font-size: 1rem; }
+      .checklist-fab-label { white-space: nowrap; }
     }
     
     /* --- TripSync V2 Modal Styles --- */
@@ -587,6 +615,78 @@
       color: var(--muted);
       cursor: pointer;
     }
+
+    /* ===================== MOBILE CHECKLIST DRAWER ===================== */
+    .checklist-drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      z-index: 900;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+    .checklist-drawer-backdrop.active {
+      opacity: 1;
+    }
+    .checklist-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 901;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      padding: 0 1.25rem 1.5rem;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+    }
+    .checklist-drawer.open {
+      transform: translateY(0);
+    }
+    .drawer-handle-bar {
+      width: 40px;
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 99px;
+      margin: 12px auto 16px;
+    }
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--cream);
+    }
+    .drawer-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .drawer-close {
+      background: #f1f1f1;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: background 0.15s;
+    }
+    .drawer-close:hover { background: #e5e5e5; }
   </style>
 </head>
 <body>
@@ -1314,6 +1414,18 @@
     if (chkActionTours) chkActionTours.href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`;
     if (chkActionInsurance) chkActionInsurance.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5869&campaign_id=225&u=${encodeURIComponent('https://ektatraveling.com')}`;
 
+    // Mirror links into mobile drawer
+    const drawerActionFlights   = document.getElementById('drawerAction-flights');
+    const drawerActionHotel     = document.getElementById('drawerAction-hotel');
+    const drawerActionCar       = document.getElementById('drawerAction-car');
+    const drawerActionTours     = document.getElementById('drawerAction-tours');
+    const drawerActionInsurance = document.getElementById('drawerAction-insurance');
+    if (drawerActionFlights && flightUrl) drawerActionFlights.href = flightUrl;
+    if (drawerActionHotel) drawerActionHotel.href = chkActionHotel ? chkActionHotel.href : '#';
+    if (drawerActionCar) drawerActionCar.href = chkActionCar ? chkActionCar.href : '#';
+    if (drawerActionTours) drawerActionTours.href = chkActionTours ? chkActionTours.href : '#';
+    if (drawerActionInsurance) drawerActionInsurance.href = chkActionInsurance ? chkActionInsurance.href : '#';
+
     loadChecklistState();
   }
 
@@ -1334,6 +1446,9 @@
       const isChecked = !!state[k];
       const cb = document.getElementById('chk-' + k);
       if (cb) cb.checked = isChecked;
+      // Also sync drawer checkbox
+      const dcb = document.getElementById('drawerChk-' + k);
+      if (dcb) dcb.checked = isChecked;
       updateChecklistItemUI(k, isChecked);
     });
 
@@ -1403,14 +1518,16 @@
   }
 
   function updateChecklistItemUI(key, isChecked) {
+    // Sidebar widget
     const row = document.getElementById('chkItem-' + key);
     const action = document.getElementById('chkAction-' + key);
-    if (row) {
-      row.classList.toggle('booked', isChecked);
-    }
-    if (action) {
-      action.textContent = isChecked ? 'Booked ✓' : (key === 'insurance' ? 'Get ↗' : 'Book ↗');
-    }
+    if (row) row.classList.toggle('booked', isChecked);
+    if (action) action.textContent = isChecked ? 'Booked ✓' : (key === 'insurance' ? 'Get ↗' : 'Book ↗');
+    // Mobile drawer mirror
+    const drow = document.getElementById('drawerItem-' + key);
+    const daction = document.getElementById('drawerAction-' + key);
+    if (drow) drow.classList.toggle('booked', isChecked);
+    if (daction) daction.textContent = isChecked ? 'Booked ✓' : (key === 'insurance' ? 'Get ↗' : 'Book ↗');
   }
 
   function updateChecklistProgress(triggerCelebrate) {
@@ -1457,13 +1574,48 @@
 
     // Sticky bottom bar chip update
     const bbText = document.getElementById('bbChecklistText');
-    if (bbText) {
-      bbText.textContent = `Checklist: ${bookedCoreCount}/${totalCore}`;
+    if (bbText) bbText.textContent = `Checklist: ${bookedCoreCount}/${totalCore}`;
+
+    // Mobile FAB label update
+    const fabLabel = document.getElementById('fabLabel');
+    if (fabLabel) fabLabel.textContent = `Checklist: ${bookedCoreCount}/${totalCore}`;
+
+    // Drawer progress bar + badge sync
+    const drawerBar = document.getElementById('drawerProgressBar');
+    if (drawerBar) drawerBar.style.width = pct + '%';
+    const drawerBadge = document.getElementById('drawerBadge');
+    if (drawerBadge) {
+      drawerBadge.textContent = `${bookedCoreCount} of ${totalCore} Booked`;
     }
+    const drawerBanner = document.getElementById('drawerCompleteBanner');
+    if (drawerBanner) drawerBanner.style.display = (bookedCoreCount === totalCore) ? 'block' : 'none';
 
     if (triggerCelebrate && bookedCoreCount === totalCore) {
       showToast("🎉 Amazing! All main items booked. You're ready to go!");
     }
+  }
+
+  /* Called from mobile drawer checkboxes */
+  function syncDrawerCheck(key, isChecked) {
+    // Mirror state back to the sidebar checkbox
+    const cb = document.getElementById('chk-' + key);
+    if (cb) cb.checked = isChecked;
+    updateChecklistItemUI(key, isChecked);
+
+    if (key === 'flights') {
+      const fb = document.getElementById('flightsBooked');
+      if (fb) fb.checked = isChecked;
+      const fw = document.getElementById('flightWidget');
+      if (fw) { fw.style.opacity = isChecked ? '0.5' : '1'; fw.style.pointerEvents = isChecked ? 'none' : 'auto'; }
+      const bbF = document.getElementById('bbFlights');
+      if (bbF) { bbF.style.opacity = isChecked ? '0.35' : '1'; bbF.style.pointerEvents = isChecked ? 'none' : 'auto'; }
+    }
+
+    saveChecklistState();
+    updateChecklistProgress(true);
+
+    const labels = { flights: '✈️ Flights', hotel: '🏨 Hotel', car: '🚗 Car / Transfer', tours: '🎭 Tours & Activities', insurance: '🛡️ Travel Insurance' };
+    if (isChecked) showToast(`${labels[key] || key} marked as booked!`);
   }
 
   function resetChecklist() {
@@ -1486,11 +1638,40 @@
   }
 
   function scrollToChecklist() {
-    const el = document.getElementById('bookingChecklistWidget');
-    if (!el) return;
-    const offset = 140;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top, behavior: 'smooth' });
+    if (window.innerWidth <= 768) {
+      openChecklistDrawer();
+    } else {
+      const el = document.getElementById('bookingChecklistWidget');
+      if (!el) return;
+      const offset = 140;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }
+
+  function openChecklistDrawer() {
+    const backdrop = document.getElementById('checklistDrawerBackdrop');
+    const drawer = document.getElementById('checklistDrawer');
+    if (!backdrop || !drawer) return;
+    backdrop.style.display = 'block';
+    // Force reflow before adding active class so transition fires
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        backdrop.classList.add('active');
+        drawer.classList.add('open');
+      });
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeChecklistDrawer() {
+    const backdrop = document.getElementById('checklistDrawerBackdrop');
+    const drawer = document.getElementById('checklistDrawer');
+    if (!backdrop || !drawer) return;
+    backdrop.classList.remove('active');
+    drawer.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => { backdrop.style.display = 'none'; }, 320);
   }
 
   function toggleFlights(){
@@ -1955,6 +2136,72 @@
 
   init();
 </script>
+<!-- ===== MOBILE CHECKLIST DRAWER ===== -->
+<div class="checklist-drawer-backdrop" id="checklistDrawerBackdrop" onclick="closeChecklistDrawer()"></div>
+<div class="checklist-drawer" id="checklistDrawer" role="dialog" aria-modal="true" aria-label="Trip Booking Checklist">
+  <div class="drawer-handle-bar"></div>
+  <div class="drawer-header">
+    <div class="drawer-title">📋 Trip Checklist</div>
+    <button class="drawer-close" onclick="closeChecklistDrawer()" aria-label="Close checklist">✕</button>
+  </div>
+  <!-- Progress bar -->
+  <div class="checklist-progress-bar-wrap" style="margin-bottom:1rem">
+    <div class="checklist-progress-bar" id="drawerProgressBar" style="width:0%"></div>
+  </div>
+  <div style="font-size:0.75rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem" id="drawerBadge">0 of 4 Booked</div>
+  <!-- Checklist items (mirrored, controlled by same JS state) -->
+  <div class="checklist-items">
+    <div class="checklist-item" id="drawerItem-flights">
+      <label class="checklist-item-left" for="drawerChk-flights">
+        <input type="checkbox" id="drawerChk-flights" class="checklist-checkbox" onchange="syncDrawerCheck('flights', this.checked)">
+        <span class="checklist-label">✈️ Flights</span>
+      </label>
+      <a id="drawerAction-flights" href="#" target="_blank" class="checklist-action-link">Book ↗</a>
+    </div>
+    <div class="checklist-item" id="drawerItem-hotel">
+      <label class="checklist-item-left" for="drawerChk-hotel">
+        <input type="checkbox" id="drawerChk-hotel" class="checklist-checkbox" onchange="syncDrawerCheck('hotel', this.checked)">
+        <span class="checklist-label">🏨 Accommodation</span>
+      </label>
+      <a id="drawerAction-hotel" href="#" target="_blank" class="checklist-action-link">Book ↗</a>
+    </div>
+    <div class="checklist-item" id="drawerItem-car">
+      <label class="checklist-item-left" for="drawerChk-car">
+        <input type="checkbox" id="drawerChk-car" class="checklist-checkbox" onchange="syncDrawerCheck('car', this.checked)">
+        <span class="checklist-label">🚗 Car / Transfer</span>
+      </label>
+      <a id="drawerAction-car" href="#" target="_blank" class="checklist-action-link">Book ↗</a>
+    </div>
+    <div class="checklist-item" id="drawerItem-tours">
+      <label class="checklist-item-left" for="drawerChk-tours">
+        <input type="checkbox" id="drawerChk-tours" class="checklist-checkbox" onchange="syncDrawerCheck('tours', this.checked)">
+        <span class="checklist-label">🎭 Tours &amp; Activities</span>
+      </label>
+      <a id="drawerAction-tours" href="#" target="_blank" class="checklist-action-link">Book ↗</a>
+    </div>
+    <div class="checklist-item" id="drawerItem-insurance" style="opacity:0.85">
+      <label class="checklist-item-left" for="drawerChk-insurance">
+        <input type="checkbox" id="drawerChk-insurance" class="checklist-checkbox" onchange="syncDrawerCheck('insurance', this.checked)">
+        <span class="checklist-label">🛡️ Insurance <span style="font-size:0.65rem;color:var(--muted);font-weight:400">(opt)</span></span>
+      </label>
+      <a id="drawerAction-insurance" href="#" target="_blank" class="checklist-action-link">Get ↗</a>
+    </div>
+  </div>
+  <div class="checklist-complete-banner" id="drawerCompleteBanner" style="margin-top:1rem">
+    🎉 <strong>Trip Ready!</strong> All key items booked. Have an incredible adventure!
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--cream)">
+    <span style="font-size:0.68rem;color:var(--muted)">Saved automatically to device</span>
+    <button class="checklist-reset-btn" onclick="resetChecklist()">Reset</button>
+  </div>
+</div>
+
+<!-- ===== MOBILE CHECKLIST FAB ===== -->
+<button class="checklist-fab" id="checklistFab" onclick="openChecklistDrawer()" aria-label="Open booking checklist">
+  <span class="checklist-fab-icon">📋</span>
+  <span class="checklist-fab-label" id="fabLabel">Checklist: 0/4</span>
+</button>
+
 <div class="bottom-nav">
   <a href="index.html" class="nav-item">
     <div class="nav-icon">🔍</div>
