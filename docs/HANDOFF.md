@@ -161,6 +161,7 @@ GET  /sw.js         → Service Worker v4 (network-first HTML, scheme filtering)
 ## Frontend Features (Current)
 
 - ✅ **New: Interactive Planner (`planner.html`)**
+- ✅ **New: Trip Booking Checklist & Tracker (Persistent localStorage tracker for Flights, Hotels, Cars, Tours, Insurance with live progress bar and step syncing)**
 - ✅ Day-by-day itineraries with budgets & meals
 - ✅ Hotel suggestions with direct booking
 - ✅ **New: Viator integration for activities/tours**
