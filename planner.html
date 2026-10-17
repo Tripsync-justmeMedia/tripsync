@@ -619,9 +619,9 @@
     `;
     section.appendChild(refineDiv);
 
-    // Links
+    // Links (Wired to Verified Affiliate IDs)
     const encodedDest = encodeURIComponent(destination);
-    document.getElementById('bookingLink').href = `https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${encodedDest}`)}&sid=${AFFILIATE.cj_sid}`;
+    document.getElementById('bookingLink').href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}`;
     document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
     
     document.getElementById('klookLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent(`https://www.klook.com/search?query=${destination}`)}`;

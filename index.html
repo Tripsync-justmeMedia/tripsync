@@ -1303,11 +1303,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
               <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
               <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com')}" target="_blank" class="btn-primary btn-aviasales" style="border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('aviasales','${cityRaw}')">Aviasales</a>
             </div>
-            <div class="booking-label">Book Hotels</div>
+            <div class="booking-label">Book Hotels (Best Price Guarantee)</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
-              <a href="https://www.tkqlhce.com/click-${AFFILIATE.cj_pid}-15701602?url=${encodeURIComponent(`https://www.booking.com/searchresults.html?ss=${city}&checkin=${ci}&checkout=${co}&group_adults=${g}`)}&sid=${AFFILIATE.cj_sid}" target="_blank" class="booking-btn btn-booking" onclick="track('booking','${cityRaw}')">Booking.com</a>
-              <a href="https://www.agoda.com/search?city=${city}&checkIn=${ci}&checkOut=${co}&adults=${g}&cid=${AFFILIATE.agoda_cid}" target="_blank" class="booking-btn btn-agoda" onclick="track('agoda','${cityRaw}')">Agoda</a>
-              <a href="https://www.expedia.com/Hotel-Search?destination=${city}&startDate=${ci}&endDate=${co}&adults=${g}&affcid=${AFFILIATE.expedia_affcid}" target="_blank" class="booking-btn btn-expedia" onclick="track('expedia','${cityRaw}')">Expedia</a>
+              <a href="https://www.booking.com/searchresults.html?ss=${city}&aid=${AFFILIATE.booking_aid}&checkin=${ci}&checkout=${co}&group_adults=${g}" target="_blank" class="booking-btn btn-booking" style="background:#003580;color:white;font-weight:700;flex:2;text-align:center;" onclick="track('booking','${cityRaw}')">🏨 Find Deals on Booking.com</a>
             </div>
             <div class="booking-label">Book Tours & Activities</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
