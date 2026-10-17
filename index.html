@@ -906,12 +906,17 @@ function updateActiveTripPill() {
     const chkKey = 'tripsync_chk_' + dest.toLowerCase().replace(/[^a-z0-9]/g, '_');
     const chkState = JSON.parse(localStorage.getItem(chkKey) || '{}');
     const coreKeys = ['flights', 'hotel', 'car', 'tours'];
-    const booked = coreKeys.filter(k => !!chkState[k]).length;
+    let booked = coreKeys.filter(k => !!chkState[k]).length;
+    let total = 4;
+    if (Array.isArray(chkState.custom)) {
+      total += chkState.custom.length;
+      booked += chkState.custom.filter(c => !!c.checked).length;
+    }
 
     // Build the planner URL
     const plannerUrl = `planner.html?destination=${encodeURIComponent(dest)}&currency=${lastSearch.currency || 'USD'}&days=5&from=${encodeURIComponent(lastSearch.departCity || '')}&ci=${lastSearch.checkIn || ''}&co=${lastSearch.checkOut || ''}&guests=${lastSearch.guests || '2'}`;
     pill.href = plannerUrl;
-    pillText.textContent = `📋 ${dest} (${booked}/4 booked) →`;
+    pillText.textContent = `📋 ${dest} (${booked}/${total} done) →`;
     pill.style.display = 'flex';
   } catch(e) {
     // silently ignore — pill stays hidden

@@ -463,6 +463,98 @@
       font-weight: 700;
       pointer-events: none;
     }
+    .checklist-custom-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .checklist-item-delete {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.82rem;
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+      line-height: 1;
+      opacity: 0.55;
+      transition: all 0.15s ease;
+    }
+    .checklist-item-delete:hover {
+      opacity: 1;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+    }
+    .checklist-add-wrap {
+      margin-top: 0.65rem;
+    }
+    .checklist-add-toggle {
+      background: transparent;
+      border: 1px dashed rgba(26,107,107,0.32);
+      color: var(--teal);
+      border-radius: 6px;
+      width: 100%;
+      padding: 0.42rem 0.65rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .checklist-add-toggle:hover {
+      background: rgba(26,107,107,0.06);
+      border-color: var(--teal);
+    }
+    .checklist-add-form {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .checklist-add-input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(26,107,107,0.3);
+      border-radius: 6px;
+      padding: 0.38rem 0.6rem;
+      font-size: 0.75rem;
+      outline: none;
+      background: white;
+      color: var(--ink);
+      font-family: inherit;
+    }
+    .checklist-add-input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 2px rgba(26,107,107,0.12);
+    }
+    .checklist-add-btn {
+      background: var(--teal);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.38rem 0.7rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .checklist-add-btn:hover {
+      opacity: 0.9;
+    }
+    .checklist-add-cancel {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0.25rem;
+      line-height: 1;
+    }
     .checklist-complete-banner {
       display: none;
       margin-top: 0.8rem;
@@ -855,6 +947,19 @@
               <span class="checklist-label">🛡️ Insurance <span style="font-size:0.65rem;color:var(--muted);font-weight:400">(opt)</span></span>
             </label>
             <a id="chkAction-insurance" href="#" target="_blank" class="checklist-action-link">Get ↗</a>
+          </div>
+
+          <!-- Dynamic Custom Checklist Items -->
+          <div id="chkCustomContainer" class="checklist-custom-container"></div>
+        </div>
+
+        <!-- Add Custom Item Input -->
+        <div class="checklist-add-wrap">
+          <button class="checklist-add-toggle" id="chkAddToggle" onclick="showAddChecklistItem('sidebar')">+ Add custom item (e.g. eSIM, Visa)</button>
+          <div class="checklist-add-form" id="chkAddForm" style="display:none;">
+            <input type="text" id="chkAddInput" class="checklist-add-input" placeholder="e.g. Buy eSIM, Passport, Cash..." maxlength="45" onkeydown="if(event.key==='Enter')submitAddChecklistItem('sidebar')">
+            <button class="checklist-add-btn" onclick="submitAddChecklistItem('sidebar')">Add</button>
+            <button class="checklist-add-cancel" onclick="hideAddChecklistItem('sidebar')" title="Cancel">✕</button>
           </div>
         </div>
 
@@ -1396,8 +1501,15 @@
 
   /* ===================== TRIP BOOKING CHECKLIST JS ===================== */
   let currentPlannerDestination = '';
+  let customChecklistItems = [];
   const CHECKLIST_CORE_KEYS = ['flights', 'hotel', 'car', 'tours'];
   const CHECKLIST_ALL_KEYS  = ['flights', 'hotel', 'car', 'tours', 'insurance'];
+
+  function escapeChecklistText(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
   function initChecklist(dest, flightUrl, encodedDest) {
     currentPlannerDestination = dest || 'mytrip';
@@ -1452,6 +1564,9 @@
       updateChecklistItemUI(k, isChecked);
     });
 
+    customChecklistItems = Array.isArray(state.custom) ? state.custom : [];
+    renderCustomChecklistItems();
+
     // Synchronize flightsBooked in the separate flight widget
     const fb = document.getElementById('flightsBooked');
     if (fb) fb.checked = !!state['flights'];
@@ -1476,10 +1591,106 @@
       const cb = document.getElementById('chk-' + k);
       state[k] = cb ? cb.checked : false;
     });
+    state.custom = customChecklistItems;
     try {
       localStorage.setItem(key, JSON.stringify(state));
     } catch(e){}
     return state;
+  }
+
+  function renderCustomChecklistItems() {
+    const containers = [
+      document.getElementById('chkCustomContainer'),
+      document.getElementById('drawerCustomContainer')
+    ];
+    containers.forEach(cnt => {
+      if (!cnt) return;
+      cnt.innerHTML = '';
+      customChecklistItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'checklist-item' + (item.checked ? ' booked' : '');
+        div.innerHTML = `
+          <label class="checklist-item-left" style="cursor:pointer">
+            <input type="checkbox" class="checklist-checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCustomChecklistItem('${item.id}', this.checked)">
+            <span class="checklist-label">📌 ${escapeChecklistText(item.text)}</span>
+          </label>
+          <button class="checklist-item-delete" onclick="deleteCustomChecklistItem('${item.id}')" title="Remove task" aria-label="Remove task">✕</button>
+        `;
+        cnt.appendChild(div);
+      });
+    });
+  }
+
+  function toggleCustomChecklistItem(id, isChecked) {
+    const item = customChecklistItems.find(i => i.id === id);
+    if (item) {
+      item.checked = isChecked;
+      saveChecklistState();
+      renderCustomChecklistItems();
+      updateChecklistProgress(true);
+      if (isChecked) {
+        showToast(`"${item.text}" marked done!`);
+      }
+    }
+  }
+
+  function deleteCustomChecklistItem(id) {
+    const item = customChecklistItems.find(i => i.id === id);
+    const title = item ? item.text : 'Item';
+    customChecklistItems = customChecklistItems.filter(i => i.id !== id);
+    saveChecklistState();
+    renderCustomChecklistItems();
+    updateChecklistProgress(false);
+    showToast(`Removed "${title}"`);
+  }
+
+  function showAddChecklistItem(scope) {
+    const prefix = scope === 'drawer' ? 'drawer' : 'chk';
+    const toggle = document.getElementById(prefix + 'AddToggle');
+    const form = document.getElementById(prefix + 'AddForm');
+    const input = document.getElementById(prefix + 'AddInput');
+    if (toggle) toggle.style.display = 'none';
+    if (form) {
+      form.style.display = 'flex';
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+    }
+  }
+
+  function hideAddChecklistItem(scope) {
+    const prefix = scope === 'drawer' ? 'drawer' : 'chk';
+    const toggle = document.getElementById(prefix + 'AddToggle');
+    const form = document.getElementById(prefix + 'AddForm');
+    const input = document.getElementById(prefix + 'AddInput');
+    if (toggle) toggle.style.display = 'flex';
+    if (form) {
+      form.style.display = 'none';
+      if (input) input.value = '';
+    }
+  }
+
+  function submitAddChecklistItem(scope) {
+    const prefix = scope === 'drawer' ? 'drawer' : 'chk';
+    const input = document.getElementById(prefix + 'AddInput');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) {
+      hideAddChecklistItem(scope);
+      return;
+    }
+    const newItem = {
+      id: 'c_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+      text: text,
+      checked: false
+    };
+    customChecklistItems.push(newItem);
+    saveChecklistState();
+    renderCustomChecklistItems();
+    updateChecklistProgress(false);
+    hideAddChecklistItem(scope);
+    showToast(`Added "${text}" to checklist`);
   }
 
   function toggleChecklistItem(key) {
@@ -1537,34 +1748,37 @@
       if (cb && cb.checked) bookedCoreCount++;
     });
 
-    const totalCore = CHECKLIST_CORE_KEYS.length;
-    const pct = Math.round((bookedCoreCount / totalCore) * 100);
+    const customDoneCount = customChecklistItems.filter(i => i.checked).length;
+    const totalDone = bookedCoreCount + customDoneCount;
+    const totalCount = CHECKLIST_CORE_KEYS.length + customChecklistItems.length;
+
+    const pct = totalCount > 0 ? Math.round((totalDone / totalCount) * 100) : 0;
 
     const bar = document.getElementById('checklistProgressBar');
     if (bar) bar.style.width = pct + '%';
 
     const badge = document.getElementById('checklistBadge');
     if (badge) {
-      badge.textContent = `${bookedCoreCount} of ${totalCore} Booked`;
-      badge.classList.toggle('complete', bookedCoreCount === totalCore);
+      badge.textContent = `${totalDone} of ${totalCount} Done`;
+      badge.classList.toggle('complete', totalDone === totalCount && totalCount > 0);
     }
 
     const banner = document.getElementById('checklistCompleteBanner');
     if (banner) {
-      banner.style.display = (bookedCoreCount === totalCore) ? 'block' : 'none';
+      banner.style.display = (totalDone === totalCount && totalCount > 0) ? 'block' : 'none';
     }
 
     // Step 3 in top journey steps
     const step3 = document.getElementById('journeyStepBook');
     const step3Count = document.getElementById('journeyStepBookCount');
-    if (step3Count) step3Count.textContent = `${bookedCoreCount}/${totalCore}`;
+    if (step3Count) step3Count.textContent = `${totalDone}/${totalCount}`;
     if (step3) {
-      if (bookedCoreCount === totalCore) {
+      if (totalDone === totalCount && totalCount > 0) {
         step3.classList.add('done');
         step3.classList.remove('active');
         const dot = step3.querySelector('.step-dot');
         if (dot) dot.textContent = '✓';
-      } else if (bookedCoreCount > 0) {
+      } else if (totalDone > 0) {
         step3.classList.add('active');
         step3.classList.remove('done');
         const dot = step3.querySelector('.step-dot');
@@ -1574,24 +1788,24 @@
 
     // Sticky bottom bar chip update
     const bbText = document.getElementById('bbChecklistText');
-    if (bbText) bbText.textContent = `Checklist: ${bookedCoreCount}/${totalCore}`;
+    if (bbText) bbText.textContent = `Checklist: ${totalDone}/${totalCount}`;
 
     // Mobile FAB label update
     const fabLabel = document.getElementById('fabLabel');
-    if (fabLabel) fabLabel.textContent = `Checklist: ${bookedCoreCount}/${totalCore}`;
+    if (fabLabel) fabLabel.textContent = `Checklist: ${totalDone}/${totalCount}`;
 
     // Drawer progress bar + badge sync
     const drawerBar = document.getElementById('drawerProgressBar');
     if (drawerBar) drawerBar.style.width = pct + '%';
     const drawerBadge = document.getElementById('drawerBadge');
     if (drawerBadge) {
-      drawerBadge.textContent = `${bookedCoreCount} of ${totalCore} Booked`;
+      drawerBadge.textContent = `${totalDone} of ${totalCount} Done`;
     }
     const drawerBanner = document.getElementById('drawerCompleteBanner');
-    if (drawerBanner) drawerBanner.style.display = (bookedCoreCount === totalCore) ? 'block' : 'none';
+    if (drawerBanner) drawerBanner.style.display = (totalDone === totalCount && totalCount > 0) ? 'block' : 'none';
 
-    if (triggerCelebrate && bookedCoreCount === totalCore) {
-      showToast("🎉 Amazing! All main items booked. You're ready to go!");
+    if (triggerCelebrate && totalDone === totalCount && totalCount > 0) {
+      showToast("🎉 Amazing! All checklist items completed. You're ready to go!");
     }
   }
 
@@ -1627,6 +1841,8 @@
       if (cb) cb.checked = false;
       updateChecklistItemUI(k, false);
     });
+    customChecklistItems = [];
+    renderCustomChecklistItems();
     const fb = document.getElementById('flightsBooked');
     if (fb) fb.checked = false;
     const fw = document.getElementById('flightWidget');
@@ -2185,6 +2401,19 @@
         <span class="checklist-label">🛡️ Insurance <span style="font-size:0.65rem;color:var(--muted);font-weight:400">(opt)</span></span>
       </label>
       <a id="drawerAction-insurance" href="#" target="_blank" class="checklist-action-link">Get ↗</a>
+    </div>
+
+    <!-- Dynamic Custom Checklist Items in Drawer -->
+    <div id="drawerCustomContainer" class="checklist-custom-container"></div>
+  </div>
+
+  <!-- Add Custom Item Input in Drawer -->
+  <div class="checklist-add-wrap">
+    <button class="checklist-add-toggle" id="drawerAddToggle" onclick="showAddChecklistItem('drawer')">+ Add custom item (e.g. eSIM, Visa)</button>
+    <div class="checklist-add-form" id="drawerAddForm" style="display:none;">
+      <input type="text" id="drawerAddInput" class="checklist-add-input" placeholder="e.g. Buy eSIM, Passport, Cash..." maxlength="45" onkeydown="if(event.key==='Enter')submitAddChecklistItem('drawer')">
+      <button class="checklist-add-btn" onclick="submitAddChecklistItem('drawer')">Add</button>
+      <button class="checklist-add-cancel" onclick="hideAddChecklistItem('drawer')" title="Cancel">✕</button>
     </div>
   </div>
   <div class="checklist-complete-banner" id="drawerCompleteBanner" style="margin-top:1rem">
