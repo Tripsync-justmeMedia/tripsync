@@ -2,7 +2,7 @@
 // Strategy: Cache-first for static assets, network-first for HTML pages
 // API calls always go to network (no caching of search results)
 
-const CACHE_NAME = 'tripsync-v4';
+const CACHE_NAME = 'tripsync-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -10,7 +10,11 @@ const STATIC_ASSETS = [
   '/privacy.html',
   '/terms.html',
   '/manifest.json',
-  '/icon.png'
+  '/icon.png',
+  '/icon-badge.png',
+  '/icon-192.png',
+  '/apple-touch-icon.png',
+  '/favicon.png'
 ];
 
 // Install — pre-cache all static assets

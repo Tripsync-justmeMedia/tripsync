@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a6b6b">
-  <link rel="icon" type="image/png" href="icon.png">
+  <meta name="theme-color" content="#0e2b31">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>Influencer Partner Program — TripSync</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,8 +23,10 @@
     body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); line-height:1.6; }
     
     header { background:white; padding:1.5rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--cream); position:sticky; top:0; z-index:100; }
-    .logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--ink); text-decoration:none; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--ink); text-decoration:none; display:flex; align-items:center; gap:0.65rem; }
     .logo span { color:var(--teal); }
+    .logo-mark { width:34px; height:34px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.18); flex-shrink:0; object-fit:cover; transition:transform 0.2s ease; }
+    .logo:hover .logo-mark { transform:scale(1.06); }
     .btn-outline { background:none; border:1.5px solid var(--teal); color:var(--teal); padding:0.6rem 1.2rem; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer; text-decoration:none; transition:all 0.2s; }
     .btn-outline:hover { background:var(--sky); }
 
@@ -72,7 +77,10 @@
 <body>
 
 <header>
-  <a href="index.html" class="logo">Trip<span>Sync</span></a>
+  <a href="index.html" class="logo">
+    <img src="icon-badge.png" alt="TripSync Logo" class="logo-mark">
+    <span>Trip<span>Sync</span></span>
+  </a>
   <a href="index.html" class="btn-outline">Go to TripSync</a>
 </header>
 

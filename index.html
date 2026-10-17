@@ -41,8 +41,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="apple-touch-icon" href="/icon.png">
-<link rel="icon" type="image/png" href="/icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="shortcut icon" href="favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -56,8 +58,10 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
 header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--rust)}
-.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;letter-spacing:-0.5px}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;letter-spacing:-0.5px;display:flex;align-items:center;gap:0.65rem;text-decoration:none;color:inherit}
 .logo span{color:var(--rust-light)}
+.logo-mark{width:34px;height:34px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.35);flex-shrink:0;object-fit:cover;transition:transform 0.2s ease}
+.logo:hover .logo-mark{transform:scale(1.06)}
 .header-actions{display:flex;gap:0.75rem;align-items:center}
 .btn-ghost{background:transparent;border:1px solid rgba(247,244,239,0.3);color:var(--paper);padding:0.35rem 0.9rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.2s}
 .btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:var(--rust-light);color:var(--rust-light)}
@@ -459,47 +463,17 @@ footer a:hover{color:var(--rust-light)}
       .header-actions .btn-ghost:not(.header-stats-btn) { display: none; }
     }
 
-    /* ---- Active Trip Pill ---- */
-    .active-trip-pill {
-      display: none; /* shown by JS if active trip exists */
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.3rem 0.75rem 0.3rem 0.55rem;
-      background: linear-gradient(135deg, #e6f9f0, #d1fae5);
-      border: 1px solid #a7f3d0;
-      border-radius: 50px;
-      text-decoration: none;
-      color: #065f46;
-      font-size: 0.73rem;
-      font-weight: 700;
-      white-space: nowrap;
-      transition: background 0.2s, box-shadow 0.2s;
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .active-trip-pill:hover {
-      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-      box-shadow: 0 2px 8px rgba(6,95,70,0.18);
-    }
-    .active-trip-pill .pill-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #10b981;
-      flex-shrink: 0;
-      animation: pulse-dot 1.8s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.55; transform: scale(0.75); }
-    }
+
   </style>
 </head>
 <body>
 
 <!-- Install to Home Screen Banner -->
 <div class="install-banner" id="installBanner">
-  <div class="install-banner-text">📱 <strong>Add TripSync to your home screen</strong> — access it like an app, anytime, no download needed</div>
+  <div class="install-banner-text" style="display:flex;align-items:center;gap:0.5rem">
+    <img src="icon-badge.png" alt="TripSync" style="width:22px;height:22px;border-radius:5px;flex-shrink:0">
+    <span><strong>Add TripSync to your home screen</strong> — access it like an app, anytime, no download needed</span>
+  </div>
   <div style="display:flex;gap:0.5rem">
     <button class="btn-install-now" onclick="triggerInstall()">Add to Home Screen</button>
     <button class="btn-install-dismiss" onclick="dismissInstall()">Not now</button>
@@ -509,14 +483,12 @@ footer a:hover{color:var(--rust-light)}
 <header>
   <div style="display:flex;align-items:center;gap:1rem">
     <button class="btn-sidebar-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="logo">Trip<span>Sync</span></div>
+    <a href="index.html" class="logo">
+      <img src="icon-badge.png" alt="TripSync Logo" class="logo-mark">
+      <span>Trip<span>Sync</span></span>
+    </a>
   </div>
   <div class="header-actions">
-    <!-- Active trip pill (populated by JS) -->
-    <a id="activeTripPill" class="active-trip-pill" href="planner.html" title="Resume your active trip">
-      <span class="pill-dot"></span>
-      <span id="activeTripPillText">📋 Resume Trip</span>
-    </a>
     <a id="headerPlannerLink" href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:0.5rem">🗂️<span class="mobile-hide"> PLANNER</span></a>
     <button class="btn-ghost" onclick="openModal()">+<span> New Trip</span></button>
     <button class="btn-ghost header-stats-btn" onclick="showStats()">Stats</button>
@@ -526,7 +498,10 @@ footer a:hover{color:var(--rust-light)}
 <div class="app-body">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <span class="sidebar-title">My Trips</span>
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <img src="icon-badge.png" alt="TripSync Logo" style="width:24px;height:24px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">
+        <span class="sidebar-title">My Trips</span>
+      </div>
       <div style="display:flex; gap:0.5rem; align-items:center">
         <button class="btn-new-project" onclick="openModal()">+ New</button>
         <button class="btn-sidebar-close" onclick="toggleSidebar()" style="background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; padding:0 0.5rem">✕</button>
@@ -877,49 +852,6 @@ function init(){
   if(shouldBeOpen) {
     document.getElementById('sidebar').classList.add('open');
     if(isDesktop) document.querySelector('.app-body').classList.add('sidebar-open');
-  }
-
-  updateActiveTripPill();
-}
-
-/* Show the 'active trip' pill in the header if the user has an in-progress planner session */
-function updateActiveTripPill() {
-  const pill = document.getElementById('activeTripPill');
-  const pillText = document.getElementById('activeTripPillText');
-  if (!pill || !pillText) return;
-
-  // Try to find the most recent planner session from URL stored in the v2 state
-  try {
-    const v2 = JSON.parse(localStorage.getItem('tripsync_v2') || 'null');
-    if (!v2) return;
-    const activeId = v2.activeProjectId;
-    const project = v2.projects && v2.projects[activeId];
-    if (!project || !project.searches || !project.searches.length) return;
-
-    const lastSearch = project.searches[project.searches.length - 1];
-    if (!lastSearch || !lastSearch.results || !lastSearch.results.length) return;
-
-    const dest = lastSearch.results[0].city || lastSearch.results[0].name || '';
-    if (!dest) return;
-
-    // Count how many checklist items are booked for this destination
-    const chkKey = 'tripsync_chk_' + dest.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const chkState = JSON.parse(localStorage.getItem(chkKey) || '{}');
-    const coreKeys = ['flights', 'hotel', 'car', 'tours'];
-    let booked = coreKeys.filter(k => !!chkState[k]).length;
-    let total = 4;
-    if (Array.isArray(chkState.custom)) {
-      total += chkState.custom.length;
-      booked += chkState.custom.filter(c => !!c.checked).length;
-    }
-
-    // Build the planner URL
-    const plannerUrl = `planner.html?destination=${encodeURIComponent(dest)}&currency=${lastSearch.currency || 'USD'}&days=5&from=${encodeURIComponent(lastSearch.departCity || '')}&ci=${lastSearch.checkIn || ''}&co=${lastSearch.checkOut || ''}&guests=${lastSearch.guests || '2'}`;
-    pill.href = plannerUrl;
-    pillText.textContent = `📋 ${dest} (${booked}/${total} done) →`;
-    pill.style.display = 'flex';
-  } catch(e) {
-    // silently ignore — pill stays hidden
   }
 }
 

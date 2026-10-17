@@ -4,13 +4,15 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a6b6b">
+  <meta name="theme-color" content="#0e2b31">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="shortcut icon" href="favicon.ico">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>Trip Planner — TripSync</title>
   <meta name="description" content="View your detailed travel itinerary, flight suggestions, hotels, and custom transfers on TripSync — the AI Travel Planner.">
   
@@ -50,8 +52,10 @@
     body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
     
     header{background:white;padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cream);position:sticky;top:0;z-index:100}
-    .logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--ink);text-decoration:none}
+    .logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:0.65rem}
     .logo span{color:var(--teal)}
+    .logo-mark{width:34px;height:34px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.18);flex-shrink:0;object-fit:cover;transition:transform 0.2s ease}
+    .logo:hover .logo-mark{transform:scale(1.06)}
     .header-btns{display:flex;gap:1rem}
     .btn-outline{background:none;border:1.5px solid var(--teal);color:var(--teal);padding:0.6rem 1.2rem;border-radius:6px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.2s}
     .btn-outline:hover{background:var(--sky)}
@@ -828,7 +832,10 @@
 </div>
 
 <header>
-  <a href="index.html" class="logo" style="text-decoration:none">Trip<span>Sync</span></a>
+  <a href="index.html" class="logo">
+    <img src="icon-badge.png" alt="TripSync Logo" class="logo-mark">
+    <span>Trip<span>Sync</span></span>
+  </a>
   <div class="header-btns">
     <a href="index.html" class="btn-outline" title="Back to Results">⬅️<span> RESULTS</span></a>
     <button class="btn-outline" onclick="window.print()" title="Print Itinerary">🖨️<span class="mobile-hide"> PRINT</span></button>
