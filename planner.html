@@ -206,25 +206,139 @@
       background: var(--sky);
       border-color: var(--teal);
     }
-    @media(max-width:768px){
-      .book-bar { gap: 0.45rem; padding: 0.55rem 0.75rem calc(0.55rem + env(safe-area-inset-bottom)) 0.75rem; }
-      .book-bar-label { display: none; }
-      .book-bar-chip { padding: 0.35rem 0.7rem; font-size: 0.73rem; }
-    }
-    /* Bottom Nav (PWA feel) */
-    .bottom-nav {
-      display: none;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 65px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(0,0,0,0.05);
-      z-index: 200;
-      justify-content: space-around;
+
+    /* ===================== JOURNEY PROGRESS STEPS ===================== */
+    .journey-steps {
+      display: flex;
       align-items: center;
-      padding-bottom: env(safe-area-inset-bottom);
+      justify-content: center;
+      gap: 0;
+      padding: 0.6rem 1.5rem;
+      background: white;
+      border-bottom: 1px solid var(--cream);
+      position: sticky;
+      top: 60px; /* below header */
+      z-index: 90;
     }
+    .journey-step {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .journey-step.done  { color: var(--teal); }
+    .journey-step.active{ color: var(--ink);  }
+    .step-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .journey-step.done  .step-dot { background: var(--teal); color: white; }
+    .journey-step.active .step-dot { background: var(--ink);  color: white; }
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--cream);
+      min-width: 24px;
+      max-width: 48px;
+    }
+    .step-line.done { background: var(--teal); }
+    @media(max-width:768px){
+      .journey-steps { top: 60px; padding: 0.5rem 1rem; gap: 0; }
+      .journey-step span.step-label { display: none; }
+      .step-line { min-width: 14px; max-width: 28px; }
+    }
+
+    /* ===================== DAY NAV PILLS ===================== */
+    .day-nav {
+      display: none; /* shown by JS after render */
+      position: sticky;
+      top: 95px;
+      z-index: 85;
+      background: rgba(250,249,246,0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--cream);
+      padding: 0.55rem 2rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .day-nav::-webkit-scrollbar { display: none; }
+    .day-nav-inner {
+      display: flex;
+      gap: 0.45rem;
+      width: max-content;
+    }
+    .day-pill {
+      padding: 0.3rem 0.85rem;
+      border-radius: 50px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: white;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      text-decoration: none;
+    }
+    .day-pill:hover  { background: var(--sky); color: var(--teal); border-color: rgba(26,107,107,0.2); }
+    .day-pill.active { background: var(--teal); color: white; border-color: var(--teal); }
+    @media(max-width:768px){
+      .day-nav { top: 88px; padding: 0.45rem 0.75rem; }
+    }
+
+    /* ===================== SOFT SIDEBAR PARTNER LINKS ===================== */
+    .partner-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.09);
+      background: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+      margin-bottom: 0.45rem;
+    }
+    .partner-link:last-child { margin-bottom: 0; }
+    .partner-link:hover { background: var(--sky); border-color: rgba(26,107,107,0.2); color: var(--teal); }
+    .partner-link .pl-icon { font-size: 1rem; flex-shrink: 0; }
+    .partner-link .pl-label { flex: 1; }
+    .partner-link .pl-arrow { font-size: 0.7rem; color: var(--muted); }
+    /* Book hotels soft link */
+    .btn-book-hotels-soft {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+      padding: 0.55rem 0.9rem;
+      border: 1px solid rgba(26,107,107,0.35);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--teal);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-book-hotels-soft:hover { background: var(--sky); border-color: var(--teal); }
+
+    .btn-primary{background:var(--teal);color:white;border:none;padding:1rem;border-radius:8px;font-weight:700;width:100%;cursor:pointer;margin-top:1rem;display:block;text-align:center;text-decoration:none;font-size:0.9rem;transition:all 0.2s}
+    .btn-primary:hover{background:var(--teal-light);transform:translateY(-1px)}
+    
+    .btn-viator{background:#ff5900;color:white;text-decoration:none;padding:0.8rem;border-radius:8px;font-weight:700;display:block;text-align:center;margin-top:0.75rem;font-size:0.85rem}
     .nav-item {
       display: flex;
       flex-direction: column;
@@ -372,6 +486,29 @@
   </div>
 </header>
 
+<!-- ===== JOURNEY PROGRESS STEPS ===== -->
+<div class="journey-steps" id="journeySteps">
+  <div class="journey-step done">
+    <div class="step-dot">✓</div>
+    <span class="step-label">Search</span>
+  </div>
+  <div class="step-line done"></div>
+  <div class="journey-step active">
+    <div class="step-dot">2</div>
+    <span class="step-label">Your Plan</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="journey-step">
+    <div class="step-dot">3</div>
+    <span class="step-label">Book</span>
+  </div>
+</div>
+
+<!-- ===== DAY NAV PILLS ===== -->
+<nav class="day-nav" id="dayNav" aria-label="Jump to day">
+  <div class="day-nav-inner" id="dayNavInner"></div>
+</nav>
+
 <div id="content" style="display:none">
   <div class="hero" id="hero">
     <div class="hero-sub" id="heroSub">Your Destination</div>
@@ -440,17 +577,15 @@
       <div class="sidebar-widget">
         <div class="widget-title">🏨 Suggested Stays</div>
         <div id="hotelList"></div>
-        <a id="bookingLink" href="#" target="_blank" class="btn-primary">Book Hotels on Booking.com</a>
+        <a id="bookingLink" href="#" target="_blank" class="btn-book-hotels-soft">Browse all hotels on Booking.com →</a>
       </div>
 
       <div class="sidebar-widget">
         <div class="widget-title">🎭 Tours & Activities</div>
-        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">Skip the lines and book local experiences ahead of time.</div>
-        <a id="viatorLink" href="#" target="_blank" class="btn-viator" style="margin-bottom:0.5rem">Browse Tours on Viator</a>
-        <div style="display:flex;gap:0.5rem">
-          <a id="klookLink" href="#" target="_blank" class="btn-viator" style="background:#ff5800;margin-top:0;flex:1">Klook Activities</a>
-          <a id="tiqetsLink" href="#" target="_blank" class="btn-viator" style="background:#24b3cf;margin-top:0;flex:1">Tiqets Attractions</a>
-        </div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.9rem">Book local experiences — skip the queues.</div>
+        <a id="viatorLink"    href="#" target="_blank" class="partner-link"><span class="pl-icon">🎟️</span><span class="pl-label">Viator — Tours &amp; Tickets</span><span class="pl-arrow">↗</span></a>
+        <a id="klookLink"     href="#" target="_blank" class="partner-link"><span class="pl-icon">🎡</span><span class="pl-label">Klook — Activities &amp; Passes</span><span class="pl-arrow">↗</span></a>
+        <a id="tiqetsLink"    href="#" target="_blank" class="partner-link"><span class="pl-icon">🏛️</span><span class="pl-label">Tiqets — Museums &amp; Attractions</span><span class="pl-arrow">↗</span></a>
       </div>
 
       <div class="sidebar-widget">
@@ -842,6 +977,35 @@
     `;
     section.appendChild(refineDiv);
 
+    // Build day-nav pills
+    const dayCount = (data.itinerary || []).length;
+    const navInner = document.getElementById('dayNavInner');
+    const dayNav = document.getElementById('dayNav');
+    if (navInner && dayNav && dayCount > 0) {
+      navInner.innerHTML = (data.itinerary || []).map(day => `
+        <button class="day-pill" id="pill-day-${day.day}" onclick="scrollToDay(${day.day})">
+          Day ${day.day}${day.title ? ' — ' + day.title.split(':')[0].trim() : ''}
+        </button>`).join('');
+      dayNav.style.display = 'block';
+
+      // Scroll-spy: highlight active day pill as user scrolls
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const dayNum = entry.target.dataset.day;
+          const pill = document.getElementById('pill-day-' + dayNum);
+          if (!pill) return;
+          if (entry.isIntersecting) {
+            document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            // Keep active pill in view inside the nav
+            pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        });
+      }, { threshold: 0.3 });
+
+      document.querySelectorAll('.day-card[data-day]').forEach(card => observer.observe(card));
+    }
+
     // Links (Wired to Verified Affiliate IDs)
     const encodedDest = encodeURIComponent(destination);
     document.getElementById('bookingLink').href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_planner_sidebar`;
@@ -914,6 +1078,20 @@
       bar.classList.remove('visible');
       setTimeout(() => bar.style.display = 'none', 450);
     }
+  }
+
+  function scrollToDay(dayNum) {
+    const card = document.getElementById('day-card-' + dayNum);
+    if (!card) return;
+    // Open the card if collapsed
+    const details = document.getElementById('day-details-' + dayNum);
+    if (details && details.style.display === 'none') {
+      toggleDayCollapse(dayNum);
+    }
+    // Offset for sticky headers (header ~60px + journey-steps ~38px + day-nav ~36px = ~134px)
+    const offset = 140;
+    const top = card.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
   }
 
   function showToast(msg){
