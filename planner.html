@@ -1478,22 +1478,22 @@
     const ci = urlParams.get('ci') || '';
     const co = urlParams.get('co') || '';
     const flightClass = urlParams.get('flightClass') || 'economy';
+    // Hoist flight URLs to outer scope so initChecklist() can access them
+    let aviasalesUrl = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com')}`;
     if(from && ci){
        const gFlightUrl = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}%20from%20${encodeURIComponent(from)}%20on%20${ci}${co?'%20through%20'+co:''}`;
        document.getElementById('googleFlightsLink').href = gFlightUrl;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(from)}/to/${encodedDest}/`;
-       const aviasalesUrl = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com/search/' + encodeURIComponent(from) + '/to/' + encodedDest)}`;
+       aviasalesUrl = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com/search/' + encodeURIComponent(from) + '/to/' + encodedDest)}`;
        document.getElementById('aviasalesLink').href = aviasalesUrl;
        if (bbFlightsEl) bbFlightsEl.href = aviasalesUrl;
        // Asynchronously trigger live flight price updates
        fetchLiveFlightPricePlanner(from, destination, ci, co, flightClass, currency);
     } else {
-       const gFlightFallback = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
-       document.getElementById('googleFlightsLink').href = gFlightFallback;
+       document.getElementById('googleFlightsLink').href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodedDest}`;
        document.getElementById('skyscannerLink').href = `https://www.skyscanner.net/transport/flights-from/anywhere/to/${encodedDest}/`;
-       const aviasalesFallback = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com')}`;
-       document.getElementById('aviasalesLink').href = aviasalesFallback;
-       if (bbFlightsEl) bbFlightsEl.href = aviasalesFallback;
+       document.getElementById('aviasalesLink').href = aviasalesUrl;
+       if (bbFlightsEl) bbFlightsEl.href = aviasalesUrl;
     }
 
     // Show the sticky book bar after a short delay
@@ -1503,7 +1503,7 @@
     }, 1800);
 
     // Initialize the Trip Booking Checklist & Tracker
-    initChecklist(destination, from && ci ? aviasalesUrl : aviasalesFallback, encodedDest);
+    initChecklist(destination, aviasalesUrl, encodedDest);
   }
 
   /* ===================== TRIP BOOKING CHECKLIST JS ===================== */
@@ -1530,7 +1530,7 @@
     if (chkActionFlights && flightUrl) chkActionFlights.href = flightUrl;
     if (chkActionHotel) chkActionHotel.href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_chk_hotel`;
     if (chkActionCar) chkActionCar.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent('https://getrentacar.com/en/car-rental?location=' + dest)}`;
-    if (chkActionTours) chkActionTours.href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`;
+    if (chkActionTours) chkActionTours.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent('https://www.klook.com/search?query=' + dest)}`;
     if (chkActionInsurance) chkActionInsurance.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5869&campaign_id=225&u=${encodeURIComponent('https://ektatraveling.com')}`;
 
     // Mirror links into mobile drawer
