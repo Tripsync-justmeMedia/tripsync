@@ -1088,7 +1088,9 @@
     booking_aid: '2884913', // Legacy fallback
     // Travelpayouts Integration
     tp_marker: '733310',
-    tp_trs: '533550'
+    tp_trs: '533550',
+    // Viator Partner Integration
+    viator_pid: 'P00327306'
   };
 
   async function init(){
@@ -1457,10 +1459,10 @@
     const bbActEl     = document.getElementById('bbActivities');
     const bbTransferEl = document.getElementById('bbTransfer');
     if (bbHotelsEl)   bbHotelsEl.href   = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_bookbar`;
-    if (bbActEl)      bbActEl.href      = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent('https://www.klook.com/search?query=' + destination)}`;
+    if (bbActEl)      bbActEl.href      = `https://www.viator.com/search/${encodedDest}?pid=${AFFILIATE.viator_pid}&mcid=42383`;
     if (bbTransferEl) bbTransferEl.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=647&campaign_id=1&u=${encodeURIComponent('https://kiwitaxi.com')}`;
     // Flight chip link will be set below once we know the origin
-    document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=P00000000`; // Replace with real PID
+    document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=${AFFILIATE.viator_pid}&mcid=42383`;
     
     document.getElementById('klookLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent(`https://www.klook.com/search?query=${destination}`)}`;
     document.getElementById('tiqetsLink').href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=2074&campaign_id=89&u=${encodeURIComponent(`https://www.tiqets.com/en/search/?q=${destination}`)}`;
@@ -1530,7 +1532,7 @@
     if (chkActionFlights && flightUrl) chkActionFlights.href = flightUrl;
     if (chkActionHotel) chkActionHotel.href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_chk_hotel`;
     if (chkActionCar) chkActionCar.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent('https://getrentacar.com/en/car-rental?location=' + dest)}`;
-    if (chkActionTours) chkActionTours.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent('https://www.klook.com/search?query=' + dest)}`;
+    if (chkActionTours) chkActionTours.href = `https://www.viator.com/search/${encodedDest}?pid=${AFFILIATE.viator_pid}&mcid=42383`;
     if (chkActionInsurance) chkActionInsurance.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5869&campaign_id=225&u=${encodeURIComponent('https://ektatraveling.com')}`;
 
     // Mirror links into mobile drawer

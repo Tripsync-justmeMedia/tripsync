@@ -8,11 +8,11 @@ Use this interactive checklist to track and complete your partner integrations. 
 
 These programs already have UI buttons and code paths in the TripSync planner, but currently use placeholder IDs:
 
-- [ ] **Viator (Tours & Activities)**
-  - **Portal / Signup:** [Viator Partner Program](https://www.viator.com/partner) or join via [Travelpayouts Viator Campaign](https://www.travelpayouts.com)
-  - **What You Need:** Your 8-digit **Partner ID (PID)**
-  - **Where It Goes:** [`planner.html:1351`](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/planner.html#L1351) & [`planner.html:1414`](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/planner.html#L1414)
-  - **Current Value:** `P00000000` *(Placeholder)*
+- [x] **Viator (Tours & Activities)** ✅
+  - **Portal / Signup:** [Viator Partner Program](https://www.viator.com/partner)
+  - **Your Partner ID (PID):** `P00327306`
+  - **Where Integrated:** `planner.html` (Checklist `chkActionTours`, sidebar `viatorLink`, sticky `bbActivities`) & `index.html` (card `btn-viator`)
+  - **Current Value:** `P00327306` *(Active & Verified)*
 
 - [ ] **CJ Affiliate (Expedia, Hotels.com, Vrbo)**
   - **Portal / Signup:** [CJ.com (Commission Junction)](https://www.cj.com)
