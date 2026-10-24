@@ -1247,10 +1247,19 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   if (hotelRating !== 'any') filterHtml += `<span class="filter-badge">🏨 ${hotelRating}★+</span>`;
   if (tripType === 'multicity') filterHtml += `<span class="filter-badge">🗺️ Multi-city</span>`;
 
+  let tripDays = 5;
+  if (ci && co) {
+    const diff = Math.round((new Date(co) - new Date(ci)) / (1000 * 60 * 60 * 24));
+    if (diff > 0 && diff <= 60) tripDays = diff;
+  }
+  const fClass = encodeURIComponent(document.getElementById('flightClass') ? document.getElementById('flightClass').value : 'economy');
+  const hRating = encodeURIComponent(document.getElementById('hotelRating') ? document.getElementById('hotelRating').value : 'any');
+  const bgt = encodeURIComponent(document.getElementById('budget') ? document.getElementById('budget').value : '');
+
   // Update header planner link to point to the best match
   if (destinations && destinations.length > 0) {
     const best = destinations[0];
-    const plannerUrl = `planner.html?destination=${encodeURIComponent(best.city)}&currency=${currency}&days=5&from=${encodeURIComponent(departCity)}&ci=${ci}&co=${co}&guests=${g}`;
+    const plannerUrl = `planner.html?destination=${encodeURIComponent(best.city)}&currency=${currency}&days=${tripDays}&from=${encodeURIComponent(departCity)}&ci=${ci}&co=${co}&guests=${g}&flightClass=${fClass}&hotelRating=${hRating}&budget=${bgt}`;
     document.getElementById('headerPlannerLink').href = plannerUrl;
   }
 
@@ -1298,7 +1307,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         
         <div style="display:flex; gap:0.5rem; margin-top:1.25rem; margin-bottom: 0.5rem;">
           <button class="btn-action" id="toggle-btn-${i}" onclick="toggleCardDetails(${i}, this)" style="flex:1; padding:0.6rem 0.5rem; font-size:0.78rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:0.25rem;">Details ➔</button>
-          <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=5&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}" target="_blank" class="btn-itin" style="flex:1; margin:0; padding:0.6rem 0.5rem; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center;">🗺️ Open Planner</a>
+          <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=${tripDays}&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}&flightClass=${fClass}&hotelRating=${hRating}&budget=${bgt}" target="_blank" class="btn-itin" style="flex:1; margin:0; padding:0.6rem 0.5rem; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center;">🗺️ Open Planner</a>
         </div>
       </div>
       

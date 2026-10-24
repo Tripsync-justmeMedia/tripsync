@@ -1680,9 +1680,11 @@ Return EXACTLY this structure:
     return jsonify(result)
 
 # --- Day-by-day itinerary generator ---
-def build_itinerary_prompt(destination, days, currency, preferences='', flight_class='economy'):
+def build_itinerary_prompt(destination, days, currency, preferences='', flight_class='economy', hotel_rating='any', budget=''):
+    hotel_req = f" Minimum hotel rating: {hotel_rating} stars." if hotel_rating and hotel_rating != 'any' else ""
+    budget_req = f" Target budget: {budget} {currency}." if budget else ""
     prompt = f"""Create a highly detailed {days}-day travel itinerary for {destination}.
-Preferences: {preferences}. Currency: {currency}. Flight class: {flight_class}.
+Preferences: {preferences}. Currency: {currency}. Flight class: {flight_class}.{hotel_req}{budget_req}
 
 Return ONLY valid JSON:
 {{
@@ -1691,7 +1693,7 @@ Return ONLY valid JSON:
   "total_budget_estimate": "X-Y {currency}",
   "suggested_accommodation": [
     {{ "name": "Hotel Name", "type": "Luxury/Mid-range/Boutique", "reason": "Why this hotel?" }},
-    {{ "name": "Hotel Name 2", "type": "Budget/Hostel", "reason": "Why this one?" }}
+    {{ "name": "Hotel Name 2", "type": "Budget/Comfort", "reason": "Why this one?" }}
   ],
   "itinerary": [
     {{
@@ -1762,8 +1764,10 @@ def generate_itinerary():
     preferences = data.get('preferences', '')
     currency    = data.get('currency', 'USD')
     flight_class= data.get('flightClass', 'economy')
+    hotel_rating= data.get('hotelRating', 'any')
+    budget      = data.get('budget', '')
 
-    prompt = build_itinerary_prompt(destination, days, currency, preferences, flight_class)
+    prompt = build_itinerary_prompt(destination, days, currency, preferences, flight_class, hotel_rating, budget)
 
     result_text = call_groq(prompt, max_tokens=4000)
     if not result_text:
