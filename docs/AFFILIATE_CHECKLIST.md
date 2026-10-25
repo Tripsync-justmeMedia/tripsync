@@ -1,108 +1,74 @@
 # 📋 TripSync Affiliate Monetization Checklist
 
-Use this interactive checklist to track and complete your partner integrations. Once approved or when you obtain an ID, drop it into the indicated lines in `planner.html` (or let me know and I'll wire it in for you!).
+Last verified end-to-end: **2026-10-25** (local build, live HTTP checks + real browser).
+
+How each link was verified: render the page → pull every generated `href` → follow it with a
+browser user-agent **and** open it in a real browser (bot-protected partners only show the truth
+in a browser). A link only counts as working if it lands on the right city/results page *and*
+keeps its tracking parameter.
 
 ---
 
-## ⚠️ Phase 1: High Priority (Replace Existing Placeholders)
+## ✅ Phase 3: Verified working (no action needed)
 
-These programs already have UI buttons and code paths in the TripSync planner, but currently use placeholder IDs:
-
-- [x] **Viator (Tours & Activities)** ✅
-  - **Portal / Signup:** [Viator Partner Program](https://www.viator.com/partner)
-  - **Your Partner ID (PID):** `P00327306`
-  - **Where Integrated:** `planner.html` (Checklist `chkActionTours`, sidebar `viatorLink`, sticky `bbActivities`) & `index.html` (card `btn-viator`)
-  - **Current Value:** `P00327306` *(Active & Verified)*
-
-- [ ] **CJ Affiliate (Expedia, Hotels.com, Vrbo)**
-  - **Portal / Signup:** [CJ.com (Commission Junction)](https://www.cj.com)
-  - **What You Need:** Your 7–9 digit **CJ Publisher ID (PID)**
-  - **Where It Goes:** [`planner.html:974`](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/planner.html#L974)
-  - **Current Value:** `101234567` *(Placeholder)*
-
-- [ ] **Skyscanner (Flight Searches)**
-  - **Portal / Signup:** [Skyscanner Affiliate via Impact](https://app.impact.com/advertiser-advertiser-info/Skyscanner.brand) or [CJ Skyscanner](https://www.cj.com)
-  - **What You Need:** Your affiliate tracking campaign link / tracking parameter
-  - **Where It Goes:** [`planner.html:1372`](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/planner.html#L1372)
-  - **Current Value:** Generic unmonetized link to Skyscanner
-
-- [ ] **Agoda (Alternative Accommodation)**
-  - **Portal / Signup:** [Agoda Partners Program](https://partners.agoda.com) or join via [Awin Agoda](https://www.awin.com)
-  - **What You Need:** Your Agoda CID (Client ID)
-  - **Where It Goes:** Secondary hotel links in `planner.html` and `index.html`
-
-- [ ] **Tiqets (Attractions & Museum Passes)**
-  - **Portal / Signup:** Check active campaign under [Travelpayouts Programs](https://www.travelpayouts.com)
-  - **What You Need:** Updated search deep-link format for Travelpayouts Campaign 89
-  - **Where It Goes:** [`planner.html:1354`](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/planner.html#L1354)
+| Partner | Network | Tracking | Landing page check | Status |
+|---|---|---|---|---|
+| **Booking.com (hotels)** | Direct | `aid=2884913` (+ `label=` per placement) | `searchresults.html?ss=<city>&checkin=&checkout=&group_adults=` lands on city results with dates + guests kept | ✅ Live & tracking |
+| **Viator (tours)** | Direct | `pid=P00327306`, `mcid=42383` | `/searchResults/all?text=<city>` lands on city tours | ✅ Live & tracking |
+| **Aviasales (flights)** | Travelpayouts | `marker=733310`, `trs=533550`, `campaign=100` | `marker` re-appended by redirector | ✅ Live & tracking |
+| **Klook (activities)** | Travelpayouts | `campaign=137` | `affiliate.klook.com/redirect` → city search | ✅ Live & tracking |
+| **Tiqets (museums)** | Travelpayouts | `campaign=89` | `/en/search?q=<city>` → city landing page | ✅ Live & tracking |
+| **GetRentacar (cars)** | Travelpayouts | `campaign=222` | `track_id` + `utm_source=travelpayouts`; Cloudflare "Just a moment" is normal for bots | ✅ Live & tracking |
+| **KiwiTaxi (transfers)** | Travelpayouts | `campaign=1` | `tpo=<id>-733310` | ✅ Live & tracking |
+| **Welcome Pickups** | Travelpayouts | `campaign=627` | `aff_track_id` | ✅ Live & tracking |
+| **AirHelp (claims)** | Travelpayouts | `campaign=120` | `a_aid=Travelpayouts` + `data1` | ✅ Live & tracking |
 
 ---
 
-## 🚀 Phase 2: High-Converting New Revenue Additions
+## ⛔ Removed 2026-10-25 — dead links
 
-These convert with high conversion rates for international travelers:
-
-- [ ] **eSIM Mobile Data (Airalo / Saily / Nomad)**
-  - **Why:** Every international tourist needs data; 10%–20% recurring commission per package.
-  - **Portal / Signup:**
-    - [Airalo Affiliate Program (Impact)](https://app.impact.com/advertiser-advertiser-info/Airalo.brand)
-    - [Saily Affiliate via Impact / Nord Security](https://saily.com/affiliates/)
-  - **Placement:** Can be featured as a default checklist item in `planner.html` + Extras sidebar.
-
-- [ ] **GetYourGuide (Experiences & Day Trips)**
-  - **Why:** Largest tour inventory across Europe and North America; pays 8%–10% per booking.
-  - **Portal / Signup:** [GetYourGuide Partner Portal](https://partner.getyourguide.com)
-  - **Placement:** Alternative activity provider alongside Klook in `planner.html`.
-
-- [ ] **DiscoverCars (Car Rental Comparison)**
-  - **Why:** High volume in Europe, Americas, and islands ($15–$30 commission per booking).
-  - **Portal / Signup:** [DiscoverCars Affiliate Program](https://www.discovercars.com/affiliates) or via Travelpayouts.
-  - **Placement:** Complement or alternative to GetRentACar in the booking checklist.
-
-- [ ] **Travel Banking & Currency Exchange (Wise / Revolut)**
-  - **Why:** High-ticket payouts ($30–$75 per approved user) for zero foreign transaction fees.
-  - **Portal / Signup:**
-    - [Wise Affiliate Program](https://wise.com/us/affiliate-program)
-    - [Revolut Affiliate Partner](https://www.revolut.com/affiliates/)
-  - **Placement:** Recommended under "Budget & Currency" sidebar in `planner.html`.
+| Partner | Why it was removed |
+|---|---|
+| **EKTA Travel Insurance** (`p=5869`, `campaign_id=225`) | `tp.media` returns **HTTP 400 "marker is not subscribed to campaign"** — the marker `733310` is not enrolled in that program, so every insurance button was an error page. The checklist row "🛡️ Insurance (opt)" was kept (it is a useful traveller to-do) but its `Get ↗` action link was removed. **Re-add only after subscribing to an insurance campaign under marker 733310.** |
 
 ---
 
-## ✅ Phase 3: Already Verified & Active (No Action Needed)
+## 🛠️ Bugs fixed in the same pass (do not regress)
 
-These are live on [tripsync.ca](https://tripsync.ca) and actively accumulating tracked clicks:
+1. **Booking.com `/search.html`** — does not exist; the planner's "Book This Hotel →" buttons
+   returned **"Page Not Found"**. Always use `/searchresults.html`. Both the search-results cards
+   *and* the planner hotel cards now share the correct path.
+2. **Tiqets `/en/search/?q=`** (trailing slash) — hard **404**. Correct form is `/en/search?q=`,
+   which 302s to the real city page.
+3. **Skyscanner `/transport/flights-from/<from>/to/<to>/`** — does not exist (404). Correct form:
+   `/transport/flights/<origin-slug>/<dest-slug>/<YYMMDD>/<YYMMDD>/?adults=N`.
+4. **Viator `/search/<city>`** — 302s and can drop `pid`. Now uses
+   `/searchResults/all?text=<city>&pid=…&mcid=…`, which keeps attribution and always renders results.
+5. **City names were injected raw into inline `onclick`** — a city like `Xi'an` produced invalid
+   JS and killed the whole booking row. All inline handlers now go through `jsStr()`
+   (`index.html`), and all URL builders go through `citySlug()` / `skyscannerUrl()` /
+   `tiqetsUrl()` / `viatorUrl()`.
 
-| Service / Partner | Network | Tracking Identifier | Status |
-|---|---|---|---|
-| **Booking.com (Hotels)** | Direct Affiliate | `aid=2884913` | ✅ Live & Tracking |
-| **Aviasales (Flights)** | Travelpayouts | `marker=733310`, `trs=533550`, `campaign=100` | ✅ Live & Tracking |
-| **GetRentACar (Car Rentals)** | Travelpayouts | `marker=733310`, `campaign=222` | ✅ Live & Tracking |
-| **Klook (Activities & Tours)** | Travelpayouts | `marker=733310`, `campaign=137` | ✅ Live & Tracking |
-| **KiwiTaxi (Airport Transfers)** | Travelpayouts | `marker=733310`, `campaign=1` | ✅ Live & Tracking |
-| **Welcome Pickups (Transfers)** | Travelpayouts | `marker=733310`, `campaign=627` | ✅ Live & Tracking |
-| **Ekta (Travel Insurance)** | Travelpayouts | `marker=733310`, `campaign=225` | ✅ Live & Tracking |
-| **AirHelp (Flight Claims)** | Travelpayouts | `marker=733310`, `campaign=120` | ✅ Live & Tracking |
+Rule: **never hand-write a partner URL again** — use the helpers at the top of `index.html`
+(`AFFILIATE` block) and `planner.html`. Re-run the verification after touching them.
 
 ---
 
-## 🛠️ How to Update in Code
+## ⚠️ Open items (revenue, not broken links)
 
-Whenever you get an ID, open [`planner.html`](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/planner.html) line 973:
+- **`TRAVELPAYOUTS_TOKEN` is not set** in `.env`, so `/api/flight-prices` returns
+  `{"price": null}` and the "live fare" block never appears. Copy is now honest about this
+  ("confirm current prices on the booking site"), but adding the token restores live fares.
+- **Unverified discount claims removed** — "Aviasales (40% Off Flights)" and
+  "GetRentacar.com (Save 10%)" were not backed by any partner data. Now plain labels.
+- **Unused placeholder IDs**: `cj_pid`, `agoda_cid`, `expedia_affcid` are still `YOUR_*`
+  placeholders but are **not referenced by any link**. Either wire a real program or delete the
+  keys to avoid a future false-positive.
 
-```javascript
-const AFFILIATE = {
-  cj_pid: 'YOUR_CJ_PID_HERE',
-  booking_aid: '2884913',
-  tp_marker: '733310',
-  tp_trs: '533550'
-};
-```
-And for Viator, line 1351:
-```javascript
-document.getElementById('viatorLink').href = `https://www.viator.com/search/${encodedDest}?pid=YOUR_VIATOR_PID`;
-```
-Once updated, deploy to production with:
-```bash
-cd JustMeMedia/01_ACTIVE/TripSync
-netlify deploy --prod --dir=.
-```
+## 🚀 High-converting additions (unchanged)
+
+- **eSIM (Airalo / Saily / Nomad)** — every international traveller needs data; recurring commission.
+- **GetYourGuide** — alternative to Klook, 8–10% per booking.
+- **DiscoverCars** — complement to GetRentacar.
+- **Wise / Revolut** — travel banking, $30–$75 per approved user.
+- **Insurance** — highest-value slot currently empty; pick a program you are actually subscribed to.

@@ -6,7 +6,7 @@
 <meta name="description" content="TripSync — AI-powered travel destination finder. Free, no sign-up required.">
 <meta name="theme-color" content="#1a6b6b">
 <meta property="og:title" content="TripSync — AI Travel Planner">
-<meta property="og:description" content="Describe your dream trip. Get 3 AI-matched destinations with real prices and booking links.">
+<meta property="og:description" content="Describe your dream trip. Get 3 AI-matched destinations with budget guidance and booking links.">
 <meta property="og:url" content="https://tripsync.ca">
 <title>TripSync — AI Travel Planner</title>
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -52,7 +52,7 @@
 :root{
   --ink:#0f0f0f;--paper:#f7f4ef;--cream:#ede9e1;--sand:#d4c9b4;
   --rust:#c4541a;--rust-light:#e8693a;--teal:#1a6b6b;--teal-light:#2a9090;
-  --sky:#e8f4f4;--gold:#b8962e;--muted:#7a7468;--card-bg:#ffffff;
+  --sky:#e8f4f4;--gold:#b8962e;--muted:#6b6760;--muted-on-dark:#c9c3b6;--card-bg:#ffffff;
   --shadow:0 2px 20px rgba(15,15,15,0.08);--shadow-lg:0 8px 40px rgba(15,15,15,0.14)
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -86,7 +86,7 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 .chat-entry:hover{background:rgba(255,255,255,0.03)}
 .ceq{font-size:0.78rem;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cet{font-size:0.65rem;color:var(--muted)}
-.sidebar-empty{padding:1.5rem 1.25rem;text-align:center;color:var(--muted);font-size:0.8rem;line-height:1.6}
+.sidebar-empty{padding:1.5rem 1.25rem;text-align:center;color:var(--muted-on-dark);font-size:0.8rem;line-height:1.6}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;transition:margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)}
 /* Search area */
 .search-area{background:var(--cream);border-bottom:1px solid var(--sand);padding:1.25rem 2rem}
@@ -287,8 +287,8 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .itin-tips{margin-top:1rem;font-size:0.85rem;font-style:italic;color:var(--muted)}
 .btn-itin{background:var(--teal);color:white;border:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;margin-top:0.5rem}
 .btn-itin:hover{background:var(--teal-light)}
-footer{background:var(--ink);color:var(--muted);text-align:center;padding:0.65rem 2rem;font-size:0.72rem;border-top:1px solid rgba(255,255,255,0.06)}
-footer a{color:var(--sand);text-decoration:none}
+footer{background:var(--ink);color:var(--muted-on-dark);text-align:center;padding:0.65rem 2rem;font-size:0.72rem;border-top:1px solid rgba(255,255,255,0.06)}
+footer a{color:var(--sand);text-decoration:underline}
 footer a:hover{color:var(--rust-light)}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:0.7rem 1.4rem;border-radius:6px;font-size:0.83rem;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
@@ -524,14 +524,14 @@ footer a:hover{color:var(--rust-light)}
 
       <div class="ai-engine-row" style="margin-bottom:1.5rem; display:flex; gap:0.5rem; align-items:center; background:rgba(0,0,0,0.03); padding:0.5rem; border-radius:12px; border:1px solid var(--sand)">
         <span style="font-size:0.7rem; font-weight:700; color:var(--muted); margin-left:0.5rem; white-space:nowrap">AI ENGINE:</span>
-        <select id="aiModeSelectMain" class="ai-mode-select" onchange="changeAIMode(false)" style="flex:1; border:none; background:transparent; font-size:0.85rem; padding-right:2rem">
+        <select id="aiModeSelectMain" class="ai-mode-select" aria-label="AI engine" onchange="changeAIMode(false)" style="flex:1; border:none; background:transparent; font-size:0.85rem; padding-right:2rem">
           <option value="cloud">⚡ Fast (2 sec) — instant ideas</option>
           <option value="gemma">✨ Deep (30 sec) — better for complex trips</option>
         </select>
       </div>
 
       <div class="prefs-row">
-        <select class="param-select" id="tripType" onchange="updateTripType()" style="background:var(--teal);color:white;border-color:var(--teal)">
+        <select class="param-select" id="tripType" aria-label="Trip type" onchange="updateTripType()" style="background:var(--teal);color:white;border-color:var(--teal)">
           <option value="roundtrip">🔄 Round Trip</option>
           <option value="oneway">➡️ One Way</option>
           <option value="multicity">🗺️ Multi-city</option>
@@ -561,6 +561,7 @@ footer a:hover{color:var(--rust-light)}
           <option value="BRL">🇧🇷 BRL</option>
           <option value="ZAR">🇿🇦 ZAR</option>
         </select>
+        </div>
       </div>
 
       <button class="btn-ghost" onclick="togglePrefs()" style="margin-bottom:1rem; border-color:var(--sand); color:var(--muted); width:100%; display:flex; justify-content:space-between; align-items:center; padding:0.6rem 1rem">
@@ -639,7 +640,7 @@ footer a:hover{color:var(--rust-light)}
 
         <div class="welcome-icon">🌍</div>
         <div class="welcome-title">Plan Your Perfect Trip</div>
-        <div class="welcome-sub">Describe your ideal destination in plain English. TripSync finds 3 AI-matched destinations with real prices, flight estimates, and booking links. Free, no sign-up required.</div>
+        <div class="welcome-sub">Describe your ideal destination in plain English. TripSync finds 3 AI-matched destinations with budget guidance, flight estimates, and booking links. Free, no sign-up required.</div>
         <div class="example-chips">
           <div class="chip" onclick="fill('Romantic week in Europe, love wine and history, 4-star hotels')">🍷 Romantic Europe</div>
           <div class="chip" onclick="fill('Family beach vacation with kids, calm water, max 8 hour flight, 10 days')">👨‍👩‍👧 Family Beach</div>
@@ -700,7 +701,7 @@ footer a:hover{color:var(--rust-light)}
 
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
-    <strong>Live Data Disclosure:</strong> TripSync provides real-time price matches via AI orchestration. Final booking rates are determined by our travel partners. AI-curated itineraries — please verify travel documents before departure.
+    <strong>Live Data Disclosure:</strong> TripSync surfaces live partner booking links; final rates are determined by our travel partners at checkout. AI-curated itineraries — please verify travel documents before departure.
   </div>
 </footer>
 
@@ -751,6 +752,30 @@ const AFFILIATE={
   // Viator Partner Integration
   viator_pid: 'P00327306'
 };
+
+/* --- Outbound link helpers -------------------------------------------------
+   Every partner deep link goes through these so a bad URL can only be fixed
+   in one place. Skyscanner no longer supports /flights-from/.../to/..., and
+   Tiqets 404s on /en/search/?q= (trailing slash) — keep both tested. */
+function citySlug(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'anywhere';
+}
+function yymmdd(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||'').trim());return m?m[1].slice(2)+m[2]+m[3]:'';}
+function skyscannerUrl(from,to,ci,co,guests){
+  const a=citySlug(from), b=citySlug(to), d1=yymmdd(ci), d2=yymmdd(co);
+  const dates=(d1&&d2)?`${d1}/${d2}/`:'';
+  return `https://www.skyscanner.net/transport/flights/${a}/${b}/${dates}?adults=${encodeURIComponent(guests||2)}`;
+}
+function tiqetsUrl(city){ return 'https://www.tiqets.com/en/search?q=' + city; }
+function viatorUrl(city){
+  /* /search/<city> 302s and can drop pid; the results URL keeps attribution. */
+  return 'https://www.viator.com/searchResults/all?text=' + encodeURIComponent(city) +
+         '&pid=' + AFFILIATE.viator_pid + '&mcid=42383';
+}
+/* Escapes a value for use inside a single-quoted inline JS string (a city
+   like Xi'an used to break the whole booking button). */
+function jsStr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r?\n/g,' '); }
 const MSGS_STANDARD=['Scanning 190+ countries...','Checking flight routes...','Matching your vibe...','Comparing hotel rates...','Finalizing your trip...'];
 const MSGS_EXPERT=['Deep Expert Reasoning...','Analyzing Global Data...','Curating Expert Match...','Finalizing Premium Results...'];
 const MSGS_LOCAL=['Waking up Local AI...','Loading Gemma 4 into RAM...','This takes a moment on first run...','Thinking on your hardware...','Finalizing Private Results...'];
@@ -1290,7 +1315,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
          class="flight-link" 
          id="flight-link-${i}"
          style="${isMissingOrigin ? 'background:var(--muted)' : ''}"
-         onclick="${isMissingOrigin ? "window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('departCity').focus(), 500); return false;" : `track('google_flights','${cityRaw}')`}">
+         onclick="${isMissingOrigin ? "window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('departCity').focus(), 500); return false;" : `track('google_flights','${jsStr(cityRaw)}')`}">
          ${isMissingOrigin ? 'Add Origin' : 'Check Live Price'}
       </a>
     </div>`:'';
@@ -1333,28 +1358,28 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         </div>
           <div class="booking-links" style="margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
             <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;flex-wrap:wrap">
-              <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('google_flights','${cityRaw}')">Google Flights</a>
-              <a href="https://www.skyscanner.net/transport/flights-from/${encodeURIComponent(departCity||'anywhere')}/to/${city}/" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('skyscanner','${cityRaw}')">Skyscanner</a>
-              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com')}" target="_blank" class="btn-primary btn-aviasales" style="border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('aviasales','${cityRaw}')">Aviasales</a>
+              <a href="${googleFlightsUrl}" target="_blank" class="btn-primary" style="background:#4285F4;color:white;border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('google_flights','${jsStr(cityRaw)}')">Google Flights</a>
+              <a href="${skyscannerUrl(departCity||'anywhere', cityRaw, ci, co, g)}" target="_blank" class="btn-primary" style="background:#00d7f1;color:var(--ink);border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('skyscanner','${jsStr(cityRaw)}')">Skyscanner</a>
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com')}" target="_blank" class="btn-primary btn-aviasales" style="border:none;margin:0;flex:1;min-width:100px;text-align:center;text-decoration:none;font-size:0.75rem;font-weight:700;padding:0.6rem 0.4rem;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="track('aviasales','${jsStr(cityRaw)}')">Aviasales</a>
             </div>
             <div class="booking-label">Book Hotels (Best Price Guarantee)</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
-              <a href="https://www.booking.com/searchresults.html?ss=${city}&aid=${AFFILIATE.booking_aid}&checkin=${ci}&checkout=${co}&group_adults=${g}" target="_blank" class="booking-btn btn-booking" style="background:#003580;color:white;font-weight:700;flex:2;text-align:center;" onclick="track('booking','${cityRaw}')">🏨 Find Deals on Booking.com</a>
+              <a href="https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&aid=${AFFILIATE.booking_aid}&checkin=${ci}&checkout=${co}&group_adults=${g}" target="_blank" class="booking-btn btn-booking" style="background:#003580;color:white;font-weight:700;flex:2;text-align:center;" onclick="track('booking','${jsStr(cityRaw)}')">🏨 Find Deals on Booking.com</a>
             </div>
             <div class="booking-label">Book Tours & Activities</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
-              <a href="https://www.viator.com/search/${encodeURIComponent(cityRaw)}?pid=${AFFILIATE.viator_pid}&mcid=42383" target="_blank" class="booking-btn" style="background:#008768;color:white;font-weight:700;" onclick="track('viator','${cityRaw}')">Viator</a>
-              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent('https://www.klook.com/search?query=' + cityRaw)}" target="_blank" class="booking-btn btn-klook" onclick="track('klook','${cityRaw}')">Klook</a>
-              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=2074&campaign_id=89&u=${encodeURIComponent('https://www.tiqets.com/en/search/?q=' + cityRaw)}" target="_blank" class="booking-btn btn-tiqets" onclick="track('tiqets','${cityRaw}')">Tiqets</a>
+              <a href="${viatorUrl(cityRaw)}" target="_blank" class="booking-btn" style="background:#008768;color:white;font-weight:700;" onclick="track('viator','${jsStr(cityRaw)}')">Viator</a>
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=4110&campaign_id=137&u=${encodeURIComponent('https://www.klook.com/search?query=' + cityRaw)}" target="_blank" class="booking-btn btn-klook" onclick="track('klook','${jsStr(cityRaw)}')">Klook</a>
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=2074&campaign_id=89&u=${encodeURIComponent(tiqetsUrl(cityRaw))}" target="_blank" class="booking-btn btn-tiqets" onclick="track('tiqets','${jsStr(cityRaw)}')">Tiqets</a>
             </div>
             <div class="booking-label">Car Rental</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
-              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent('https://getrentacar.com/en/car-rental?location=' + cityRaw)}" target="_blank" class="booking-btn btn-rentacar" onclick="track('getrentacar','${cityRaw}')">GetRentacar.com</a>
+              <a href="https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent('https://getrentacar.com/en/car-rental?location=' + cityRaw)}" target="_blank" class="booking-btn btn-rentacar" onclick="track('getrentacar','${jsStr(cityRaw)}')">GetRentacar.com</a>
             </div>
             <div class="card-share-row" style="margin-top:0.5rem">
-              <button class="share-btn" onclick="saveToMyTrips('${cityRaw}', ${i})">⭐ Save Trip</button>
+              <button class="share-btn" onclick="saveToMyTrips('${jsStr(cityRaw)}', ${i})">⭐ Save Trip</button>
               <button class="share-btn" onclick="copyLink()">🔗 Copy Link</button>
-              <button class="share-btn" onclick="saveCardImage(${i},'${cityRaw}')">🖼 Save Image</button>
+              <button class="share-btn" onclick="saveCardImage(${i},'${jsStr(cityRaw)}')">🖼 Save Image</button>
             </div>
           </div>
         </div>
@@ -1377,7 +1402,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
       <div>
         <div class="results-title">AI Live Match Results</div>
         <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">✅ Real-time price matches. Click booking links for live availability and official rates.</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">✅ Curated picks with live partner links — confirm current prices on the booking site.</div>
       </div>
       <div class="results-actions">
         <button class="btn-action pdf" onclick="downloadPDF('${query.replace(/'/g,"\\'")}')">⬇ Download PDF</button>
