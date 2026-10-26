@@ -1108,6 +1108,23 @@
     return 'https://www.viator.com/searchResults/all?text=' + encodeURIComponent(city) +
            '&pid=' + AFFILIATE.viator_pid + '&mcid=42383';
   }
+  /* Booking.com moved to the CJ network. Once AFFILIATE.cj_pid is a real
+     publisher id, clicks MUST go through the CJ redirect or the booking is
+     credited to nobody. Until then we keep the legacy aid link working. */
+  function bookingUrl(query, ci, co, guests, label){
+    const base = 'https://www.booking.com/searchresults.html?ss=' + encodeURIComponent(query)
+      + (ci ? '&checkin=' + encodeURIComponent(ci) : '')
+      + (co ? '&checkout=' + encodeURIComponent(co) : '')
+      + (guests ? '&group_adults=' + encodeURIComponent(guests) : '')
+      + (label ? '&label=' + encodeURIComponent(label) : '');
+    const pid = String(AFFILIATE.cj_pid || '');
+    if (/^\d{6,7}$/.test(pid) && pid !== '101234567') {
+      // 15701602 is Booking.com's CJ link id (same for every publisher).
+      return 'https://www.tkqlhce.com/click-' + pid + '-15701602?url='
+        + encodeURIComponent(base) + '&sid=' + encodeURIComponent(AFFILIATE.cj_sid || 'tripsync_planner');
+    }
+    return base + '&aid=' + AFFILIATE.booking_aid;
+  }
 
   async function init(){
     const modes = {
@@ -1368,8 +1385,7 @@
     const hotelGuestsParam = guests ? `&group_adults=${guests}` : '';
     const hotelList = document.getElementById('hotelList');
     hotelList.innerHTML = (data.suggested_accommodation || []).map(h => {
-      const hotelQuery = encodeURIComponent(`${h.name} ${destination}`);
-      const hotelLink = `https://www.booking.com/searchresults.html?ss=${hotelQuery}&aid=${AFFILIATE.booking_aid}&label=tripsync_planner_hotel_card${hotelDatesParam}${hotelGuestsParam}`;
+      const hotelLink = bookingUrl(`${h.name} ${destination}`, ci, co, guests, 'tripsync_planner_hotel_card');
       return `
         <div class="hotel-card">
           <div class="hotel-name">${h.name}</div>
@@ -1484,14 +1500,14 @@
 
     // Links (Wired to Verified Affiliate IDs with Dates & Guest Counts)
     const encodedDest = encodeURIComponent(destination);
-    document.getElementById('bookingLink').href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_planner_sidebar${hotelDatesParam}${hotelGuestsParam}`;
+    document.getElementById('bookingLink').href = bookingUrl(destination, ci, co, guests, 'tripsync_planner_sidebar');
 
     // Wire up the calm helper strip
     const bbFlightsEl = document.getElementById('bbFlights');
     const bbHotelsEl  = document.getElementById('bbHotels');
     const bbActEl     = document.getElementById('bbActivities');
     const bbTransferEl = document.getElementById('bbTransfer');
-    if (bbHotelsEl)   bbHotelsEl.href   = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_bookbar${hotelDatesParam}${hotelGuestsParam}`;
+    if (bbHotelsEl)   bbHotelsEl.href   = bookingUrl(destination, ci, co, guests, 'tripsync_bookbar');
     if (bbActEl)      bbActEl.href      = viatorUrl(destination);
     if (bbTransferEl) bbTransferEl.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=647&campaign_id=1&u=${encodeURIComponent('https://kiwitaxi.com')}`;
     // Flight chip link will be set below once we know the origin
@@ -1535,7 +1551,7 @@
     }, 1800);
 
     // Initialize the Trip Booking Checklist & Tracker
-    initChecklist(destination, aviasalesUrl, encodedDest, hotelDatesParam, hotelGuestsParam);
+    initChecklist(destination, aviasalesUrl, encodedDest, hotelDatesParam, hotelGuestsParam, ci, co, guests);
   }
 
   /* ===================== TRIP BOOKING CHECKLIST JS ===================== */
@@ -1550,7 +1566,7 @@
     return div.innerHTML;
   }
 
-  function initChecklist(dest, flightUrl, encodedDest, hotelDatesParam = '', hotelGuestsParam = '') {
+  function initChecklist(dest, flightUrl, encodedDest, hotelDatesParam = '', hotelGuestsParam = '', ci = '', co = '', guests = '') {
     currentPlannerDestination = dest || 'mytrip';
 
     const chkActionFlights   = document.getElementById('chkAction-flights');
@@ -1559,7 +1575,7 @@
     const chkActionTours     = document.getElementById('chkAction-tours');
 
     if (chkActionFlights && flightUrl) chkActionFlights.href = flightUrl;
-    if (chkActionHotel) chkActionHotel.href = `https://www.booking.com/searchresults.html?ss=${encodedDest}&aid=${AFFILIATE.booking_aid}&label=tripsync_chk_hotel${hotelDatesParam}${hotelGuestsParam}`;
+    if (chkActionHotel) chkActionHotel.href = bookingUrl(dest, ci, co, guests, 'tripsync_chk_hotel');
     if (chkActionCar) chkActionCar.href = `https://tp.media/r?marker=${AFFILIATE.tp_marker}&trs=${AFFILIATE.tp_trs}&p=5996&campaign_id=222&u=${encodeURIComponent('https://getrentacar.com/en/car-rental?location=' + dest)}`;
     if (chkActionTours) chkActionTours.href = viatorUrl(dest);
 
