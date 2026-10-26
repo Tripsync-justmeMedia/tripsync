@@ -56,9 +56,12 @@ Rule: **never hand-write a partner URL again** — use the helpers at the top of
 
 ## ⚠️ Open items (revenue, not broken links)
 
-- **`TRAVELPAYOUTS_TOKEN` is not set** in `.env`, so `/api/flight-prices` returns
-  `{"price": null}` and the "live fare" block never appears. Copy is now honest about this
-  ("confirm current prices on the booking site"), but adding the token restores live fares.
+- **Fares are cached, not live.** `TRAVELPAYOUTS_TOKEN` is now set and `/api/flight-prices`
+  returns real fares, but the Data API is a ~48h cache and has nothing for most exact dates,
+  so the UI degrades to "Cheapest fare found for Nov 16 — your dates may differ". True
+  real-time prices need a different provider; see **[REALTIME_PRICING.md](REALTIME_PRICING.md)**
+  for the per-partner gates and what to request (Duffel for flights, Booking widget for
+  hotels, Tiqets token for attractions).
 - **Unverified discount claims removed** — "Aviasales (40% Off Flights)" and
   "GetRentacar.com (Save 10%)" were not backed by any partner data. Now plain labels.
 - **Unused placeholder IDs**: `cj_pid`, `agoda_cid`, `expedia_affcid` are still `YOUR_*`
