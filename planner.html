@@ -2104,11 +2104,20 @@
         const data = await resp.json();
         if (data && data.price) {
           const symbol = getCurrencySymbol(currency);
+          const isExact = data.exact === true;
           document.getElementById('liveFlightPrice').style.display = 'block';
-          document.getElementById('livePriceValue').textContent = `${symbol}${data.price}`;
-          
-          let airlineText = data.airline_name ? `on ${data.airline_name}` : '';
-          document.getElementById('livePriceDetail').textContent = `Cheapest live fare ${airlineText}`;
+          document.getElementById('livePriceValue').textContent = `${isExact ? '' : 'From '}${symbol}${data.price}`;
+
+          const airlineText = data.airline_name ? ` on ${data.airline_name}` : '';
+          if (isExact) {
+            document.getElementById('livePriceDetail').textContent = `Live fare for your dates${airlineText}`;
+          } else {
+            const when = data.found_departure
+              ? new Date(data.found_departure).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+              : '';
+            document.getElementById('livePriceDetail').textContent =
+              `Cheapest fare found${when ? ' for ' + when : ''}${airlineText} — your dates may differ`;
+          }
           
           const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination)}%20from%20${encodeURIComponent(origin)}%20on%20${depDate}${retDate ? '%20through%20' + retDate : ''}`;
           document.getElementById('googleFlightsLink').href = googleFlightsUrl;

@@ -360,62 +360,138 @@ def resolve_iata_code(keyword):
     return None
 
 # --- Travelpayouts Flight Prices Client ---
-def fetch_flight_price(origin_city, dest_city, departure_date, return_date=None, travel_class="ECONOMY", currency="USD"):
-    # Resolve IATA codes
-    origin_iata = IATA_FALLBACKS.get(origin_city.lower())
-    if not origin_iata:
-        origin_iata = resolve_iata_code(origin_city)
-        
-    dest_iata = IATA_FALLBACKS.get(dest_city.lower())
-    if not dest_iata:
-        dest_iata = resolve_iata_code(dest_city)
-        
-    if not origin_iata or not dest_iata:
-        logging.warning(f"Could not resolve IATA for {origin_city} -> {dest_city}")
+def _tp_cheapest(offers):
+    """Pick the cheapest offer from a Travelpayouts payload."""
+    priced = [o for o in (offers or []) if o.get('price')]
+    if not priced:
         return None
-        
-    token = os.environ.get("TRAVELPAYOUTS_TOKEN")
-    if not token:
-        logging.warning("TRAVELPAYOUTS_TOKEN environment variable not set. Flight pricing will be skipped.")
-        return None
-        
-    url = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+    return min(priced, key=lambda o: float(o['price']))
+
+
+def _tp_prices_for_dates(token, origin_iata, dest_iata, currency, departure_at=None, return_at=None):
+    """Prices for exact dates. Only returns offers Travelpayouts has cached FOR
+    THOSE DATES, so an empty list is normal - callers must fall back."""
     params = {
         "origin": origin_iata,
         "destination": dest_iata,
-        "departure_at": departure_date,
         "currency": currency.lower(),
         "sorting": "price",
-        "limit": 5,
-        "token": token
+        "limit": 10,
+        "token": token,
     }
-    
-    if return_date:
-        params["return_at"] = return_date
-        
+    if departure_at:
+        params["departure_at"] = departure_at
+    if return_at:
+        params["return_at"] = return_at
+    resp = requests.get("https://api.travelpayouts.com/aviasales/v3/prices_for_dates",
+                        params=params, headers={"Accept-Encoding": "gzip, deflate"}, timeout=12)
+    if resp.status_code != 200:
+        logging.warning(f"prices_for_dates {resp.status_code}: {resp.text[:120]}")
+        return []
+    payload = resp.json()
+    if not payload.get("success"):
+        logging.warning(f"prices_for_dates unsuccessful: {str(payload)[:120]}")
+        return []
+    return payload.get("data") or []
+
+
+def _tp_prices_cheap(token, origin_iata, dest_iata, currency, month):
+    """Month-granularity cache (v1/prices/cheap). Almost always has data for
+    real routes, but the fare may travel on different dates than requested."""
+    params = {
+        "origin": origin_iata,
+        "destination": dest_iata,
+        "depart_date": month,          # YYYY-MM
+        "currency": currency.lower(),
+        "token": token,
+    }
+    resp = requests.get("https://api.travelpayouts.com/v1/prices/cheap",
+                        params=params, headers={"Accept-Encoding": "gzip, deflate"}, timeout=12)
+    if resp.status_code != 200:
+        logging.warning(f"prices/cheap {resp.status_code}: {resp.text[:120]}")
+        return []
+    payload = resp.json()
+    if not payload.get("success"):
+        return []
+    # `data` is keyed by destination code, which may be the CITY code (TYO) even
+    # though we searched the AIRPORT code (NRT) - so do not trust the key.
+    out = []
+    for buckets in (payload.get("data") or {}).values():
+        if isinstance(buckets, dict):
+            for offer in buckets.values():
+                if isinstance(offer, dict):
+                    out.append(offer)
+    return out
+
+
+def fetch_flight_price(origin_city, dest_city, departure_date, return_date=None, travel_class="ECONOMY", currency="USD"):
+    """Look up a fare, degrading gracefully.
+
+    Travelpayouts only answers `prices_for_dates` when it already has a cached
+    offer for the *exact* day, which is rare (0 results for most dates). So we
+    try: exact dates -> any date on the route -> month cache, and tell the
+    caller which basis was used so the UI never implies more precision than it has.
+    """
+    origin_iata = IATA_FALLBACKS.get(origin_city.lower()) or resolve_iata_code(origin_city)
+    dest_iata = IATA_FALLBACKS.get(dest_city.lower()) or resolve_iata_code(dest_city)
+
+    if not origin_iata or not dest_iata:
+        logging.warning(f"Could not resolve IATA for {origin_city} -> {dest_city}")
+        return None
+
+    token = os.environ.get("TRAVELPAYOUTS_TOKEN")
+    if not token:
+        logging.warning("TRAVELPAYOUTS_TOKEN not set. Flight pricing skipped.")
+        return None
+
+    attempts = []
     try:
-        headers = {"Accept-Encoding": "gzip, deflate"}
-        resp = requests.get(url, params=params, headers=headers, timeout=12)
-        if resp.status_code == 200:
-            res_data = resp.json()
-            if "data" in res_data and len(res_data["data"]) > 0:
-                offers = res_data["data"]
-                cheapest_offer = offers[0]
-                price = cheapest_offer.get("price")
-                airline_code = cheapest_offer.get("airline")
-                
-                return {
-                    "price": float(price) if price else None,
-                    "airline_code": airline_code,
-                    "currency": currency,
-                    "origin_iata": origin_iata,
-                    "dest_iata": dest_iata
-                }
-        else:
-            logging.error(f"Travelpayouts API failed: {resp.status_code} {resp.text}")
+        # 1) Exact itinerary
+        attempts.append(("exact", departure_date,
+                         _tp_prices_for_dates(token, origin_iata, dest_iata, currency,
+                                              departure_at=departure_date, return_at=return_date)))
+
+        # 2) Month cache for the requested departure month - stays inside the
+        #    user's month, so the fare is far more relevant than a route-wide hit
+        if not _tp_cheapest(attempts[-1][2]) and re.match(r"^\d{4}-\d{2}", departure_date or ""):
+            attempts.append(("month", None,
+                             _tp_prices_cheap(token, origin_iata, dest_iata, currency,
+                                              departure_date[:7])))
+
+        # 3) Any date on this route (last resort - may be a different month)
+        if not _tp_cheapest(attempts[-1][2]):
+            attempts.append(("route", None,
+                             _tp_prices_for_dates(token, origin_iata, dest_iata, currency)))
     except Exception as e:
-        logging.error(f"Error calling Travelpayouts API: {e}")
-        
+        logging.error(f"Travelpayouts lookup failed: {e}")
+        return None
+
+    for basis, basis_date, offers in attempts:
+        best = _tp_cheapest(offers)
+        if not best:
+            continue
+        found_departure = best.get("departure_at")
+        found_return = best.get("return_at")
+        exact = bool(basis == "exact" and found_departure and found_departure[:10] == (basis_date or "")[:10])
+        result = {
+            "price": float(best["price"]),
+            "airline_code": best.get("airline"),
+            "currency": currency.upper(),
+            "origin_iata": origin_iata,
+            "dest_iata": dest_iata,
+            "exact": exact,
+            "basis": "exact" if exact else basis,
+            "found_departure": found_departure,
+            "found_return": found_return,
+            "return_date_differs": bool(
+                found_return and return_date and found_return[:10] != return_date[:10]
+            ),
+        }
+        logging.info(f"Flight price {origin_iata}->{dest_iata}: {result['price']} {currency} "
+                     f"(basis={result['basis']}, exact={exact})")
+        return result
+
+    logging.info(f"No fare found for {origin_iata}->{dest_iata} on/around {departure_date}")
     return None
 
 
