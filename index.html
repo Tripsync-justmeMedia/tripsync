@@ -1698,7 +1698,7 @@ function renderMultiStopResults(data, query, currency) {
       <div style="flex:1">
         <div style="font-weight:700; font-size:1.1rem; color:var(--teal)">${l.origin}${l.origin_iata ? ' (' + l.origin_iata + ')' : ''} → ${l.destination}${l.destination_iata ? ' (' + l.destination_iata + ')' : ''}</div>
         <div style="font-size:0.8rem; color:var(--muted); margin-top:0.25rem">
-          ${l.date ? '🗓️ ' + l.date + ' · ' : ''}${l.duration ? l.duration + ' · ' : ''}${l.stay_duration || '0'} day stay
+          ${l.date ? '🗓️ ' + l.date + ' · ' : ''}${l.duration ? '~' + l.duration + ' · ' : ''}${l.stay_duration || '0'} day stay
         </div>
       </div>
       <div style="text-align:right">
