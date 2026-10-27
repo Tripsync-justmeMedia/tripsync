@@ -1694,17 +1694,29 @@ function renderMultiStopResults(data, query, currency) {
   </div>` : '';
 
   const legs = (data.legs || []).map(l => `
-    <div style="background:white; border:1px solid var(--sand); border-radius:12px; padding:1.25rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center">
+    <div style="background:white; border:1px solid var(--sand); border-radius:12px; padding:1.25rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem">
       <div style="flex:1">
-        <div style="font-weight:700; font-size:1.1rem; color:var(--teal)">${l.origin} → ${l.destination}</div>
-        <div style="font-size:0.8rem; color:var(--muted); margin-top:0.25rem">✈️ ${l.flight_no || 'TBD'} · ${l.duration || 'N/A'} · ${l.stay_duration || '0'} day stay</div>
+        <div style="font-weight:700; font-size:1.1rem; color:var(--teal)">${l.origin}${l.origin_iata ? ' (' + l.origin_iata + ')' : ''} → ${l.destination}${l.destination_iata ? ' (' + l.destination_iata + ')' : ''}</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:0.25rem">
+          ${l.date ? '🗓️ ' + l.date + ' · ' : ''}${l.duration ? l.duration + ' · ' : ''}${l.stay_duration || '0'} day stay
+        </div>
       </div>
       <div style="text-align:right">
-        <div style="font-weight:700; color:var(--rust)">${currency} ${l.cost || '---'}</div>
-        <a href="https://www.google.com/travel/flights?q=Flights+from+${encodeURIComponent(l.origin)}+to+${encodeURIComponent(l.destination)}" target="_blank" class="share-btn" style="margin-top:0.5rem; display:inline-block">View Flight →</a>
+        <div style="font-weight:700; color:var(--rust)">${currency} ${l.cost || '—'}</div>
+        <div style="font-size:0.65rem; color:var(--muted)">AI estimate</div>
+        ${l.search_url ? `<a href="${l.search_url}" target="_blank" class="share-btn" style="margin-top:0.4rem; display:inline-block" onclick="track('google_flights','${jsStr(l.destination || '')}')">Check leg →</a>` : ''}
       </div>
     </div>
   `).join('');
+
+  const legCount = (data.legs || []).length;
+  const liveCta = data.multi_city_url ? `
+    <a href="${data.multi_city_url}" target="_blank" class="btn-primary"
+       style="display:block; width:100%; text-align:center; text-decoration:none; padding:0.9rem; font-weight:800; border-radius:10px; margin-bottom:0.5rem"
+       onclick="track('cheapflights','multi_city')">🔎 See live prices for all ${legCount} legs →</a>
+    <div style="font-size:0.72rem; color:var(--muted); text-align:center; margin-bottom:1.5rem">
+      Opens a real multi-city search${data.dates_evenly_spread ? ' with your dates spread evenly across legs — adjust them there' : ''}. Fare totals below are AI estimates, not live prices.
+    </div>` : `<div style="font-size:0.72rem; color:var(--muted); text-align:center; margin-bottom:1.5rem">Fare totals below are AI estimates, not live prices — check each leg for real fares.</div>`;
 
   document.getElementById('destinationsOutput').innerHTML = `
     <div class="results-header">
@@ -1722,14 +1734,16 @@ function renderMultiStopResults(data, query, currency) {
       <div class="card-body">
         ${insightBlock}
         <div class="info-grid" style="margin-bottom:1.5rem">
-          <div class="info-block"><div class="info-label">Total Estimated</div><div class="info-value price">${currency} ${data.total_estimated_cost || 'N/A'}</div></div>
-          <div class="info-block"><div class="info-label">Route Savings</div><div class="info-value hi">${data.route_savings || '---'}</div></div>
+          <div class="info-block"><div class="info-label">AI Estimate</div><div class="info-value price">${currency} ${data.total_estimated_cost || 'N/A'}</div></div>
           <div class="info-block"><div class="info-label">Legs</div><div class="info-value">${data.legs?.length || 0}</div></div>
+          <div class="info-block"><div class="info-label">Dates</div><div class="info-value">${data.legs?.[0]?.date || '—'}</div></div>
         </div>
         
-        <a href="planner.html?destination=${encodeURIComponent(query)}&currency=${currency}&days=14&from=${encodeURIComponent(departCity)}" target="_blank" class="btn-itin" style="margin-bottom:2rem; padding:0.8rem; font-size:0.95rem">🗺️ View Detailed Day-by-Day Planner</a>
+        ${liveCta}
 
         <div style="margin-bottom:2rem">${legs}</div>
+
+        <a href="planner.html?destination=${encodeURIComponent((data.legs && data.legs[0] && data.legs[0].destination) || query)}&currency=${currency}&days=7&from=${encodeURIComponent(departCity)}" target="_blank" class="btn-itin" style="margin-bottom:2rem; padding:0.8rem; font-size:0.95rem">🗺️ Plan the first stop day-by-day</a>
         
         <div style="background:var(--sky); padding:1.5rem; border-radius:12px; margin-bottom:1.5rem">
           <div style="font-weight:700; color:var(--teal); margin-bottom:0.75rem">🎭 Expert Planning Tips</div>

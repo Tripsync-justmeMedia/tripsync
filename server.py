@@ -9,7 +9,8 @@ import random
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
+from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory, make_response
 from dotenv import load_dotenv
 import requests
@@ -358,6 +359,41 @@ def resolve_iata_code(keyword):
     except Exception as e:
         logging.error(f"Error resolving IATA for keyword {keyword}: {e}")
     return None
+
+_IATA_CACHE = {}
+
+
+def iata_for(city):
+    """Resolve a city to an IATA code, cached. Returns None when unknown."""
+    key = (city or "").strip().lower()
+    if not key:
+        return None
+    if key in _IATA_CACHE:
+        return _IATA_CACHE[key]
+    code = IATA_FALLBACKS.get(key) or resolve_iata_code(city)
+    _IATA_CACHE[key] = code
+    return code
+
+
+def build_multi_city_url(legs, currency="CAD"):
+    """Cheapflights/Kayak multi-city deep link: LEG/DATE/LEG/DATE/.../LEG
+
+    Verified 2026-10-26: the 6-leg pattern returns 200 and renders the same
+    results page as the UI. Dates are YYYY-MM-DD; if any leg lacks a date we
+    drop dates entirely rather than emit a malformed path.
+    """
+    codes = [(l.get("origin_iata"), l.get("destination_iata")) for l in legs]
+    if not codes or any(not o or not d for o, d in codes):
+        return None
+    domain = "cheapflights.ca" if (currency or "").upper() == "CAD" else "cheapflights.com"
+    have_dates = all(l.get("date") for l in legs)
+    parts = []
+    for (o, d), leg in zip(codes, legs):
+        parts.append(f"{o}-{d}")
+        if have_dates:
+            parts.append(leg["date"])
+    return f"https://www.{domain}/flight-search/" + "/".join(parts) + "?sort=bestflight_a"
+
 
 # --- Travelpayouts Flight Prices Client ---
 def _tp_cheapest(offers):
@@ -1720,9 +1756,11 @@ def multi_stop():
     prompt = f"""Return ONLY valid JSON. No other text.
 User wants this route: "{query}". Trip starts in {depart_city}. Currency: {currency}.
 
-Create a realistic multi-stop flight itinerary with 5-8 legs.
-Every city must be a REAL city name. Use REAL airline codes (AC, UA, DL, AA, BA, LH, EK, QR, SQ, TG, CX, NH, JL, KE).
-The FIRST leg MUST depart from {depart_city}.
+Build the itinerary for the route the user actually described. Use the cities and
+countries they mention, in their order, and only add intermediate legs when the user
+did not name enough places. Every city must be a REAL city name. The FIRST leg MUST
+depart from {depart_city}. If the user returns home, the LAST leg must fly back to {depart_city}.
+Costs are rough per-person estimates, not live fares - never present them as bookable prices.
 
 Pricing & Logistics Rules:
 - All prices in {currency}.
@@ -1753,6 +1791,39 @@ Return EXACTLY this structure:
     result = extract_json_safe(result_text) if result_text else None
     if not result:
         return jsonify({"error": "Could not generate route. Please try again in a moment."}), 503
+
+    # Make the route bookable: resolve IATA codes and spread the user's dates
+    # evenly across the legs, then hand back a real multi-city search URL.
+    legs = result.get("legs") or []
+    check_in = (data.get("checkIn") or "").strip()
+    check_out = (data.get("checkOut") or "").strip()
+    start = end = None
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", check_in):
+        start = datetime.strptime(check_in, "%Y-%m-%d")
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", check_out):
+        end = datetime.strptime(check_out, "%Y-%m-%d")
+
+    for i, leg in enumerate(legs):
+        leg["origin_iata"] = iata_for(leg.get("origin"))
+        leg["destination_iata"] = iata_for(leg.get("destination"))
+        if start and end and legs:
+            # Spread legs between the real start and end date; the final leg
+            # must land exactly on the trip end, not short of it.
+            span = max(1, (end - start).days)
+            step = max(1, span // max(1, len(legs) - 1))
+            offset = span if i == len(legs) - 1 else min(span, step * i)
+            leg["date"] = (start + timedelta(days=offset)).strftime("%Y-%m-%d")
+        leg["search_url"] = None
+        if leg.get("origin_iata") and leg.get("destination_iata"):
+            q = f"Flights from {leg['origin_iata']} to {leg['destination_iata']}"
+            if leg.get("date"):
+                q += f" on {leg['date']}"
+            leg["search_url"] = "https://www.google.com/travel/flights?q=" + quote(q)
+    result["legs"] = legs
+
+    result["multi_city_url"] = build_multi_city_url(legs, result.get("currency") or data.get("currency") or "CAD")
+    result["currency"] = result.get("currency") or data.get("currency") or "CAD"
+    result["dates_evenly_spread"] = bool(start and end)
     return jsonify(result)
 
 # --- Day-by-day itinerary generator ---

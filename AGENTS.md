@@ -45,6 +45,10 @@ TripSync generates detailed travel itineraries with pricing, booking links, and 
   See `.env.example`.
 - Ekta insurance (`p=5869`, campaign 225) was removed — the marker is not subscribed, the
   redirector returns 400. Do not re-add without a subscribed campaign.
+- **Multi-city deep links are built server-side** by `build_multi_city_url()` in `server.py`,
+  using Cheapflights' verified pattern `/flight-search/LEG/DATE/LEG/DATE/.../LEG` (IATA codes,
+  `YYYY-MM-DD`). Never assemble that path in the browser — the frontend only renders
+  `data.multi_city_url`. A malformed leg/date alternation produces a broken search page.
 
 ## Dev Commands
 ```bash
