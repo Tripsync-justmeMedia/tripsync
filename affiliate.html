@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0e2b31">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -85,15 +86,22 @@
 </header>
 
 <section class="hero">
-  <p class="hero-sub">Auto-Approved Partner Program</p>
+  <p class="hero-sub">Partner Program</p>
   <h1 class="hero-title">Monetize Your Influence</h1>
 </section>
 
 <div class="container">
   <div class="panel">
-    
-    <!-- Registration Form -->
-    <form id="affiliateForm" onsubmit="executeRegister(event)">
+
+    <!-- Applications paused: we no longer collect payout details here -->
+    <div style="border:1px solid #e5c07b;background:#fff8e6;color:#5a4a10;border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1.75rem;line-height:1.5">
+      <strong style="display:block;margin-bottom:0.25rem">Applications are paused.</strong>
+      We are moving payouts to a proper partner platform, so this form is closed and no payment details are being accepted.
+      Email <a href="mailto:hello@justmemedia.ca" style="color:#5a4a10;font-weight:700">hello@justmemedia.ca</a> to be notified when it reopens.
+    </div>
+
+    <!-- Registration Form (disabled) -->
+    <form id="affiliateForm" onsubmit="executeRegister(event)" style="display:none">
       <div style="margin-bottom:2rem;">
         <h2 style="font-family:'Playfair Display'; margin-bottom:0.4rem;">Create Partner Profile</h2>
         <p style="color:var(--muted); font-size:0.9rem;">Join the TripSync affiliate system instantly. Sign up, create your dashboard, and earn 50% on all bookings from your audience.</p>
@@ -181,7 +189,7 @@
 </div>
 
 <footer style="background:var(--ink);color:var(--muted);text-align:center;padding:2rem;font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:4rem">
-  &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; william@justmemedi.ca
+  &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; hello@justmemedia.ca
 </footer>
 
 <script>

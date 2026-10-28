@@ -6,7 +6,7 @@
 <meta name="description" content="TripSync — AI-powered travel destination finder. Free, no sign-up required.">
 <meta name="theme-color" content="#1a6b6b">
 <meta property="og:title" content="TripSync — AI Travel Planner">
-<meta property="og:description" content="Describe your dream trip. Get 3 AI-matched destinations with budget guidance and booking links.">
+<meta property="og:description" content="Plan any trip in plain English - round-trip, one-way, or a full multi-city route. TripSync maps the legs, estimates costs and links you to live booking options.">
 <meta property="og:url" content="https://tripsync.ca">
 <title>TripSync — AI Travel Planner</title>
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -122,8 +122,51 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .install-banner-text{font-size:0.82rem;font-weight:500}
 .btn-install-now{background:white;color:var(--teal);border:none;padding:0.35rem 0.9rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer}
 .btn-install-dismiss{background:rgba(255,255,255,0.2);color:white;border:none;padding:0.35rem 0.7rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer}
+/* --- Clarity pass: one obvious path --------------------------------------- */
+.search-lead{font-size:0.86rem;color:var(--muted);line-height:1.5;max-width:620px;margin:0 0 1rem}
+.trip-type-tabs{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem}
+.trip-tab{flex:1 1 0;min-width:140px;text-align:left;background:#fff;border:1.5px solid var(--sand);border-radius:10px;padding:0.55rem 0.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .15s,background .15s,box-shadow .15s;line-height:1.25}
+.trip-tab strong{display:block;font-size:0.86rem;font-weight:700;color:var(--ink)}
+.trip-tab span{display:block;font-size:0.7rem;color:var(--muted);margin-top:0.12rem}
+.trip-tab:hover{border-color:var(--teal)}
+.trip-tab.active{border-color:var(--teal);background:var(--sky);box-shadow:inset 0 0 0 1px var(--teal)}
+.trip-tab.active strong{color:var(--teal)}
+.trip-type-note{font-size:0.78rem;color:var(--muted);margin-bottom:0.85rem;line-height:1.45}
+.trip-type-note a{color:var(--teal);font-weight:600;cursor:pointer;text-decoration:underline}
+.search-form{display:flex;flex-direction:column;gap:0.6rem}
+.route-row{display:flex;gap:0.6rem;flex-wrap:wrap}
+.route-row .field{flex:1 1 200px}
+.search-form .details-row{margin-top:0}
+.search-actions{display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap}
+.search-actions .btn-search{flex:0 0 auto;min-width:190px}
+.describe-toggle{background:none;border:none;color:var(--teal);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;text-decoration:underline;padding:0.25rem 0;text-align:left}
+.describe-toggle:hover{color:var(--teal-light)}
+.search-main{flex:1;display:flex;flex-direction:column;gap:0.5rem;min-width:0}
+.from-inline{width:100%;box-sizing:border-box;background:#fff;border:1.5px solid var(--sand);border-radius:6px;padding:0.6rem 0.85rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--ink)}
+.from-inline:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,107,107,0.1)}
+.from-inline::placeholder{color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:0.2rem;min-width:110px}
+.details-row{margin-top:0.6rem}
+.prefs-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.55rem 1rem;margin:0.75rem 0 0;background:#fff;border:1.5px solid var(--sand);border-radius:8px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s}
+.prefs-toggle:hover{border-color:var(--teal);color:var(--teal)}
+.prefs-summary{font-size:0.7rem;opacity:0.75;margin-left:0.4rem;font-weight:400}
+#extraPrefs{display:none;background:rgba(0,0,0,0.02);border:1px solid var(--sand);border-radius:8px;padding:1rem;margin-top:0.6rem;animation:slideIn 0.25s ease}
+#extraPrefs .field{min-width:120px}
+#extraPrefs .ai-mode-select{background:#fff;border:1.5px solid var(--sand);color:var(--ink);border-radius:4px;padding:0.32rem 0.55rem;font-size:0.76rem;width:100%}
+.how-strip{display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-top:0.25rem}
+.how-strip div{background:var(--cream);border:1px solid var(--sand);border-radius:20px;padding:0.35rem 0.8rem;font-size:0.75rem;color:var(--muted)}
+.how-strip b{color:var(--teal);margin-right:0.25rem}
+@media(max-width:640px){
+  .trip-tab{min-width:0;flex:1 1 0;text-align:center;padding:0.5rem 0.35rem}
+  .trip-tab span{display:none}
+  .trip-tab strong{font-size:0.78rem}
+  .details-row .field{min-width:0}
+  .search-actions{flex-direction:column;align-items:stretch}
+  .search-actions .btn-search{width:100%}
+}
 /* Results */
 .results-area{flex:1;overflow-y:auto;padding:1.5rem 2rem}
+#destinationsOutput{scroll-margin-top:72px}
 .welcome-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;text-align:center;gap:1rem}
 .welcome-icon{font-size:3.5rem}
 .welcome-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700}
@@ -199,6 +242,9 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .card-details.open{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .dest-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.card-description.clamped{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.desc-more{background:none;border:none;color:var(--teal);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;padding:0.25rem 0 0;cursor:pointer;text-align:left}
+.desc-more:hover{text-decoration:underline}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .dest-card:nth-child(2){animation-delay:0.12s}.dest-card:nth-child(3){animation-delay:0.24s}
 .card-header{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-light) 100%);padding:1.5rem 1.25rem;position:relative;color:white}
@@ -463,6 +509,7 @@ footer a:hover{color:var(--rust-light)}
       .bottom-nav { display: flex; }
       body { padding-bottom: 70px; } /* Space for bottom nav */
       .header-actions .btn-ghost:not(.header-stats-btn) { display: none; }
+      .header-actions #headerPlannerLink { display: none; } /* bottom nav has Planner */
     }
 
 
@@ -491,9 +538,8 @@ footer a:hover{color:var(--rust-light)}
     </a>
   </div>
   <div class="header-actions">
-    <a id="headerPlannerLink" href="planner.html" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:0.5rem">🗂️<span class="mobile-hide"> PLANNER</span></a>
+    <a id="headerPlannerLink" href="planner.html" onclick="if(!lastResults.length){openPlanner();return false;}" style="color:var(--teal);text-decoration:none;font-size:0.85rem;font-weight:700;margin-right:0.5rem">🗂️<span class="mobile-hide"> PLANNER</span></a>
     <button class="btn-ghost" onclick="openModal()">+<span> New Trip</span></button>
-    <button class="btn-ghost header-stats-btn" onclick="showStats()">Stats</button>
   </div>
 </header>
 
@@ -521,84 +567,140 @@ footer a:hover{color:var(--rust-light)}
     <div class="search-area">
       <div class="project-label" id="projectLabel">GENERAL SEARCH</div>
       <div class="project-heading">Where do you want to go?</div>
+      <p class="search-lead">Any trip — one city, a road trip, or six stops in a row. Describe it in a sentence and get a day-by-day plan with costs and booking links. Free, no account needed.</p>
 
-      <div class="ai-engine-row" style="margin-bottom:1.5rem; display:flex; gap:0.5rem; align-items:center; background:rgba(0,0,0,0.03); padding:0.5rem; border-radius:12px; border:1px solid var(--sand)">
-        <span style="font-size:0.7rem; font-weight:700; color:var(--muted); margin-left:0.5rem; white-space:nowrap">AI ENGINE:</span>
-        <select id="aiModeSelectMain" class="ai-mode-select" aria-label="AI engine" onchange="changeAIMode(false)" style="flex:1; border:none; background:transparent; font-size:0.85rem; padding-right:2rem">
-          <option value="cloud">⚡ Fast (2 sec) — instant ideas</option>
-          <option value="gemma">✨ Deep (30 sec) — better for complex trips</option>
-        </select>
+      <!-- 1. Trip type, in plain language -->
+      <div class="trip-type-tabs" role="tablist" aria-label="Trip type">
+        <button type="button" class="trip-tab active" role="tab" aria-selected="true" data-type="roundtrip" onclick="setTripType('roundtrip')">
+          <strong>Round trip</strong><span>Return to where you started</span>
+        </button>
+        <button type="button" class="trip-tab" role="tab" aria-selected="false" data-type="oneway" onclick="setTripType('oneway')">
+          <strong>One way</strong><span>Fly out, no return leg</span>
+        </button>
+        <button type="button" class="trip-tab" role="tab" aria-selected="false" data-type="multicity" onclick="setTripType('multicity')">
+          <strong>Multi-city</strong><span>Two or more stops in one trip</span>
+        </button>
+      </div>
+      <select id="tripType" aria-hidden="true" tabindex="-1" onchange="updateTripType()" style="display:none">
+        <option value="roundtrip">Round Trip</option>
+        <option value="oneway">One Way</option>
+        <option value="multicity">Multi-city</option>
+      </select>
+      <div class="trip-type-note" id="tripTypeNote">We&#39;ll price the flight out and back, plus hotels and a day-by-day plan.</div>
+
+      <!-- 2. The trip itself: a normal search for the 90% case -->
+      <div class="search-form">
+        <div class="route-row">
+          <div class="field">
+            <label for="departCity" class="depart-label">From</label>
+            <input type="text" class="from-inline" id="departCity" placeholder="Your city (e.g. Toronto)" autocomplete="off">
+          </div>
+          <div class="field" id="destField">
+            <label for="destCity" class="depart-label">To</label>
+            <input type="text" class="from-inline" id="destCity" placeholder="Where to? (e.g. Tokyo)" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- shown for multi-city, or when someone wants to describe a vibe -->
+        <div class="field" id="describeField" style="display:none">
+          <label for="tripInput" class="depart-label" id="describeLabel">Your route</label>
+          <textarea id="tripInput" rows="2" placeholder="e.g. Toronto → Bangkok → Bali → Athens → home"></textarea>
+        </div>
+
+        <!-- 3. When and who -->
+        <div class="prefs-row details-row">
+          <div class="field">
+            <label for="checkIn" class="depart-label">Depart</label>
+            <input type="date" class="param-input" id="checkIn">
+          </div>
+          <div class="field" id="coField">
+            <label for="checkOut" class="depart-label" id="coLabel">Return</label>
+            <input type="date" class="param-input" id="checkOut">
+          </div>
+          <div class="field">
+            <label for="guests" class="depart-label">Guests</label>
+            <input type="number" class="param-input" id="guests" value="2" min="1" max="20">
+          </div>
+          <div class="field">
+            <label for="currency" class="depart-label">Currency</label>
+            <select class="param-select" id="currency">
+              <option value="CAD" selected>🇨🇦 CAD</option>
+              <option value="USD">🇺🇸 USD</option>
+              <option value="EUR">🇪🇺 EUR</option>
+              <option value="GBP">🇬🇧 GBP</option>
+              <option value="AUD">🇦🇺 AUD</option>
+              <option value="SGD">🇸🇬 SGD</option>
+              <option value="AED">🇦🇪 AED</option>
+              <option value="JPY">🇯🇵 JPY</option>
+              <option value="INR">🇮🇳 INR</option>
+              <option value="MXN">🇲🇽 MXN</option>
+              <option value="BRL">🇧🇷 BRL</option>
+              <option value="ZAR">🇿🇦 ZAR</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <button class="btn-search" id="searchBtn" onclick="searchTrip()">Plan my trip →</button>
+          <button class="describe-toggle" id="describeToggle" onclick="toggleDescribe()">Not sure where? Describe the trip you want →</button>
+        </div>
       </div>
 
-      <div class="prefs-row">
-        <select class="param-select" id="tripType" aria-label="Trip type" onchange="updateTripType()" style="background:var(--teal);color:white;border-color:var(--teal)">
-          <option value="roundtrip">🔄 Round Trip</option>
-          <option value="oneway">➡️ One Way</option>
-          <option value="multicity">🗺️ Multi-city</option>
-        </select>
-        <span class="depart-label">✈ From:</span>
-        <input type="text" class="depart-input" id="departCity" placeholder="Your city (e.g. Toronto)" autocomplete="off">
-        <span class="depart-label">📅 Dates:</span>
-        <input type="date" class="param-input" id="checkIn" title="Departure Date" aria-label="Departure Date">
-        <input type="date" class="param-input" id="checkOut" title="Return Date" aria-label="Return Date">
-        <div class="pref-field-group">
-          <label for="guests" class="depart-label" style="cursor:pointer">👥 Guests:</label>
-          <input type="number" class="param-input" id="guests" value="2" min="1" max="20" style="width:55px" placeholder="2" title="Number of Guests" aria-label="Number of Guests">
-        </div>
-        <div class="pref-field-group">
-          <label for="currency" class="depart-label" style="cursor:pointer">💱 Currency:</label>
-          <select class="param-select" id="currency" title="Currency" aria-label="Currency">
-          <option value="USD">🇺🇸 USD</option>
-          <option value="EUR">🇪🇺 EUR</option>
-          <option value="GBP">🇬🇧 GBP</option>
-          <option value="CAD">🇨🇦 CAD</option>
-          <option value="AUD">🇦🇺 AUD</option>
-          <option value="SGD">🇸🇬 SGD</option>
-          <option value="AED">🇦🇪 AED</option>
-          <option value="JPY">🇯🇵 JPY</option>
-          <option value="INR">🇮🇳 INR</option>
-          <option value="MXN">🇲🇽 MXN</option>
-          <option value="BRL">🇧🇷 BRL</option>
-          <option value="ZAR">🇿🇦 ZAR</option>
-        </select>
-        </div>
-      </div>
-
-      <button class="btn-ghost" onclick="togglePrefs()" style="margin-bottom:1rem; border-color:var(--sand); color:var(--muted); width:100%; display:flex; justify-content:space-between; align-items:center; padding:0.6rem 1rem">
-        <span>⚙️ More Preferences <span id="prefsSummary" style="font-size:0.7rem; opacity:0.7; margin-left:0.5rem; font-weight:400"></span></span>
+      <!-- 4. Everything else is optional -->
+      <button class="prefs-toggle" onclick="togglePrefs()" aria-expanded="false" aria-controls="extraPrefs">
+        <span>Optional extras <span id="prefsSummary" class="prefs-summary"></span></span>
         <span id="prefsChevron">▼</span>
       </button>
 
-      <div id="extraPrefs" style="display:none; background:rgba(0,0,0,0.02); border:1px solid var(--sand); border-radius:8px; padding:1rem; margin-bottom:1rem; animation: slideIn 0.3s ease;">
+      <div id="extraPrefs">
 
         <div class="prefs-row">
-          <input type="text" class="param-input" id="budget" placeholder="Max Budget (e.g. 5000)" style="width:160px">
-          <span class="depart-label">🛫 Flight:</span>
-          <select class="param-select" id="flightClass">
-            <option value="economy">Economy</option>
-            <option value="premium economy">Premium Economy</option>
-            <option value="business">Business Class</option>
-            <option value="first">First Class</option>
-          </select>
-          <select class="param-select" id="flightPriority">
-            <option value="cheapest">💰 Cheapest</option>
-            <option value="fastest">⏱ Fastest</option>
-            <option value="best value">✨ Best Value</option>
-          </select>
-          <span class="depart-label" style="margin-left:0.5rem">🏨 Hotel:</span>
-          <select class="param-select" id="hotelRating">
-            <option value="any">Any ★</option>
-            <option value="3">3★+</option>
-            <option value="4">4★+</option>
-            <option value="5">5★</option>
-          </select>
-          <span class="depart-label" style="margin-left:0.5rem">🚗 Car:</span>
-          <select class="param-select" id="carType">
-            <option value="none">No car</option>
-            <option value="economy">Economy</option>
-            <option value="suv">SUV</option>
-            <option value="minivan">Minivan</option>
-          </select>
+          <div class="field" style="min-width:150px">
+            <label for="budget" class="depart-label">Max budget</label>
+            <input type="text" class="param-input" id="budget" placeholder="e.g. 5000" style="width:150px">
+          </div>
+          <div class="field">
+            <label for="flightClass" class="depart-label">Flight class</label>
+            <select class="param-select" id="flightClass">
+              <option value="economy">Economy</option>
+              <option value="premium economy">Premium Economy</option>
+              <option value="business">Business Class</option>
+              <option value="first">First Class</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="flightPriority" class="depart-label">Prefer</label>
+            <select class="param-select" id="flightPriority">
+              <option value="cheapest">💰 Cheapest</option>
+              <option value="fastest">⏱ Fastest</option>
+              <option value="best value">✨ Best Value</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="hotelRating" class="depart-label">Hotel</label>
+            <select class="param-select" id="hotelRating">
+              <option value="any">Any ★</option>
+              <option value="3">3★+</option>
+              <option value="4">4★+</option>
+              <option value="5">5★</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="carType" class="depart-label">Car</label>
+            <select class="param-select" id="carType">
+              <option value="none">No car</option>
+              <option value="economy">Economy</option>
+              <option value="suv">SUV</option>
+              <option value="minivan">Minivan</option>
+            </select>
+          </div>
+          <div class="field" style="min-width:190px">
+            <label for="aiModeSelectMain" class="depart-label">AI engine</label>
+            <select id="aiModeSelectMain" class="ai-mode-select" onchange="changeAIMode(false)">
+              <option value="cloud">⚡ Fast (2 sec) — instant ideas</option>
+              <option value="gemma">✨ Deep (30 sec) — complex trips</option>
+            </select>
+          </div>
         </div>
 
         <div class="amenities-row" style="margin-bottom:0">
@@ -611,17 +713,6 @@ footer a:hover{color:var(--rust-light)}
           <span class="amenity-tag" data-amenity="parking">🅿 Free Parking</span>
           <span class="amenity-tag" data-amenity="wifi">📶 Free WiFi</span>
         </div>
-      </div>
-
-      <div class="search-box">
-        <textarea id="tripInput" rows="2" placeholder="Enter your trip details here... (e.g. '7 days in Tokyo' or 'romantic weekend under $1500')"></textarea>
-        <button class="btn-search" id="searchBtn" onclick="searchTrip()">Find Destinations</button>
-      </div>
-      <div class="search-chips-row">
-        <span style="font-size:0.7rem;color:var(--muted);font-weight:700;align-self:center">Try:</span>
-        <button class="example-chip" onclick="setExample('7 days in Tokyo, food and pop culture')">7 days in Tokyo</button>
-        <button class="example-chip" onclick="setExample('Honeymoon in Amalfi Coast, romantic and luxury')">Amalfi Honeymoon</button>
-        <button class="example-chip" onclick="setExample('Backpacking Thailand for 1 month, budget friendly')">Thailand Backpacking</button>
       </div>
     </div>
 
@@ -639,8 +730,13 @@ footer a:hover{color:var(--rust-light)}
         </div>
 
         <div class="welcome-icon">🌍</div>
-        <div class="welcome-title">Plan Your Perfect Trip</div>
-        <div class="welcome-sub">Describe your ideal destination in plain English. TripSync finds 3 AI-matched destinations with budget guidance, flight estimates, and booking links. Free, no sign-up required.</div>
+        <div class="welcome-title">Plan any trip</div>
+        <div class="welcome-sub">One city, a loop, or six stops in a row. Tell us where and when, and get a day-by-day plan with costs and booking links.</div>
+        <div class="how-strip" aria-label="How TripSync works">
+          <div><b>1</b> Tell us where and when</div>
+          <div><b>2</b> Get a priced day-by-day plan</div>
+          <div><b>3</b> Book with partners or save it</div>
+        </div>
         <div class="example-chips">
           <div class="chip" onclick="fill('Romantic week in Europe, love wine and history, 4-star hotels')">🍷 Romantic Europe</div>
           <div class="chip" onclick="fill('Family beach vacation with kids, calm water, max 8 hour flight, 10 days')">👨‍👩‍👧 Family Beach</div>
@@ -648,6 +744,7 @@ footer a:hover{color:var(--rust-light)}
           <div class="chip" onclick="fill('Adventure trip for two, hiking and wildlife, off-season, 2 weeks')">🏔 Adventure</div>
           <div class="chip" onclick="fill('Luxury honeymoon, exotic and private, 10 days')">💍 Honeymoon</div>
           <div class="chip" onclick="fill('City break long weekend, great food scene, art and culture')">🏙 City Break</div>
+          <div class="chip" onclick="fillMultiCity()" title="Multi-city route">🌍 Multi-city Route</div>
         </div>
       </div>
       <div class="loading-state" id="loadingState">
@@ -701,7 +798,7 @@ footer a:hover{color:var(--rust-light)}
 
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
-    <strong>Live Data Disclosure:</strong> TripSync surfaces live partner booking links; final rates are determined by our travel partners at checkout. AI-curated itineraries — please verify travel documents before departure.
+    <strong>Affiliate disclosure:</strong> TripSync may earn a commission when you book through our partner links — at no extra cost to you. Final rates are set by the partner at checkout. AI-curated itineraries — please verify travel documents before departure.
   </div>
 </footer>
 
@@ -805,7 +902,8 @@ let deferredInstallPrompt=null;
 
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();deferredInstallPrompt=e;
-  if(!localStorage.getItem('tripsync_install_dismissed'))
+  // Only ask after the visitor has actually planned something.
+  if(!localStorage.getItem('tripsync_install_dismissed') && localStorage.getItem('tripsync_has_searched')==='1')
     document.getElementById('installBanner').classList.add('show');
 });
 window.addEventListener('appinstalled',()=>{
@@ -885,6 +983,7 @@ function init(){
   }
   document.getElementById('aiModeSelectMain').value = savedMode;
   
+  applyInputMode();
   renderSidebar();
   showResumeCardIfAny();
   
@@ -900,7 +999,8 @@ function init(){
   // Restore Sidebar state
   const sidebarSaved = localStorage.getItem('tripsync_sidebar_open');
   const isDesktop = window.innerWidth >= 1024;
-  const shouldBeOpen = sidebarSaved === null ? isDesktop : sidebarSaved === '1';
+  // New visitors get the full width for the search form; "My Trips" is opt-in.
+  const shouldBeOpen = sidebarSaved === '1';
   
   if(shouldBeOpen) {
     document.getElementById('sidebar').classList.add('open');
@@ -917,8 +1017,9 @@ function setDefaultDates(){
 }
 
 function resetFields(){
-  document.getElementById('tripType').value='roundtrip';
-  document.getElementById('checkOut').style.display='inline-block';
+  describeManual=false;
+  setTripType('roundtrip');
+  document.getElementById('destCity').value='';
   document.getElementById('tripInput').value='';
   document.getElementById('budget').value='';
   document.getElementById('guests').value='2';
@@ -932,13 +1033,65 @@ function resetFields(){
   showWelcome();
 }
 
+let describeManual = false;
+
+function setTripType(type){
+  const sel=document.getElementById('tripType');
+  if(sel) sel.value=type;
+  document.querySelectorAll('.trip-tab').forEach(b=>{
+    const on=b.dataset.type===type;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-selected',on?'true':'false');
+  });
+  updateTripType();
+  applyInputMode();
+}
+
+/* Round trip / one way: a normal "From -> To + dates" search.
+   Multi-city (or "not sure where"): the free-text box, because a route
+   cannot be expressed as one destination. */
+function applyInputMode(){
+  const type=document.getElementById('tripType').value;
+  const describe=(type==='multicity')||describeManual;
+  const destField=document.getElementById('destField');
+  const describeField=document.getElementById('describeField');
+  const toggle=document.getElementById('describeToggle');
+  const label=document.getElementById('describeLabel');
+  if(destField) destField.style.display=describe?'none':'flex';
+  if(describeField) describeField.style.display=describe?'flex':'none';
+  const box=document.getElementById('tripInput');
+  if(label) label.textContent=(type==='multicity')?'Your route':'Describe the trip you want';
+  if(box){
+    box.placeholder=(type==='multicity')
+      ? 'e.g. Toronto → Bangkok → Bali → Athens → home'
+      : 'e.g. a romantic week in Europe, wine and history, 4-star hotels';
+  }
+  if(toggle){
+    toggle.style.display=(type==='multicity')?'none':'inline-block';
+    toggle.textContent=describeManual?'← Search one destination instead':'Not sure where? Describe the trip you want →';
+  }
+}
+
+function toggleDescribe(){
+  describeManual=!describeManual;
+  applyInputMode();
+  const f=document.getElementById(describeManual?'tripInput':'destCity');
+  if(f) f.focus();
+}
+
 function updateTripType(){
   const type=document.getElementById('tripType').value;
-  const co=document.getElementById('checkOut');
-  if(type==='oneway'){
-    co.style.display='none';
-  } else {
-    co.style.display='inline-block';
+  const coField=document.getElementById('coField');
+  if(coField) coField.style.display = (type==='oneway') ? 'none' : 'flex';
+  const note=document.getElementById('tripTypeNote');
+  if(note){
+    if(type==='multicity'){
+      note.innerHTML='Multi-city: list every stop in the box below — e.g. <a onclick="fillMultiCity()">Toronto → Bangkok → Bali → Athens → home</a>. We price each leg and the whole route.';
+    } else if(type==='oneway'){
+      note.textContent='One flight out. We plan the stay from your arrival date — no return leg needed.';
+    } else {
+      note.textContent='Enter where you are flying from and where you want to go. We price the flights, hotels and a day-by-day plan.';
+    }
   }
 }
 
@@ -957,9 +1110,11 @@ document.getElementById('newProjectName').addEventListener('keydown',e=>{if(e.ke
 function togglePrefs() {
   const panel = document.getElementById('extraPrefs');
   const chevron = document.getElementById('prefsChevron');
+  const btn = document.querySelector('.prefs-toggle');
   const isOpen = panel.style.display === 'block';
   panel.style.display = isOpen ? 'none' : 'block';
   chevron.textContent = isOpen ? '▼' : '▲';
+  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
 }
 
 function updatePrefsSummary() {
@@ -1122,8 +1277,24 @@ async function fetchWithTimeout(url, options, timeoutMs = 45000) {
 }
 
 async function searchTrip(isRetry = false){
-  const query=document.getElementById('tripInput').value.trim();
-  if(!query){document.getElementById('tripInput').focus();return;}
+  const type=document.getElementById('tripType').value;
+  const describe=(type==='multicity')||describeManual;
+  let query='';
+  if(describe){
+    query=document.getElementById('tripInput').value.trim();
+    if(!query){document.getElementById('tripInput').focus();showToast('Add your route or describe the trip');return;}
+  } else {
+    const dest=document.getElementById('destCity').value.trim();
+    if(!dest){document.getElementById('destCity').focus();showToast('Where do you want to go?');return;}
+    const ciVal=document.getElementById('checkIn').value;
+    const coVal=document.getElementById('checkOut').value;
+    let nights=0;
+    if(ciVal&&coVal){
+      const diff=Math.round((new Date(coVal)-new Date(ciVal))/86400000);
+      if(diff>0&&diff<=60) nights=diff;
+    }
+    query=(nights?`${nights}-day trip to ${dest}`:`Trip to ${dest}`);
+  }
   const departCity=document.getElementById('departCity').value.trim();
   const checkIn=document.getElementById('checkIn').value;
   const checkOut=document.getElementById('checkOut').value;
@@ -1281,6 +1452,9 @@ function showError(msg){
 }
 
 function renderResults(destinations,query,checkIn,checkOut,guests,departCity,currency){
+  localStorage.setItem('tripsync_has_searched','1');
+  if(deferredInstallPrompt && !localStorage.getItem('tripsync_install_dismissed'))
+    document.getElementById('installBanner').classList.add('show');
   document.getElementById('loadingState').style.display='none';
   document.getElementById('welcomeState').style.display='none';
   document.getElementById('errorState').style.display='none';
@@ -1296,7 +1470,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   let filterHtml = '';
   if (flightClass !== 'economy') filterHtml += `<span class="filter-badge">✈️ ${flightClass}</span>`;
   if (hotelRating !== 'any') filterHtml += `<span class="filter-badge">🏨 ${hotelRating}★+</span>`;
-  if (tripType === 'multicity') filterHtml += `<span class="filter-badge">🗺️ Multi-city</span>`;
+  if (tripType === 'multicity') filterHtml += `<span class="filter-badge">🌍 Multi-city</span>`;
 
   let tripDays = 5;
   if (ci && co) {
@@ -1334,7 +1508,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
          id="flight-link-${i}"
          style="${isMissingOrigin ? 'background:var(--muted)' : ''}"
          onclick="${isMissingOrigin ? "window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('departCity').focus(), 500); return false;" : `track('google_flights','${jsStr(cityRaw)}')`}">
-         ${isMissingOrigin ? 'Add Origin' : 'Check Live Price'}
+         ${isMissingOrigin ? 'Add Origin' : 'Check fare'}
       </a>
     </div>`:'';
     const cardText=`I found ${cityRaw}, ${d.country||''} on TripSync! ${d.flight_estimate?'Flights: '+d.flight_estimate+'.':''} Plan your trip free:`;
@@ -1354,11 +1528,12 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
         ${d.match_score?`<div class="card-match">★ ${d.match_score} Match</div>`:''}
       </div>
       <div class="card-body" style="padding-bottom: 0.5rem;">
-        <div class="card-description">${d.description||''}</div>
-        
-        <div style="display:flex; gap:0.5rem; margin-top:1.25rem; margin-bottom: 0.5rem;">
+        ${flightBlock}
+        <div class="card-description clamped" id="desc-${i}">${d.description||''}</div>
+
+        <div style="display:flex; gap:0.5rem; margin-top:1rem; margin-bottom: 0.5rem;">
           <button class="btn-action" id="toggle-btn-${i}" onclick="toggleCardDetails(${i}, this)" style="flex:1; padding:0.6rem 0.5rem; font-size:0.78rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:0.25rem;">Details ➔</button>
-          <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=${tripDays}&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}&flightClass=${fClass}&hotelRating=${hRating}&budget=${bgt}" target="_blank" class="btn-itin" style="flex:1; margin:0; padding:0.6rem 0.5rem; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center;">🗺️ Open Planner</a>
+          <a href="planner.html?destination=${city}&currency=${document.getElementById('currency').value}&days=${tripDays}&from=${encodeURIComponent(document.getElementById('departCity').value)}&ci=${ci}&co=${co}&guests=${g}&flightClass=${fClass}&hotelRating=${hRating}&budget=${bgt}" target="_blank" class="btn-itin" style="flex:1; margin:0; padding:0.6rem 0.5rem; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center;">🌍 Open Planner</a>
         </div>
       </div>
       
@@ -1372,7 +1547,6 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
             ${d.flight_duration?`<div class="info-block"><div class="info-label">Flight Time</div><div class="info-value">${d.flight_duration}</div></div>`:''}
           </div>
           ${hl?`<div class="highlights-row">${hl}</div>`:''}
-          ${flightBlock}
         </div>
           <div class="booking-links" style="margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
             <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;flex-wrap:wrap">
@@ -1418,9 +1592,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   document.getElementById('destinationsOutput').innerHTML=`
     <div class="results-header">
       <div>
-        <div class="results-title">AI Live Match Results</div>
+        <div class="results-title">Your matches</div>
         <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">✅ Curated picks with live partner links — confirm current prices on the booking site.</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Pick a card for the full plan. Prices are estimates — confirm the final rate on the partner site.</div>
       </div>
       <div class="results-actions">
         <button class="btn-action pdf" onclick="downloadPDF('${query.replace(/'/g,"\\'")}')">⬇ Download PDF</button>
@@ -1429,6 +1603,22 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     </div>
     <div class="destinations-grid">${cards}</div>
     ${badgeHtml}`;
+
+  document.querySelectorAll('.card-description.clamped').forEach(el => {
+    if (el.scrollHeight > el.clientHeight + 4) {
+      const b = document.createElement('button');
+      b.className = 'desc-more';
+      b.textContent = 'Read more';
+      b.onclick = () => { el.classList.remove('clamped'); b.remove(); };
+      el.after(b);
+    }
+  });
+
+  // On phones the form is tall - jump to what the visitor just asked for.
+  if (window.innerWidth < 1024) {
+    const out = document.getElementById('destinationsOutput');
+    if (out) setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  }
 
   // Progressive real-time flight checks (flightClass already declared above)
   flightClass = document.getElementById('flightClass').value || 'economy';
@@ -1479,7 +1669,7 @@ async function fetchFlightPriceRealTime(idx, origin, destination, depDate, retDa
         }
         
         elLink.href = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination)}%20from%20${encodeURIComponent(origin)}%20on%20${depDate}${retDate ? '%20through%20' + retDate : ''}`;
-        elLink.textContent = "Book Live Deal";
+        elLink.textContent = "Check this fare";
         elLink.style.background = "var(--rust)";
         elLink.style.borderColor = "var(--rust)";
         elLink.style.color = "white";
@@ -1668,7 +1858,36 @@ function masterReset(){
   document.getElementById('confirmDesc').textContent='This will permanently delete all your saved trips, projects, and settings. This action cannot be undone.';
   document.getElementById('confirmModalOverlay').classList.add('open');
 }
-function fill(text){document.getElementById('tripInput').value=text;document.getElementById('tripInput').focus();}
+function fillMultiCity(){
+  setTripType('multicity');
+  const i=document.getElementById('tripInput');
+  if(i){ i.value='Toronto to Bangkok, then Bali, Athens, Prague, Porto, back to Toronto'; i.focus(); }
+}
+function openPlanner(){
+  if(lastResults && lastResults.length){
+    const city=lastResults[0].city||'';
+    const params=new URLSearchParams({
+      destination:city,
+      currency:document.getElementById('currency').value,
+      guests:document.getElementById('guests').value||'2',
+      ci:document.getElementById('checkIn').value,
+      co:document.getElementById('checkOut').value,
+      from:document.getElementById('departCity').value
+    });
+    window.location.href='planner.html?'+params.toString();
+    return;
+  }
+  showToast('Search a trip first — your plan will open here.');
+  const f=document.getElementById('destCity');
+  if(f) f.focus();
+}
+
+function fill(text){
+  describeManual=true;
+  applyInputMode();
+  document.getElementById('tripInput').value=text;
+  document.getElementById('tripInput').focus();
+}
 function toggleSidebar(){
   const s = document.getElementById('sidebar');
   const o = document.querySelector('.sidebar-overlay');
@@ -1790,7 +2009,7 @@ init();
     <div class="nav-icon">🔍</div>
     <span>Search</span>
   </a>
-  <a href="planner.html" class="nav-item">
+  <a href="#" class="nav-item" onclick="openPlanner(); return false;">
     <div class="nav-icon">🗂️</div>
     <span>Planner</span>
   </a>
@@ -1798,10 +2017,7 @@ init();
     <div class="nav-icon">⭐</div>
     <span>My Trips</span>
   </a>
-  <a href="#" class="nav-item" onclick="showStats(); return false;">
-    <div class="nav-icon">📊</div>
-    <span>Stats</span>
-  </a>
+
 </div>
 
 </body>

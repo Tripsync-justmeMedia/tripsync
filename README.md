@@ -7,12 +7,12 @@ TripSync is a high-performance, AI-driven travel planning application designed t
 ## 🌟 Key Features
 
 *   **Smart Deal Optimizer**: Built-in intelligence that automatically analyzes booking timing, currency arbitrage (e.g., BRL/INR savings), and travel day patterns to find the best rates.
-*   **Precision Flight Engine**: Eliminates AI "hallucinations" by requiring origin data for accurate intercontinental flight pricing and durations.
+*   **Grounded flight data**: Legs resolve to real IATA codes and fares are queried per route, so durations and prices are not invented. AI itinerary *text* still needs a human read — the app says so on every plan.
 *   **3-Tier AI Orchestration**: Choose between high-speed Cloud AI, deep Reasoning (Gemma 4 Expert), or complete Privacy (Local AI).
 *   **Modern PWA Experience**: Native-feel mobile bottom navigation, frosted-glass aesthetics, and "One-Touch Resume" to pick up where you left off.
 *   **Minimalist UI**: Deeply cleaned search interface with collapsible preference panels, designed for speed on mobile devices.
 *   **Interactive Planner**: Build detailed itineraries day-by-day with AI refinement.
-*   **Real-Time Price Matching**: Integrated booking links with live availability from partners like Booking.com, Google Flights, and Skyscanner.
+*   **Fare lookups with honest labels**: cached fares (~48h) and clearly-marked estimates, with tracked deep links so the partner site shows the live price at checkout. Labels never claim "live" for a cached fare.
 
 ## 🧠 AI Architecture (The "3 Brains")
 
@@ -20,9 +20,9 @@ TripSync uses a sophisticated multi-tier AI strategy to ensure you always get th
 
 1.  **Cloud AI (Groq)**: Optimized for milliseconds-fast responses.
 2.  **Gemma 4 Expert (Google Gemini API)**: A high-intelligence reasoning tier for complex requests. (Avg. response: ~30s)
-3.  **Local AI (Ollama/Gemma4)**: Runs directly on your hardware. No data ever leaves your device. Perfect for privacy-conscious travelers.
+3.  **Local AI (Ollama/Gemma4)**: Runs on the host machine. In local mode the itinerary request stays on that machine; the page itself still loads from tripsync.ca. Best for private/offline use.
 
-*Note: Expert mode uses a "Silent Fallback" strategy. If the request nears the 30s platform limit, it seamlessly switches to Cloud AI to ensure you always get a result.*
+*Note: if a deep request nears the 30s platform limit, the server may fall back to the fast model so you still get a result. Deep mode is best-effort, not guaranteed.*
 
 ## 🛠 Tech Stack
 

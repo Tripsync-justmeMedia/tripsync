@@ -65,6 +65,12 @@
     .hero-sub{font-size:1.1rem;opacity:0.9;font-weight:500;letter-spacing:1px;text-transform:uppercase}
 
     .container{max-width:1100px;margin:3rem auto;padding:0 2rem;display:grid;grid-template-columns:1fr 320px;gap:3rem}
+    .trip-summary{max-width:1100px;margin:1.25rem auto 0;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .trip-summary-facts{display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--muted)}
+    .trip-summary-facts span{background:var(--paper);border:1px solid var(--sand);border-radius:20px;padding:0.3rem 0.7rem}
+    .trip-summary-facts i{font-style:normal;color:var(--sand)}
+    .trip-summary-cta{background:var(--rust);color:#fff;border:none;border-radius:6px;padding:0.55rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer}
+    .trip-summary-cta:hover{background:var(--rust-light)}
     
     .itinerary-section{display:flex;flex-direction:column;gap:2.5rem}
     .day-card{background:white;border-radius:16px;padding:2.5rem;box-shadow:var(--shadow);border:1px solid var(--cream)}
@@ -256,7 +262,7 @@
     .step-line.done { background: var(--teal); }
     @media(max-width:768px){
       .journey-steps { top: 60px; padding: 0.5rem 1rem; gap: 0; }
-      .journey-step span.step-label { display: none; }
+      .journey-step span.step-label { display: inline; font-size: 0.6rem; }
       .step-line { min-width: 14px; max-width: 28px; }
     }
 
@@ -618,6 +624,8 @@
       .header-ai-select { display: none; } /* Hide from header on mobile */
       
       .hero{padding:2.5rem 1rem}
+      .trip-summary{padding:0 1rem;margin-top:1rem}
+      .trip-summary-cta{width:100%}
       .hero-title{font-size:1.8rem}
       .hero-sub{font-size:0.75rem}
       
@@ -787,48 +795,10 @@
 </head>
 <body>
 
-  <!-- TripSync V2 Modal Overlay -->
-  <div class="ts-modal-overlay" id="assistantModal">
-    <div class="ts-modal-card">
-      <div class="ts-modal-header">
-        <span>🤖 AI Assistant Setup</span>
-        <button class="ts-modal-close" onclick="closeAssistantModal()">×</button>
-      </div>
-      <div id="modalStep1">
-        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1.5rem; line-height:1.5;">
-          Upgrade to the Interactive AI Assistant. Enter your email to begin your free secure activation.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:0.75rem;">
-          <input type="email" id="assistantEmail" class="input-mini" style="padding:0.75rem; font-size:0.9rem;" placeholder="your.name@example.com">
-          <button onclick="submitAssistantEmail()" class="btn-primary" style="margin:0;">Continue</button>
-        </div>
-      </div>
-      <div id="modalStep2" style="display:none;">
-        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1rem; line-height:1.5;">
-          TripSync V2 is free and local-first. Bring your own free API key to unlock unlimited premium day-by-day travel planning chats.
-        </p>
-        <div style="margin-bottom:1.25rem;">
-          <label style="font-size:0.75rem; font-weight:700; color:var(--teal); text-transform:uppercase; display:block; margin-bottom:0.4rem;">Select AI Provider</label>
-          <select id="modalProviderSelect" class="input-mini" style="width:100%; padding:0.6rem; font-weight:700;" onchange="updateProviderInstructions()">
-            <option value="deepseek">DeepSeek (Primary - Recommended)</option>
-            <option value="groq">Groq (Backup 1)</option>
-            <option value="gemini">Gemini (Backup 2)</option>
-          </select>
-        </div>
-        <div id="providerInstructions" style="font-size:0.8rem; background:var(--sky); border-radius:8px; padding:1rem; margin-bottom:1.25rem; line-height:1.6; border:1px solid rgba(26,107,107,0.1);">
-          <!-- Dynamic instructions go here -->
-        </div>
-        <div style="display:flex; flex-direction:column; gap:0.75rem;">
-          <input type="password" id="assistantApiKey" class="input-mini" style="padding:0.75rem; font-family:monospace; font-size:0.8rem;" placeholder="Paste API Key here...">
-          <button onclick="verifyAndSaveKey()" id="modalVerifyBtn" class="btn-primary" style="margin:0;">Verify &amp; Activate Key</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <div id="loadingText">Curating your experience...</div>
+  <div id="loadingText">Building your day-by-day plan…</div>
+  <div style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;max-width:320px;text-align:center">Checking routes, hotels and prices. Usually 10–30 seconds.</div>
 </div>
 
 <header>
@@ -871,6 +841,11 @@
     <div class="hero-title" id="heroTitle">Detailed Planner</div>
   </div>
 
+  <div class="trip-summary" id="tripSummary">
+    <div class="trip-summary-facts" id="tripSummaryFacts"></div>
+    <button class="trip-summary-cta" onclick="scrollToChecklist()">Start booking →</button>
+  </div>
+
   <div class="container">
     <main class="itinerary-section" id="itinerarySection">
       <!-- Days populated here -->
@@ -887,7 +862,7 @@
         <div id="chatMessages" style="flex: 1; min-height: 200px; max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 4px; font-size: 0.85rem; scroll-behavior: smooth;">
           <!-- Welcome message -->
           <div class="chat-bubble assistant" style="align-self: flex-start; background: var(--sky); color: var(--ink); padding: 0.6rem 0.8rem; border-radius: 12px 12px 12px 0px; max-width: 85%; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-            Hi! I am your AI Travel Assistant. Ask me anything about your trip to <strong id="chatDestName">Queenstown</strong>!
+            Hi! I am your AI Travel Assistant. Ask me anything about your trip to <strong id="chatDestName">your destination</strong>!
           </div>
         </div>
 
@@ -982,7 +957,7 @@
       <div class="sidebar-widget" id="flightWidget">
         <div class="widget-title">✈️ Book Flights</div>
         <div id="liveFlightPrice" style="display:none; background:var(--sky); border:1px solid rgba(26,107,107,0.15); border-radius:8px; padding:0.75rem; margin-bottom:1rem; text-align:center;">
-          <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); font-weight:700">Live Flight Deal</div>
+          <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); font-weight:700">Fare found</div>
           <div id="livePriceValue" style="font-size:1.4rem; font-weight:800; color:var(--rust); margin-top:0.25rem;"></div>
           <div id="livePriceDetail" style="font-size:0.75rem; color:var(--muted); margin-top:0.15rem;"></div>
         </div>
@@ -1141,7 +1116,9 @@
     if (sel) sel.value = aiMode;
     const params = new URLSearchParams(window.location.search);
     const destination = params.get('destination');
-    const currency = params.get('currency') || 'USD';
+    // Arriving with no trip used to render a stranger's Queenstown itinerary.
+    if (!destination) { window.location.replace('/'); return; }
+    const currency = params.get('currency') || 'CAD';
     let days = parseInt(params.get('days'), 10) || 5;
     const from = params.get('from') || '';
     const ci = params.get('ci') || '';
@@ -1189,6 +1166,26 @@
     document.getElementById('heroTitle').textContent = destination;
     document.getElementById('heroSub').textContent = `${days} Day Detailed Experience${flightClass !== 'economy' ? ' · ' + flightClass.toUpperCase() : ''}${hotelRating !== 'any' ? ' · ' + hotelRating + '★' : ''}`;
     document.title = `${destination} Planner — TripSync`;
+
+    // Orient the visitor: where this trip goes, when, and who is going.
+    const facts = document.getElementById('tripSummaryFacts');
+    if (facts) {
+      const shortDate = iso => {
+        const d = new Date(iso + 'T12:00:00');
+        return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      };
+      const bits = [];
+      if (from) bits.push('from ' + from);
+      if (ci && co) bits.push(shortDate(ci) + ' → ' + shortDate(co));
+      else if (ci) bits.push(shortDate(ci));
+      bits.push(guests + (String(guests) === '1' ? ' traveller' : ' travellers'));
+      bits.push(days + ' days');
+      facts.innerHTML = '';
+      bits.filter(Boolean).forEach((b, idx) => {
+        if (idx) { const sep = document.createElement('i'); sep.textContent = '·'; facts.appendChild(sep); }
+        const sp = document.createElement('span'); sp.textContent = b; facts.appendChild(sp);
+      });
+    }
     const chatDestElement = document.getElementById('chatDestName');
     if (chatDestElement && destination) {
       chatDestElement.textContent = destination;
@@ -2137,7 +2134,7 @@
           
           const googleFlightsUrl = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination)}%20from%20${encodeURIComponent(origin)}%20on%20${depDate}${retDate ? '%20through%20' + retDate : ''}`;
           document.getElementById('googleFlightsLink').href = googleFlightsUrl;
-          document.getElementById('googleFlightsLink').textContent = `Book Live Deal (${symbol}${data.price})`;
+          document.getElementById('googleFlightsLink').textContent = `Check this fare (${symbol}${data.price})`;
         }
       }
     } catch(e) {
@@ -2152,122 +2149,12 @@
     return symbols[currency] || currency;
   }
 
-  // --- TripSync V2 AI Assistant Modal Handlers ---
+  // --- Sidebar AI Chat Assistant ---
+  /* The old setup modal (email + bring-your-own API key) was removed: /api/chat runs
+     server-side, so it contradicted the homepage's "no sign-up required" promise. */
   function triggerAIAssistant() {
-    const modal = document.getElementById('assistantModal');
-    modal.classList.add('active');
-
-    // Reset view steps
-    document.getElementById('modalStep1').style.display = 'block';
-    document.getElementById('modalStep2').style.display = 'none';
-
-    // If profile email is already present, skip to Step 2
-    if (window.TripSyncStorage && window.TripSyncStorage.hasProfile()) {
-      const profile = window.TripSyncStorage.getProfile();
-      document.getElementById('assistantEmail').value = profile.email;
-      submitAssistantEmail();
-    }
-  }
-
-  function closeAssistantModal() {
-    document.getElementById('assistantModal').classList.remove('active');
-  }
-
-  function submitAssistantEmail() {
-    const email = document.getElementById('assistantEmail').value.trim();
-    if (!email || !email.includes('@')) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-    
-    // Save profile details
-    if (window.TripSyncStorage) {
-      window.TripSyncStorage.saveProfile(email);
-    }
-    
-    // Go to step 2
-    document.getElementById('modalStep1').style.display = 'none';
-    document.getElementById('modalStep2').style.display = 'block';
-    updateProviderInstructions();
-  }
-
-  function updateProviderInstructions() {
-    const provider = document.getElementById('modalProviderSelect').value;
-    const box = document.getElementById('providerInstructions');
-    
-    let html = '';
-    if (provider === 'deepseek') {
-      html = `
-        <strong>Guided DeepSeek Setup (60s):</strong><br>
-        1. Click <a href="https://platform.deepseek.com/" target="_blank" style="color:var(--teal); font-weight:700; text-decoration:underline;">here to open DeepSeek Console</a>.<br>
-        2. Create a free account (no credit card required).<br>
-        3. Go to <strong>API Keys</strong> ➔ <strong>Create API Key</strong>.<br>
-        4. Copy the key and paste it below.
-      `;
-    } else if (provider === 'groq') {
-      html = `
-        <strong>Guided Groq Setup (60s):</strong><br>
-        1. Click <a href="https://console.groq.com/" target="_blank" style="color:var(--teal); font-weight:700; text-decoration:underline;">here to open Groq Console</a>.<br>
-        2. Sign in and navigate to <strong>API Keys</strong>.<br>
-        3. Click <strong>Create API Key</strong>, copy it and paste below.
-      `;
-    } else if (provider === 'gemini') {
-      html = `
-        <strong>Guided Gemini Setup (60s):</strong><br>
-        1. Click <a href="https://aistudio.google.com/" target="_blank" style="color:var(--teal); font-weight:700; text-decoration:underline;">here to open Google AI Studio</a>.<br>
-        2. Click <strong>Get API Key</strong> in top left.<br>
-        3. Select <strong>Create API Key</strong>, copy it and paste below.
-      `;
-    }
-    box.innerHTML = html;
-  }
-
-  async function verifyAndSaveKey() {
-    const key = document.getElementById('assistantApiKey').value.trim();
-    const provider = document.getElementById('modalProviderSelect').value;
-    const btn = document.getElementById('modalVerifyBtn');
-    
-    if (!key) {
-      alert("Please paste your API key.");
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Verifying API Key...';
-
-    try {
-      const resp = await fetch('/api/verify-key', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ key, provider })
-      });
-      
-      const res = await resp.json();
-      if (!resp.ok || !res.valid) {
-        throw new Error(res.error || 'Invalid API Key');
-      }
-
-      // Success! Encrypt and save key
-      const profile = window.TripSyncStorage.getProfile();
-      const email = profile ? profile.email : '';
-      const encryptedKey = window.TripSyncCipher.encrypt(key, email);
-      
-      window.TripSyncStorage.saveKeys(encryptedKey, provider, true);
-      
-      showToast("🎉 Key Verified & Activated!");
-      closeAssistantModal();
-      
-      // Redirect to Chat Assistant page!
-      const params = new URLSearchParams(window.location.search);
-      const destination = params.get('destination') || '';
-      window.location.href = `assistant.html?destination=${encodeURIComponent(destination)}`;
-      
-    } catch(e) {
-      alert("Verification Failed: " + e.message + ". Please verify you copied the key correctly and try again.");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Verify & Activate Key';
-    }
+    const input = document.getElementById('chatInput');
+    if (input) input.focus();
   }
 
   // --- Sidebar AI Chat Assistant Handlers ---
@@ -2326,7 +2213,7 @@
 
     // Get current trip details from search params
     const params = new URLSearchParams(window.location.search);
-    const destination = params.get('destination') || 'Queenstown';
+    const destination = params.get('destination') || '';
     const currency = params.get('currency') || 'USD';
     const days = params.get('days') || '5';
 

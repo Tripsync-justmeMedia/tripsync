@@ -996,6 +996,13 @@ def serve_influencer_profile(handle):
 
 @app.route('/api/affiliate/register', methods=['POST'])
 def affiliate_register():
+    # Paused: the old flow auto-approved partners and stored payout details in a
+    # Google Sheet behind a 4-digit PIN. Re-enable only with real auth + payouts.
+    return jsonify({
+        'error': 'Affiliate applications are paused while we move to a proper partner platform.',
+        'contact': 'hello@justmemedia.ca'
+    }), 410
+
     data = request.get_json() or {}
     handle = data.get('handle', '').strip().lower()
     email = data.get('email', '').strip()
