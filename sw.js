@@ -1,8 +1,8 @@
-// TripSync Service Worker v3 — Zero-Downtime PWA
+// TripSync Service Worker v4 — Zero-Downtime PWA
 // Strategy: Cache-first for static assets, network-first for HTML pages
 // API calls always go to network (no caching of search results)
 
-const CACHE_NAME = 'tripsync-v5';
+const CACHE_NAME = 'tripsync-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
