@@ -91,27 +91,30 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 /* Search area */
 .search-area{
   position: relative;
-  background: linear-gradient(135deg, #3ab4b4 0%, #4ec4c4 50%, #ff7a3a 100%);
+  background-image: url('hero-bg.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: center 30%;
   border-bottom: 2px solid var(--rust);
   padding: 4rem 2rem;
   color: white;
-  min-height: 500px;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  text-align: center;
 }
 .search-area::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.25);
   z-index: 1;
 }
 .search-area > * {
   position: relative;
   z-index: 2;
+  width: 100%;
+  max-width: 900px;
 }
 .project-label{font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color: #ffffff; margin-bottom:0.5rem;font-weight:800; text-shadow: 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;}
 .project-heading{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;color:#ffffff;margin-bottom:1rem;text-shadow: 0 0 4px #000, 0 0 8px #000, 0 0 12px #000, 0 0 16px #000; line-height: 1.1;}
@@ -677,9 +680,8 @@ footer a:hover{color:var(--rust-light)}
 
   <main class="main">
     <div class="search-area">
-      <div class="project-label" id="projectLabel">GENERAL SEARCH</div>
-      <div class="project-heading">Where do you want to go?</div>
-      <p class="search-lead">Your personal AI travel assistant for any trip — round-trip, one-way, or multi-city routes. Describe your trip in a sentence and get a day-by-day plan with costs and booking links. Free, no account needed.</p>
+      <div class="project-heading">Your Personalized AI Travel Planner, for any journey</div>
+      <p class="search-lead">Receive personalized flight and hotel recommendations for your perfect trip.</p>
 
       <!-- 1. Trip type, in plain language -->
       <div class="trip-type-tabs" role="tablist" aria-label="Trip type">
@@ -759,7 +761,7 @@ footer a:hover{color:var(--rust-light)}
         </div>
 
         <div class="search-actions">
-          <button class="btn-search" id="searchBtn" onclick="searchTrip()">Plan my trip →</button>
+          <button class="btn-search" id="searchBtn" onclick="searchTrip()">Curate My Ideal Journey →</button>
           <button class="describe-toggle" id="describeToggle" onclick="toggleDescribe()">Not sure where? Describe the trip you want →</button>
         </div>
       </div>
