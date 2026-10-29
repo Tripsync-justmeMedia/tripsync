@@ -87,13 +87,14 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 .ceq{font-size:0.78rem;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cet{font-size:0.65rem;color:var(--muted)}
 .sidebar-empty{padding:1.5rem 1.25rem;text-align:center;color:var(--muted-on-dark);font-size:0.8rem;line-height:1.6}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;transition:margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)}
+.main{flex:1;display:flex;flex-direction:column;overflow:auto;transition:margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)}
 /* Search area */
 .search-area{
   position: relative;
-  background-image: url('hero-bg.jpg');
+  background-image: url('hero-bg.jpg?v=3');
   background-size: cover;
-  background-position: center 30%;
+  background-position: center;
+  background-attachment: fixed;
   border-bottom: 2px solid var(--rust);
   padding: 4rem 2rem;
   color: white;
@@ -107,7 +108,7 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.25);
+  background: rgba(0,0,0,0.3);
   z-index: 1;
 }
 .search-area > * {
@@ -837,36 +838,7 @@ footer a:hover{color:var(--rust-light)}
     </div>
 
     <div class="results-area">
-      <div class="welcome-state" id="welcomeState">
-        <div id="resumeCardContainer" style="display:none; width:100%; max-width:420px; margin-bottom:2rem; animation: cardIn 0.5s ease both;">
-          <div style="background:var(--sky); border:1px solid var(--teal); border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:1rem; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow)" id="resumeCardBtn">
-            <div style="font-size:1.5rem">🕒</div>
-            <div style="flex:1; text-align:left">
-              <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); font-weight:700">Resume Last Search</div>
-              <div id="resumeCardText" style="font-size:0.85rem; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis"></div>
-            </div>
-            <div style="font-size:1.2rem; color:var(--teal)">→</div>
-          </div>
-        </div>
 
-        <div class="welcome-icon">🌍</div>
-        <div class="welcome-title">Plan any trip</div>
-        <div class="welcome-sub">One city, a loop, or six stops in a row. Tell us where and when, and get a day-by-day plan with costs and booking links.</div>
-        <div class="how-strip" aria-label="How TripSync works">
-          <div><b>1</b> Tell us where and when</div>
-          <div><b>2</b> Get a priced day-by-day plan</div>
-          <div><b>3</b> Book with partners or save it</div>
-        </div>
-        <div class="example-chips">
-          <div class="chip" onclick="fill('Romantic week in Europe, love wine and history, 4-star hotels')">🍷 Romantic Europe</div>
-          <div class="chip" onclick="fill('Family beach vacation with kids, calm water, max 8 hour flight, 10 days')">👨‍👩‍👧 Family Beach</div>
-          <div class="chip" onclick="fill('Solo backpacking Southeast Asia 3 weeks, ultra budget friendly')">🎒 Budget Asia</div>
-          <div class="chip" onclick="fill('Adventure trip for two, hiking and wildlife, off-season, 2 weeks')">🏔 Adventure</div>
-          <div class="chip" onclick="fill('Luxury honeymoon, exotic and private, 10 days')">💍 Honeymoon</div>
-          <div class="chip" onclick="fill('City break long weekend, great food scene, art and culture')">🏙 City Break</div>
-          <div class="chip" onclick="fillMultiCity()" title="Multi-city route">🌍 Multi-city Route</div>
-        </div>
-      </div>
       <div class="loading-state" id="loadingState">
         <div class="loading-hero">
           <span class="loading-globe">🌍</span>
