@@ -143,7 +143,14 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 }
 .depart-label {
   color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 0 6px #000, 0 0 12px #000;
+  font-weight: 600;
+}
+.field-label {
+  color: white;
+  text-shadow: 0 0 6px #000, 0 0 12px #000;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 .trip-tab {
   background: rgba(255,255,255,0.1) !important;
@@ -169,7 +176,7 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 .prefs-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.6rem;align-items:center}
 .param-input,.param-select{background:white;border:1.5px solid var(--sand);border-radius:4px;padding:0.32rem 0.55rem;font-family:'DM Sans',sans-serif;font-size:0.76rem;color:var(--ink)}
 .param-input:focus,.param-select:focus{outline:none;border-color:var(--teal)}
-.flexible-label{font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.25rem;color:var(--muted)}
+.flexible-label{font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.25rem;color:#ffffff;font-weight:600;text-shadow:0 0 4px #000,0 0 8px #000}
 .flexible-label input[type="checkbox"]{accent-color:var(--rust)}
 .param-select{cursor:pointer}
 .depart-input{background:white;border:1.5px solid var(--teal);border-radius:4px;padding:0.32rem 0.55rem;font-family:'DM Sans',sans-serif;font-size:0.76rem;color:var(--ink);width:165px}
@@ -216,6 +223,8 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .search-actions .btn-search{flex:0 0 auto;min-width:190px}
 .describe-toggle{background:none;border:none;color:var(--teal);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;text-decoration:underline;padding:0.25rem 0;text-align:left}
 .describe-toggle:hover{color:var(--teal-light)}
+.search-area .describe-toggle{color:#ffffff;text-shadow:0 0 4px #000,0 0 8px #000,0 0 12px #000}
+.search-area .depart-label{color:#ffffff;text-shadow:0 0 4px #000,0 0 8px #000,0 0 12px #000}
 .search-main{flex:1;display:flex;flex-direction:column;gap:0.5rem;min-width:0}
 .from-inline{width:100%;box-sizing:border-box;background:#fff;border:1.5px solid var(--sand);border-radius:6px;padding:0.6rem 0.85rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--ink)}
 .from-inline:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,107,107,0.1)}
@@ -737,14 +746,20 @@ footer a:hover{color:var(--rust-light)}
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <input type="date" class="param-input" id="checkIn">
               <label class="flexible-label">
-                <input type="checkbox" id="flexibleDates" onchange="toggleFlexibleDates()">
-                Flexible dates
+                <input type="checkbox" id="flexibleDepart" onchange="toggleFlexibleDate('depart')">
+                Flexible
               </label>
             </div>
           </div>
           <div class="field" id="coField">
-            <label for="checkOut" class="depart-label" id="coLabel">Return</label>
-            <input type="date" class="param-input" id="checkOut">
+            <label for="checkOut" class="depart-label">Return</label>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="date" class="param-input" id="checkOut">
+              <label class="flexible-label">
+                <input type="checkbox" id="flexibleReturn" onchange="toggleFlexibleDate('return')">
+                Flexible
+              </label>
+            </div>
           </div>
           <div class="field">
             <label for="guests" class="depart-label">Guests</label>
@@ -1217,22 +1232,16 @@ function togglePrefs() {
   if (btn) btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
 }
 
-function toggleFlexibleDates() {
-  const flexible = document.getElementById('flexibleDates').checked;
-  const checkIn = document.getElementById('checkIn');
-  const checkOut = document.getElementById('checkOut');
-  if (flexible) {
-    checkIn.disabled = true;
-    checkOut.disabled = true;
-    checkIn.value = '';
-    checkOut.value = '';
-    checkIn.style.opacity = '0.5';
-    checkOut.style.opacity = '0.5';
+function toggleFlexibleDate(field) {
+  const cb = document.getElementById('flexible' + field.charAt(0).toUpperCase() + field.slice(1));
+  const input = document.getElementById(field === 'depart' ? 'checkIn' : 'checkOut');
+  if (cb.checked) {
+    input.disabled = true;
+    input.value = '';
+    input.style.opacity = '0.5';
   } else {
-    checkIn.disabled = false;
-    checkOut.disabled = false;
-    checkIn.style.opacity = '1';
-    checkOut.style.opacity = '1';
+    input.disabled = false;
+    input.style.opacity = '1';
   }
 }
 
@@ -1405,21 +1414,34 @@ async function searchTrip(isRetry = false){
   } else {
     const dest=document.getElementById('destCity').value.trim();
     if(!dest){document.getElementById('destCity').focus();showToast('Where do you want to go?');return;}
-    const flexibleDates = document.getElementById('flexibleDates').checked;
+    const flexibleDepart = document.getElementById('flexibleDepart').checked;
+    const flexibleReturn = document.getElementById('flexibleReturn').checked;
     let ciVal, coVal, nights = 0;
-    if (!flexibleDates) {
+    if (!flexibleDepart) {
       ciVal=document.getElementById('checkIn').value;
-      coVal=document.getElementById('checkOut').value;
-      if(!ciVal){document.getElementById('checkIn').focus();showToast('Please select a departure date, or enable Flexible dates');return;}
-      if(ciVal&&coVal){
+      if(!ciVal){document.getElementById('checkIn').focus();showToast('Please select a departure date, or enable Flexible');return;}
+      if(!flexibleReturn) {
+        coVal=document.getElementById('checkOut').value;
+        if(!coVal){document.getElementById('checkOut').focus();showToast('Please select a return date, or enable Flexible');return;}
         const diff=Math.round((new Date(coVal)-new Date(ciVal))/86400000);
         if(diff>0&&diff<=60) nights=diff;
+      } else {
+        coVal='';
+      }
+    } else {
+      ciVal='';
+      if(!flexibleReturn) {
+        coVal=document.getElementById('checkOut').value;
+        if(!coVal){document.getElementById('checkOut').focus();showToast('Please select a return date, or enable Flexible');return;}
+      } else {
+        coVal='';
       }
     }
     query=(nights?`${nights}-day trip to ${dest}`:`Trip to ${dest}`);
   }
   const departCity=document.getElementById('departCity').value.trim();
-  const flexibleDates = document.getElementById('flexibleDates').checked;
+  const flexibleDepart = document.getElementById('flexibleDepart').checked;
+  const flexibleReturn = document.getElementById('flexibleReturn').checked;
   const checkIn=document.getElementById('checkIn').value;
   const checkOut=document.getElementById('checkOut').value;
   const guests=document.getElementById('guests').value||'2';
@@ -1440,7 +1462,7 @@ async function searchTrip(isRetry = false){
       if(aiMode === 'local') endpoint = '/api/tripsync-local';
       else if(aiMode === 'gemma') endpoint = '/api/tripsync-gemma';
     }
-    const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType,flexibleDates};
+    const body={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,flightPriority,hotelRating,amenities:selectedAmenities,carType,tripType,flexibleDepart,flexibleReturn};
     const resp=await fetchWithTimeout(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}, 48000);
     stopLoadingAnimations();
     

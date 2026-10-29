@@ -62,6 +62,32 @@ python main.py   # or python server.py
 # See docs/PRIVATE_HANDOFF.md for full deployment setup
 ```
 
+## ⚠️ CRITICAL: Test Locally Before Deploying (learned the hard way)
+
+**ALWAYS run the site locally and test all functionality before pushing to GitHub / deploying to Netlify.**
+
+The site is served locally via Python HTTP server on port 8080:
+```bash
+cd /Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync
+python3 -m http.server 8080
+# Then open http://localhost:8080/index.html in a browser
+```
+
+**Never push to GitHub without:**
+1. ✅ Running the local server (`python3 -m http.server 8080`)
+2. ✅ Opening `http://localhost:8080/index.html` in a browser
+3. ✅ Clicking every button (especially "Curate My Ideal Journey") to verify no JS errors
+4. ✅ Verifying the hero background image loads correctly
+5. ✅ Verifying all JavaScript functions work without null reference errors
+
+**Common failures caught this way:**
+- Removed DOM elements (`#welcomeState`) still referenced in JS → crashes `searchTrip()`
+- Background image files missing or wrong path → gray placeholder instead of image
+- CSS changes breaking layout → overlapping elements, dead space gaps
+
+Deployments to Netlify auto-trigger from GitHub pushes, so broken code goes live immediately. Test first, push second.
+```
+
 ## Accounts
 | Service | Account | Notes |
 |---|---|---|
