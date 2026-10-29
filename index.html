@@ -1471,14 +1471,14 @@ function showLoading(isRetry = false){
   else if (currentMode === 'local') activeMsgs = MSGS_LOCAL;
 
   const ws=document.getElementById('welcomeState'); if(ws) ws.style.display='none';
-  document.getElementById('loadingState').style.display='flex';
-  document.getElementById('errorState').style.display='none';
+  const ls=document.getElementById('loadingState'); if(ls) ls.style.display='flex';
+  const es=document.getElementById('errorState'); if(es) es.style.display='none';
   document.getElementById('destinationsOutput').innerHTML='';
   document.getElementById('searchBtn').disabled=true;
 
   if (isRetry) {
-    document.getElementById('loadingText').textContent = '🔄 Waking up the AI engine, please wait...';
-    document.getElementById('loadingStatus').textContent = 'Auto-retrying (cold start)...';
+    const lt=document.getElementById('loadingText'); if(lt) lt.textContent='🔄 Waking up the AI engine, please wait...';
+    const ls2=document.getElementById('loadingStatus'); if(ls2) ls2.textContent='Auto-retrying (cold start)...';
   }
 
   // Set progress bar duration based on mode
@@ -1489,7 +1489,7 @@ function showLoading(isRetry = false){
   // Rotate subline messages (skip if retry — we have custom message)
   if (!isRetry) {
     let mi = 0;
-    document.getElementById('loadingText').textContent = activeMsgs[mi];
+    const lt=document.getElementById('loadingText'); if(lt) lt.textContent = activeMsgs[mi];
     window._loadingMsgIv = setInterval(()=>{
       mi = (mi+1) % activeMsgs.length;
       const el = document.getElementById('loadingText');
@@ -1548,7 +1548,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   if(deferredInstallPrompt && !localStorage.getItem('tripsync_install_dismissed'))
     document.getElementById('installBanner').classList.add('show');
   document.getElementById('loadingState').style.display='none';
-  document.getElementById('welcomeState').style.display='none';
+  const ws2=document.getElementById('welcomeState'); if(ws2) ws2.style.display='none';
   document.getElementById('errorState').style.display='none';
   document.getElementById('searchBtn').disabled=false;
   const ranks=['BEST MATCH','GREAT PICK','WORTH IT'];
