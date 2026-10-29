@@ -890,7 +890,7 @@ footer a:hover{color:var(--rust-light)}
 
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
-    <strong>Affiliate disclosure:</strong> TripSync may earn a commission when you book through our partner links — at no extra cost to you. Final rates are set by the partner at checkout. AI-curated itineraries — please verify travel documents before departure.
+    
   </div>
 </footer>
 
@@ -1470,7 +1470,7 @@ function showLoading(isRetry = false){
   if (currentMode === 'gemma') activeMsgs = MSGS_EXPERT;
   else if (currentMode === 'local') activeMsgs = MSGS_LOCAL;
 
-  document.getElementById('welcomeState').style.display='none';
+  const ws=document.getElementById('welcomeState'); if(ws) ws.style.display='none';
   document.getElementById('loadingState').style.display='flex';
   document.getElementById('errorState').style.display='none';
   document.getElementById('destinationsOutput').innerHTML='';
