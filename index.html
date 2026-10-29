@@ -91,9 +91,9 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 /* Search area */
 .search-area{
   position: relative;
-  background-image: url('https://images.opencode.com/44883461-1256-4995-b210-91136b6965be.png');
+  background: linear-gradient(135deg, #3ab4b4 0%, #4ec4c4 50%, #ff7a3a 100%);
   background-size: cover;
-  background-position: center 30%;
+  background-position: center;
   border-bottom: 2px solid var(--rust);
   padding: 4rem 2rem;
   color: white;
@@ -106,30 +106,36 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.5) 100%);
+  background: rgba(0,0,0,0.4);
   z-index: 1;
 }
 .search-area > * {
   position: relative;
   z-index: 2;
 }
-.project-label{font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color: var(--rust-light); margin-bottom:0.5rem;font-weight:800; text-shadow: 0 1px 3px rgba(0,0,0,0.5);}
-.project-heading{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;color:white;margin-bottom:1rem;text-shadow: 0 2px 15px rgba(0,0,0,0.6); line-height: 1.1;}
-.search-lead{font-size:1.15rem;color: white; line-height:1.6;max-width:700px;margin:0 0 2rem;text-shadow: 0 2px 8px rgba(0,0,0,0.6); font-weight: 500;}
+.project-label{font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color: #ffffff; margin-bottom:0.5rem;font-weight:800; text-shadow: 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;}
+.project-heading{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;color:#ffffff;margin-bottom:1rem;text-shadow: 0 0 4px #000, 0 0 8px #000, 0 0 12px #000, 0 0 16px #000; line-height: 1.1;}
+.search-lead{font-size:1.15rem;color: #ffffff; line-height:1.6;max-width:700px;margin:0 0 2rem;text-shadow: 0 0 4px #000, 0 0 8px #000, 0 0 12px #000; font-weight: 500;}
 
 /* Glassmorphism Form */
 .search-form {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   padding: 2rem;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
   max-width: 900px;
+}
+
+/* Fix text colors for hero area */
+.trip-type-note {
+  color: rgba(255, 255, 255, 0.95) !important;
+  text-shadow: 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;
 }
 .depart-label {
   color: white;
