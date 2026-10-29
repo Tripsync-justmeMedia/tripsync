@@ -1521,7 +1521,7 @@ function stopLoadingAnimations(){
   if(window._loadingTipIv){ clearInterval(window._loadingTipIv); window._loadingTipIv=null; }
 }
 function showWelcome(){
-  document.getElementById('welcomeState').style.display='flex';
+  const ws3=document.getElementById('welcomeState'); if(ws3) ws3.style.display='flex';
   document.getElementById('loadingState').style.display='none';
   document.getElementById('errorState').style.display='none';
   document.getElementById('destinationsOutput').innerHTML='';
