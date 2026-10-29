@@ -920,6 +920,41 @@ def ping():
         "has_gemini": bool(GEMINI_API_KEY)
     })
 
+@app.route('/api/autocomplete')
+def autocomplete():
+    """Autocomplete endpoint for cities and airports using Travelpayouts API"""
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify([])
+    
+    url = "https://autocomplete.travelpayouts.com/places2"
+    params = {
+        "term": query,
+        "locale": "en",
+        "types[]": ["city", "airport"]
+    }
+    
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            # Process and format the results
+            suggestions = []
+            for item in data[:10]:  # Limit to 10 suggestions
+                suggestions.append({
+                    "name": item.get("name", ""),
+                    "code": item.get("code", ""),
+                    "country": item.get("country", ""),
+                    "type": item.get("type", ""),
+                    "city_code": item.get("city_code", "")
+                })
+            return jsonify(suggestions)
+        else:
+            return jsonify([])
+    except Exception as e:
+        logging.error(f"Autocomplete error for query '{query}': {e}")
+        return jsonify([])
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')

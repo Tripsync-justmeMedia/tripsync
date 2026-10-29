@@ -89,10 +89,68 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 .sidebar-empty{padding:1.5rem 1.25rem;text-align:center;color:var(--muted-on-dark);font-size:0.8rem;line-height:1.6}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;transition:margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)}
 /* Search area */
-.search-area{background:var(--cream);border-bottom:1px solid var(--sand);padding:1.25rem 2rem}
-.project-label{font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;font-weight:600}
-.project-heading{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:0.75rem}
-/* Prefs row */
+.search-area{
+  position: relative;
+  background-image: url('https://images.opencode.com/44883461-1256-4995-b210-91136b6965be.png');
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--sand);
+  padding: 3rem 2rem; /* Increased padding for hero feel */
+  color: white;
+}
+.search-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15,15,15,0.6) 0%, rgba(15,15,15,0.2) 50%, rgba(15,15,15,0.7) 100%);
+  z-index: 1;
+}
+.search-area > * {
+  position: relative;
+  z-index: 2;
+}
+.project-label{font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--rust-light);margin-bottom:0.3rem;font-weight:700}
+.project-heading{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:white;margin-bottom:0.75rem;text-shadow: 0 2px 10px rgba(0,0,0,0.3)}
+.search-lead{font-size:1.1rem;color:rgba(255,255,255,0.9);line-height:1.5;max-width:700px;margin:0 0 1.5rem;text-shadow: 0 1px 4px rgba(0,0,0,0.3)}
+
+/* Glassmorphism Form */
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.depart-label {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.trip-tab {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  color: white !important;
+}
+.trip-tab strong { color: white !important; }
+.trip-tab span { color: rgba(255,255,255,0.7) !important; }
+.trip-tab.active {
+  background: var(--teal) !important;
+  border-color: var(--teal) !important;
+}
+.trip-type-note { color: rgba(255,255,255,0.8); }
+.prefs-toggle {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+.prefs-toggle:hover {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
 .prefs-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.6rem;align-items:center}
 .param-input,.param-select{background:white;border:1.5px solid var(--sand);border-radius:4px;padding:0.32rem 0.55rem;font-family:'DM Sans',sans-serif;font-size:0.76rem;color:var(--ink)}
 .param-input:focus,.param-select:focus{outline:none;border-color:var(--teal)}
@@ -193,6 +251,49 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .ai-mode-select option {
   background: var(--ink);
   color: white;
+}
+
+/* Autocomplete Dropdown */
+.autocomplete-dropdown {
+  z-index: 1000;
+}
+.autocomplete-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--cream);
+  transition: all 0.15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+.autocomplete-item:hover {
+  background: var(--sky);
+  color: var(--teal);
+}
+.autocomplete-item.highlighted {
+  background: var(--sky);
+  color: var(--teal);
+  font-weight: 600;
+}
+.autocomplete-item .airport-code {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  color: var(--teal);
+  font-size: 0.85rem;
+  margin-right: 0.5rem;
+}
+.autocomplete-item .airport-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.autocomplete-item .country {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 .chip{background:white;border:1.5px solid var(--sand);padding:0.4rem 0.9rem;border-radius:20px;font-size:0.8rem;color:var(--teal);cursor:pointer;font-weight:500;transition:all 0.2s}
 .chip:hover{border-color:var(--teal);background:var(--sky);transform:translateY(-1px)}
@@ -567,7 +668,7 @@ footer a:hover{color:var(--rust-light)}
     <div class="search-area">
       <div class="project-label" id="projectLabel">GENERAL SEARCH</div>
       <div class="project-heading">Where do you want to go?</div>
-      <p class="search-lead">Any trip — one city, a road trip, or six stops in a row. Describe it in a sentence and get a day-by-day plan with costs and booking links. Free, no account needed.</p>
+      <p class="search-lead">Your personal AI travel assistant for any trip — round-trip, one-way, or multi-city routes. Describe your trip in a sentence and get a day-by-day plan with costs and booking links. Free, no account needed.</p>
 
       <!-- 1. Trip type, in plain language -->
       <div class="trip-type-tabs" role="tablist" aria-label="Trip type">
@@ -593,11 +694,17 @@ footer a:hover{color:var(--rust-light)}
         <div class="route-row">
           <div class="field">
             <label for="departCity" class="depart-label">From</label>
-            <input type="text" class="from-inline" id="departCity" placeholder="Your city (e.g. Toronto)" autocomplete="off">
+            <div style="position: relative;">
+              <input type="text" class="from-inline" id="departCity" placeholder="City or airport (e.g. Toronto YYZ)" autocomplete="off" oninput="showAutocomplete('departCity', this.value)">
+              <div id="departCityAutocomplete" class="autocomplete-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid var(--sand); border-radius: 8px; box-shadow: var(--shadow); max-height: 200px; overflow-y: auto; z-index: 100; margin-top: 4px;"></div>
+            </div>
           </div>
           <div class="field" id="destField">
             <label for="destCity" class="depart-label">To</label>
-            <input type="text" class="from-inline" id="destCity" placeholder="Where to? (e.g. Tokyo)" autocomplete="off">
+            <div style="position: relative;">
+              <input type="text" class="from-inline" id="destCity" placeholder="Destination city or airport (e.g. Tokyo NRT)" autocomplete="off" oninput="showAutocomplete('destCity', this.value)">
+              <div id="destCityAutocomplete" class="autocomplete-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid var(--sand); border-radius: 8px; box-shadow: var(--shadow); max-height: 200px; overflow-y: auto; z-index: 100; margin-top: 4px;"></div>
+            </div>
           </div>
         </div>
 
@@ -2003,6 +2110,113 @@ function changeAIMode(){
 }
 
 init();
+
+// Autocomplete functionality for airport/city search
+let autocompleteTimeouts = {};
+
+async function showAutocomplete(fieldId, query) {
+  const dropdown = document.getElementById(fieldId + 'Autocomplete');
+  
+  // Clear previous timeout
+  if (autocompleteTimeouts[fieldId]) {
+    clearTimeout(autocompleteTimeouts[fieldId]);
+  }
+  
+  // Hide dropdown if query is empty
+  if (!query.trim()) {
+    dropdown.style.display = 'none';
+    return;
+  }
+  
+  // Debounce the search
+  autocompleteTimeouts[fieldId] = setTimeout(async () => {
+    try {
+      const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
+      if (response.ok) {
+        const suggestions = await response.json();
+        renderAutocompleteDropdown(dropdown, suggestions, fieldId);
+      }
+    } catch (error) {
+      console.error('Autocomplete error:', error);
+    }
+  }, 300);
+}
+
+function renderAutocompleteDropdown(dropdown, suggestions, fieldId) {
+  if (!suggestions || suggestions.length === 0) {
+    dropdown.style.display = 'none';
+    return;
+  }
+  
+  dropdown.innerHTML = suggestions.map(item => `
+    <div class="autocomplete-item" onclick="selectAutocomplete('${fieldId}', '${item.name}', '${item.code}', '${item.type}')">
+      <div>
+        <span class="airport-code">${item.code}</span>
+        <span class="airport-name">${item.name}</span>
+      </div>
+      <span class="country">${item.country}</span>
+    </div>
+  `).join('');
+  
+  dropdown.style.display = 'block';
+}
+
+function selectAutocomplete(fieldId, name, code, type) {
+  const input = document.getElementById(fieldId);
+  input.value = name;
+  
+  // Store the code for backend processing
+  input.dataset.code = code;
+  input.dataset.type = type;
+  
+  // Hide dropdown
+  document.getElementById(fieldId + 'Autocomplete').style.display = 'none';
+}
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('.from-inline')) {
+    document.querySelectorAll('.autocomplete-dropdown').forEach(dropdown => {
+      dropdown.style.display = 'none';
+    });
+  }
+});
+
+// Handle keyboard navigation in autocomplete
+document.addEventListener('keydown', function(event) {
+  const activeDropdown = document.querySelector('.autocomplete-dropdown:not([style*="display: none"])');
+  if (!activeDropdown) return;
+  
+  const items = activeDropdown.querySelectorAll('.autocomplete-item');
+  const highlighted = activeDropdown.querySelector('.highlighted');
+  
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    if (highlighted) {
+      highlighted.classList.remove('highlighted');
+      const next = highlighted.nextElementSibling || items[0];
+      next.classList.add('highlighted');
+    } else {
+      items[0].classList.add('highlighted');
+    }
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (highlighted) {
+      highlighted.classList.remove('highlighted');
+      const prev = highlighted.previousElementSibling || items[items.length - 1];
+      prev.classList.add('highlighted');
+    } else {
+      items[items.length - 1].classList.add('highlighted');
+    }
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    if (highlighted) {
+      highlighted.click();
+    }
+  } else if (event.key === 'Escape') {
+    activeDropdown.style.display = 'none';
+  }
+});
 </script>
 <div class="bottom-nav">
   <a href="index.html" class="nav-item active">
