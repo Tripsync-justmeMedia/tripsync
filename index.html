@@ -1993,7 +1993,7 @@ document.getElementById('tripInput').addEventListener('keydown',e=>{if(e.key==='
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
 function renderMultiStopResults(data, query, currency) {
   document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('welcomeState').style.display = 'none';
+  const ws4=document.getElementById('welcomeState'); if(ws4) ws4.style.display = 'none';
   document.getElementById('errorState').style.display = 'none';
   document.getElementById('searchBtn').disabled = false;
   
