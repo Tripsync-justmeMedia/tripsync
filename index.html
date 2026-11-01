@@ -93,12 +93,12 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
   position: relative;
   background-image: url('hero-bg.jpg?v=3');
   background-size: cover;
-  background-position: center;
+  background-position: center 15%;
   background-attachment: fixed;
   border-bottom: 2px solid var(--rust);
   padding: 4rem 2rem 5rem;
   color: white;
-  min-height: 900px;
+  min-height: 650px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -207,6 +207,40 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .install-banner-text{font-size:0.82rem;font-weight:500}
 .btn-install-now{background:white;color:var(--teal);border:none;padding:0.35rem 0.9rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer}
 .btn-install-dismiss{background:rgba(255,255,255,0.2);color:white;border:none;padding:0.35rem 0.7rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer}
+/* Trusted Partners Logo Strip */
+.partner-logos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.partner-label {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+}
+.logo-strip {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.logo-strip img {
+  filter: brightness(0) invert(1);
+  opacity: 0.6;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.logo-strip img:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
 /* --- Clarity pass: one obvious path --------------------------------------- */
 .search-lead{font-size:0.86rem;color:var(--muted);line-height:1.5;max-width:620px;margin:0 0 1rem}
 .trip-type-tabs{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem}
@@ -489,7 +523,7 @@ footer a:hover{color:var(--rust-light)}
   
   .mobile-hide { display: none !important; }
 
-  .search-area{padding:2rem 1rem; min-height: 500px;}
+  .search-area{padding:2rem 1rem; min-height: 600px; background-position: center 30%;}
   .project-heading{font-size: 1.8rem; margin-bottom: 0.5rem;}
   .search-lead { font-size: 0.95rem; margin-bottom: 1.5rem; }
   .search-form { padding: 1.25rem; border-radius: 16px; }
@@ -799,6 +833,17 @@ footer a:hover{color:var(--rust-light)}
         </div>
       </div>
 
+      <!-- Trusted Partners Logo Strip -->
+      <div class="partner-logos">
+        <span class="partner-label">Trusted Partners</span>
+        <div class="logo-strip">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Booking.com_logo.svg" alt="Booking.com" style="height:20px; opacity:0.7">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Skyscanner_Logo.svg" alt="Skyscanner" style="height:20px; opacity:0.7">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Tiqets_Logo.svg" alt="Tiqets" style="height:20px; opacity:0.7">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Viator_logo.svg" alt="Viator" style="height:20px; opacity:0.7">
+        </div>
+      </div>
+
       <!-- 4. Everything else is optional -->
       <button class="prefs-toggle" onclick="togglePrefs()" aria-expanded="false" aria-controls="extraPrefs">
         <span>Optional extras <span id="prefsSummary" class="prefs-summary"></span></span>
@@ -962,7 +1007,7 @@ footer a:hover{color:var(--rust-light)}
 
 <script>
 const AFFILIATE={
-  cj_pid: '101234567', // REPLACE WITH YOUR CJ PUBLISHER ID
+  cj_pid: '7953580', // Just Me Media CJ Publisher ID
   cj_sid: 'tripsync_web',
   booking_aid: '2884913', // Legacy fallback
   agoda_cid: 'YOUR_AGODA_CID',
