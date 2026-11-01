@@ -13,6 +13,20 @@ TripSync is a high-performance, AI-driven travel planning application designed t
 *   **Minimalist UI**: Deeply cleaned search interface with collapsible preference panels, designed for speed on mobile devices.
 *   **Interactive Planner**: Build detailed itineraries day-by-day with AI refinement.
 *   **Fare lookups with honest labels**: cached fares (~48h) and clearly-marked estimates, with tracked deep links so the partner site shows the live price at checkout. Labels never claim "live" for a cached fare.
+*   **Trusted-partner marquee**: a single slim scrolling row in the hero showcasing all active booking partners. Logos are self-hosted in `assets/partners/` (they cannot 404) and the strip is a seamless, hover-pausing marquee, so adding partners never adds page height. On mobile it sits at the end of the hero to keep the planner first.
+
+## 🖥 Homepage Layout Notes
+
+*   The hero uses `background-size: cover` + `background-position: top center` and
+    `min-height: calc(100vh - 60px)`, so it fills the fold exactly and the footer touches it —
+    no cream band, no dead space.
+*   `.results-area` keeps zero padding; the padding lives on `#destinationsOutput` with
+    `:empty { display: none }` so an idle results panel collapses to 0px.
+*   Mobile is intentionally minimal (the planner is the point); iPad and landscape render the
+    full desktop layout.
+*   See `AGENTS.md` → "Homepage Hero Rules" and "Trusted Partners Marquee" before touching the
+    hero or the logo strip.
+
 
 ## 🧠 AI Architecture (The "3 Brains")
 

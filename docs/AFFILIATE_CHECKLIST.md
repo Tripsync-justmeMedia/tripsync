@@ -1,6 +1,6 @@
 # 📋 TripSync Affiliate Monetization Checklist
 
-Last verified end-to-end: **2026-10-25** (local build, live HTTP checks + real browser).
+Last verified end-to-end: **2026-11-01** (local build, live HTTP checks + real browser).
 
 How each link was verified: render the page → pull every generated `href` → follow it with a
 browser user-agent **and** open it in a real browser (bot-protected partners only show the truth
@@ -64,9 +64,46 @@ Rule: **never hand-write a partner URL again** — use the helpers at the top of
   hotels, Tiqets token for attractions).
 - **Unverified discount claims removed** — "Aviasales (40% Off Flights)" and
   "GetRentacar.com (Save 10%)" were not backed by any partner data. Now plain labels.
-- **Unused placeholder IDs**: `cj_pid`, `agoda_cid`, `expedia_affcid` are still `YOUR_*`
-  placeholders but are **not referenced by any link**. Either wire a real program or delete the
-  keys to avoid a future false-positive.
+- **Unused placeholder IDs**: `agoda_cid`, `expedia_affcid` are still `YOUR_*`
+  placeholders and are **not referenced by any link**. Either wire a real program or delete the
+  keys to avoid a future false-positive. `cj_pid` is now live (`7953580`, Just Me Media) and is
+  used by the Booking.com helper.
+
+---
+
+## 🖼️ Trusted Partners strip (homepage hero)
+
+The strip under the hero is an **infinite marquee** (`.partner-logos` → `.partner-marquee` →
+`.partner-track`). The list is rendered twice for a seamless loop; the duplicate is
+`.partner-dup` with `aria-hidden="true"`. 45s cycle, pauses on hover, edge mask fades,
+`prefers-reduced-motion` turns the animation off. On mobile it is pushed to the end of the
+hero with `order: 10` so it never displaces the search form.
+
+**Every logo is self-hosted in `assets/partners/`** — no partner CDN is hotlinked, so a logo
+can never 404 because a vendor moved a file. They are forced monochrome white with
+`filter: brightness(0) invert(1)`, which is why full-colour raster logos do **not** work there.
+
+| Partner | File | Source |
+|---|---|---|
+| Booking.com | `booking.svg` | Official mark (Wikimedia) |
+| Skyscanner | `skyscanner.svg` | Official lockup (Wikimedia) |
+| Klook | `klook.svg` | Official mark (Wikimedia) |
+| AirHelp | `airhelp.svg` | Official mark (Wikimedia) |
+| Tiqets | `tiqets.svg` | Official mark (Tiqets CDN) |
+| Viator | `viator.svg` | Authored white wordmark |
+| KiwiTaxi | `kiwitaxi.svg` | Authored white wordmark |
+| Welcome Pickups | `welcomepickups.svg` | Authored white wordmark |
+| GetRentACar | `getrentacar.svg` | Authored white wordmark |
+| Aviasales | `aviasales.svg` | Authored white wordmark |
+
+**Not shown:** Agoda and Expedia — their affiliate CIDs are still placeholders, so advertising
+them would imply a partnership that cannot pay out. Skyscanner is shown as a flight-search
+partner (its deep links work) even though the affiliate re-apply is still pending.
+
+To swap an authored wordmark for an official brand-kit file, drop it in under the **same
+filename** — no markup or CSS change is required. Check it is monochrome-safe (single-colour
+or transparent), otherwise it will render as a white blob.
+
 
 ## 🚀 High-converting additions (unchanged)
 

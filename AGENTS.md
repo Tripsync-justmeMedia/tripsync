@@ -49,6 +49,48 @@ TripSync generates detailed travel itineraries with pricing, booking links, and 
   using Cheapflights' verified pattern `/flight-search/LEG/DATE/LEG/DATE/.../LEG` (IATA codes,
   `YYYY-MM-DD`). Never assemble that path in the browser — the frontend only renders
   `data.multi_city_url`. A malformed leg/date alternation produces a broken search page.
+- **CJ Publisher ID `7953580`** (Just Me Media) is set in `index.html` and `planner.html`.
+  Booking.com links prefer the CJ wrapper and fall back to `aid=2884913`.
+  `agoda_cid` / `expedia_affcid` are still `YOUR_*` placeholders — do not advertise either
+  partner (including in the logo marquee) until a real CID exists.
+
+## Homepage Hero Rules (learned the hard way)
+- `hero-bg.jpg` is **992×1071 (portrait)** — plane at the top, stewardess bottom-right.
+  On a 16:9 screen, showing the whole image needs a ~1554px-tall hero, so it is impossible to
+  show both figures uncropped without a huge empty hero. Chosen trade-off:
+  `background-size: cover; background-position: top center` — the plane is always fully
+  visible and there is never dead space. The stewardess is cropped on wide desktop.
+  A wide 16:9 hero image would be needed to fix that; do not "solve" it with `contain`.
+- Hero height is `min-height: calc(100vh - 60px)`. It was `100vh`, which measured the whole
+  viewport *on top of* the 60px header and pushed the footer below the fold.
+- **Dead space is a layout bug, not a styling preference.** `.results-area` must keep
+  `padding: 0`; the padding lives on `#destinationsOutput`, with
+  `#destinationsOutput:empty { display: none }`. Otherwise an empty results panel leaves a
+  48px cream band between the hero and the footer. Verify with a probe: footer `top` must
+  equal hero `bottom`.
+- Mobile keeps `min-height: 600px` (overrides the `calc`). On mobile the planner is the point —
+  "less is more". iPad / landscape should feel like the full desktop page.
+
+## Trusted Partners Marquee
+- The partner strip is an **infinite marquee**, not a static row, so the partner list can grow
+  without adding height or clutter. Markup: `.partner-logos > .partner-marquee > .partner-track`.
+- The track holds the list **twice**; the duplicate set is wrapped in `.partner-dup` and marked
+  `aria-hidden="true"`. The animation is a seamless `translateX(-50%)` over 45s, paused on
+  hover, with edge mask fades and a `prefers-reduced-motion` fallback (animation off,
+  duplicates hidden).
+- **All logos are self-hosted in `assets/partners/`** — never hotlink a partner CDN again.
+  They are rendered monochrome white via `filter: brightness(0) invert(1)` at `opacity: .7`,
+  so any logo with a transparent background works; do not add a full-colour PNG (it becomes a
+  white blob under that filter).
+- Real marks: Booking.com, Skyscanner, Klook, AirHelp (Wikimedia), Tiqets (official CDN).
+  Authored white wordmarks (no official asset available): Viator, KiwiTaxi, Welcome Pickups,
+  GetRentACar, Aviasales. Swap in official brand-kit files under the same filenames when
+  available — no code change needed.
+- 10 partners are shown: Booking.com, Skyscanner, Viator, Tiqets, Klook, KiwiTaxi,
+  Welcome Pickups, GetRentACar, AirHelp, Aviasales. **Agoda and Expedia are deliberately
+  excluded** (placeholder affiliate CIDs).
+- On mobile the marquee is moved to the end of the hero with `order: 10` so it never pushes
+  the search form, CTA, or "Optional extras" down. Logos shrink to 16px at ≤640px.
 
 ## Dev Commands
 ```bash
@@ -86,7 +128,22 @@ python3 -m http.server 8080
 - CSS changes breaking layout → overlapping elements, dead space gaps
 
 Deployments to Netlify auto-trigger from GitHub pushes, so broken code goes live immediately. Test first, push second.
-```
+
+---
+
+## ⛔ HARD RULE: No Pushes Without Explicit Approval
+
+**NEVER push to GitHub or deploy to Netlify without the founder's explicit approval.**
+
+This is a non-negotiable rule. Before any push/deploy:
+1. ✅ Test locally first (see rules above)
+2. ✅ Show the founder the visual result (screenshot or live preview)
+3. ✅ Wait for explicit "yes" or "approved" from the founder
+4. ✅ Only then push and deploy
+
+**Never assume approval.** If the founder says "test locally first" or "let me review," that means STOP and wait. Do not push. Do not deploy. Do not run `git push` or `netlify deploy` in the background.
+
+This rule was added because previous sessions wasted GitHub and Netlify rate limits by pushing/deploying without approval.
 
 ## Accounts
 | Service | Account | Notes |
@@ -94,4 +151,7 @@ Deployments to Netlify auto-trigger from GitHub pushes, so broken code goes live
 | Groq API | In `.env` | Fast cloud inference |
 | Google Gemini | In `.env` | Expert reasoning tier |
 | Booking.com Affiliate | ID: 2884913 | Active |
+| CJ Affiliate | Publisher ID: 7953580 | Just Me Media; Booking.com links |
+| Travelpayouts | Marker 733310 / trs 533550 | Klook, Tiqets, Aviasales, AirHelp, KiwiTaxi, Welcome Pickups, GetRentACar |
+| Viator (Partnerize) | pid P00327306 / mcid 42383 | Active |
 | Netlify | William@lexsort.com | tripsync.ca frontend |
