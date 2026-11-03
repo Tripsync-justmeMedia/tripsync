@@ -43,7 +43,8 @@ TripSync uses a sophisticated multi-tier AI strategy to ensure you always get th
 *   **Backend**: Python / Flask
 *   **Frontend**: Plain HTML5, CSS3 (Glassmorphism), Vanilla JS
 *   **Database**: SQLite (Local-first history)
-*   **Infrastructure**: Render / GitHub CI/CD
+*   **Infrastructure**: Netlify (static frontend, manual CLI deploys) + Render (Flask API at
+    `tripsync-nvss.onrender.com`, proxied through Netlify's `/api/*` redirect)
 
 ## 🚀 Local Setup
 

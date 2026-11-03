@@ -97,12 +97,47 @@ TripSync generates detailed travel itineraries with pricing, booking links, and 
 # Install deps
 pip install -r requirements.txt
 
-# Run locally
-python main.py   # or python server.py
+# Run locally (frontend)
+python3 -m http.server 8080
 
-# Deploy (Netlify for frontend, separate backend host)
-# See docs/PRIVATE_HANDOFF.md for full deployment setup
+# Run locally (full app + API)
+python main.py   # or python server.py
 ```
+
+## Deploying (READ THIS — the old assumption was wrong)
+
+**A `git push` does NOT deploy.** The Netlify site `tripsync-ca-studio`
+(id `a7d0f090-eae5-41ca-b28d-674a513e697e`, team `wcommu`, custom domain `tripsync.ca`)
+is **not connected to GitHub** — `repo_url` is null and every deploy in its history is a manual
+CLI deploy. Pushing only updates the repo.
+
+Deploy from a **clean staging directory**, never from the repo root:
+
+```bash
+STAGE=/tmp/ts_deploy
+rm -rf $STAGE && mkdir -p $STAGE
+cp index.html planner.html affiliate.html assistant.html dashboard.html handle.html \
+   privacy.html terms.html manifest.json sw.js robots.txt sitemap.xml netlify.toml \
+   hero-bg.jpg $STAGE/
+cp -R assets static $STAGE/
+cp *.png *.ico $STAGE/
+netlify deploy --prod --dir=$STAGE
+```
+
+- **NEVER run `netlify deploy --dir=.`** — the repo root contains `.env`, `credentials.json`,
+  `mock_sheets_db.json`, `.venv/` and `docs/PRIVATE_HANDOFF.md`. `--dir=.` uploads all of it to a
+  public CDN. Only the static frontend files belong in the publish set.
+- Netlify post-processing rewrites links (`planner.html` → `/planner`) and adds pretty URLs. That
+  is expected; it does not touch CSS/JS.
+- `netlify.toml` (headers + `/api/*` proxy to the Render backend) lives in the repo root and is
+  applied by the CLI; it is also copied into the publish set.
+
+**Known blocker (2026-11-01):** production deploys return
+`403 {"error":"Account credit usage exceeded - new deploys are blocked until credits are added"}`.
+Draft deploys (`netlify deploy --dir=$STAGE`, no `--prod`) still succeed and give a preview URL.
+To go live again the founder must add credits / upgrade at
+<https://app.netlify.com/teams/wcommu/billing>, then re-run the `--prod` command above.
+
 
 ## ⚠️ CRITICAL: Test Locally Before Deploying (learned the hard way)
 
@@ -127,7 +162,8 @@ python3 -m http.server 8080
 - Background image files missing or wrong path → gray placeholder instead of image
 - CSS changes breaking layout → overlapping elements, dead space gaps
 
-Deployments to Netlify auto-trigger from GitHub pushes, so broken code goes live immediately. Test first, push second.
+Deployments are **manual** (`netlify deploy --prod --dir=<staging>`) — a GitHub push does not
+deploy. See `AGENTS.md` → "Deploying" before shipping, and never deploy the repo root.
 
 ---
 
