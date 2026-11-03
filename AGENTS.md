@@ -118,7 +118,7 @@ STAGE=/tmp/ts_deploy
 rm -rf $STAGE && mkdir -p $STAGE
 cp index.html planner.html affiliate.html assistant.html dashboard.html handle.html \
    privacy.html terms.html manifest.json sw.js robots.txt sitemap.xml netlify.toml \
-   hero-bg.jpg $STAGE/
+   hero-bg.jpg hero-bg-wide.jpg $STAGE/
 cp -R assets static $STAGE/
 cp *.png *.ico $STAGE/
 netlify deploy --prod --dir=$STAGE

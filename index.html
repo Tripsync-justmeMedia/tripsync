@@ -91,9 +91,12 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
 /* Search area */
 .search-area{
   position: relative;
-  background-image: url('hero-bg.jpg?v=4');
-  background-size: cover;
-  background-position: top center;
+  /* Landscape screens use the wide 16:9 hero (plane + stewardess both in frame).
+     If that file is ever missing the portrait image below still paints, so the
+     hero can never break — the second layer is a graceful fallback. */
+  background-image: url('hero-bg-wide.jpg?v=1'), url('hero-bg.jpg?v=4');
+  background-size: cover, cover;
+  background-position: center center, top center;
   background-repeat: no-repeat;
   background-color: #0b3a5c;
   border-bottom: 2px solid var(--rust);
@@ -105,6 +108,22 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+/* Portrait screens (phones, portrait tablets) keep the portrait hero:
+   plane at the top, stewardess bottom-right. */
+@media (orientation: portrait) {
+  .search-area {
+    background-image: url('hero-bg.jpg?v=4');
+    background-position: top center;
+  }
+}
+/* Squarer landscape (4:3 iPad, small windows): the wide photo would crop the
+   stewardess right off the edge, so fall back to the portrait hero there. */
+@media (orientation: landscape) and (max-aspect-ratio: 3/2) {
+  .search-area {
+    background-image: url('hero-bg.jpg?v=4');
+    background-position: top center;
+  }
 }
 .search-area::before {
   content: '';
