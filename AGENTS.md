@@ -55,12 +55,24 @@ TripSync generates detailed travel itineraries with pricing, booking links, and 
   partner (including in the logo marquee) until a real CID exists.
 
 ## Homepage Hero Rules (learned the hard way)
-- `hero-bg.jpg` is **992×1071 (portrait)** — plane at the top, stewardess bottom-right.
-  On a 16:9 screen, showing the whole image needs a ~1554px-tall hero, so it is impossible to
-  show both figures uncropped without a huge empty hero. Chosen trade-off:
-  `background-size: cover; background-position: top center` — the plane is always fully
-  visible and there is never dead space. The stewardess is cropped on wide desktop.
-  A wide 16:9 hero image would be needed to fix that; do not "solve" it with `contain`.
+- **Two hero images, chosen by orientation only — never by aspect ratio.**
+  `hero-bg-wide.jpg` (1024×572, 16:9) for every landscape viewport; `hero-bg.jpg`
+  (992×1071, portrait) for portrait phones/tablets. The wide file is the first background
+  layer and the portrait is the second, so a missing wide file degrades to the portrait
+  instead of blanking the hero.
+- **Never swap the hero image at an aspect-ratio breakpoint.** An earlier version used the
+  wide photo above 3:2 and the portrait photo at/below it. Because the hero grows taller than
+  the fold whenever its content is tall (form + marquee + extras), the aspect ratio crosses
+  1.5 as the window is resized, and the whole background picture swapped — reported as "the
+  background moves when I expand to full screen", and at the portrait side the plane was cut
+  off with only the stewardess's head showing. One image per orientation; use
+  `background-position` to bias the crop instead.
+- Landscape ≤3:2 (4:3 iPad, tall/narrow windows) keeps the wide photo and nudges the crop
+  with `background-position: 62% center` so the stewardess stays in frame while the plane's
+  tail stays just inside the left edge. Below ~1.5:1 a 16:9 photo cannot show both subjects
+  in full — that is geometry, not a CSS bug. Do not "solve" it with `contain` (dead bars).
+- `hero-bg.jpg` on a 16:9 screen: showing the whole image needs a ~1554px-tall hero, so both
+  figures cannot be uncropped without a huge empty hero. That is why the wide file exists.
 - Hero height is `min-height: calc(100vh - 60px)`. It was `100vh`, which measured the whole
   viewport *on top of* the 60px header and pushed the footer below the fold.
 - **Dead space is a layout bug, not a styling preference.** `.results-area` must keep

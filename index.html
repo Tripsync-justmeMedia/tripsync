@@ -117,12 +117,13 @@ header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;alig
     background-position: top center;
   }
 }
-/* Squarer landscape (4:3 iPad, small windows): the wide photo would crop the
-   stewardess right off the edge, so fall back to the portrait hero there. */
+/* Squarer landscape (4:3 iPad, narrow windows, tall browser windows): keep the
+   SAME wide photo and only bias the crop toward the stewardess. Swapping in the
+   portrait image here made the whole hero visibly jump when a window was resized
+   across this breakpoint, and the portrait photo cannot serve landscape anyway. */
 @media (orientation: landscape) and (max-aspect-ratio: 3/2) {
   .search-area {
-    background-image: url('hero-bg.jpg?v=4');
-    background-position: top center;
+    background-position: 62% center, top center;
   }
 }
 .search-area::before {
@@ -279,6 +280,24 @@ textarea#tripInput::placeholder{color:var(--muted)}
 @keyframes partnerScroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
+}
+/* Full-screen / large desktop: a 950px content column with a 3rem heading reads as
+   undersized on a 1920-2560px monitor — the hero looks like a small page floating in
+   a big photo. Scale the hero with the canvas instead. */
+@media (min-width: 1600px) {
+  .search-area { padding: 5rem 2rem 6rem; }
+  .search-area > * { max-width: 1120px; }
+  .search-area > .partner-logos { max-width: 1320px; }
+  .project-heading { font-size: 3.6rem; max-width: 1000px; }
+  .search-lead { font-size: 1.22rem; max-width: 840px; }
+  .partner-track img { height: 24px; margin-right: 3.5rem; }
+}
+@media (min-width: 2100px) {
+  .search-area > * { max-width: 1260px; }
+  .search-area > .partner-logos { max-width: 1480px; }
+  .project-heading { font-size: 4.1rem; max-width: 1140px; }
+  .search-lead { font-size: 1.32rem; max-width: 920px; }
+  .partner-track img { height: 26px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .partner-track { animation: none; }
