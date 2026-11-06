@@ -1,5 +1,5 @@
 # TripSync — Complete Project Handoff
-**Last Updated:** May 27, 2026  
+**Last Updated:** November 2026  
 **Owner:** William — Just Me Media  
 **Company:** Just Me Media  
 **Developer Contact:** [refer to gitignored docs/PRIVATE_HANDOFF.md]  
@@ -7,10 +7,10 @@
 ---
 
 ## What TripSync Is
-AI-powered travel destination finder. User describes their dream trip in plain English. TripSync returns 3 detailed destination cards with real prices, flight estimates, visa info, and direct booking links to Booking.com, Agoda, and Expedia. Monetizes through affiliate commissions on every hotel and flight click. Features a dual-mode AI engine (Cloud via Groq / Local Private AI via Gemma 4).
+AI-powered travel destination finder and day-by-day itinerary planner. The user describes their dream trip in plain English or enters specific destinations and dates. TripSync returns curated destination cards with realistic price estimates, flight routes, and direct booking links to verified affiliate partners (Booking.com via CJ Affiliate, Skyscanner, Viator, and Travelpayouts). Monetizes through affiliate commissions on travel clicks and bookings. Features a 3-tier AI engine: Fast Cloud (Groq), Deep Reasoning (Gemini), and Local Private AI (Ollama).
 
 **Live URL:** https://tripsync.ca  
-**Target Domain:** tripsync.ca (Purchased & Live on Namecheap/Render)  
+**Target Domain:** tripsync.ca (Netlify static frontend + Render Flask backend)  
 **GitHub Repo:** https://github.com/Tripsync-justmeMedia/tripsync  
 
 ---
@@ -19,7 +19,7 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 
 > [!IMPORTANT]
 > **Security Notice**:
-> For security, all actual organization login details, developer credentials, and affiliate program passwords reside in the gitignored **[PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/02_ACTIVE_PROJECTS/TripSync/docs/PRIVATE_HANDOFF.md)** file on your local machine. 
+> For security, all actual organization login details, developer credentials, and affiliate program passwords reside in the gitignored **[PRIVATE_HANDOFF.md](file:///Users/williamcommu/Desktop/JUST_ME_MEDIA_VAULT/JustMeMedia/01_ACTIVE/TripSync/docs/PRIVATE_HANDOFF.md)** file on your local machine. 
 > This file is strictly excluded from Git commits (`.gitignore`) to keep the public repository safe from scanning bots.
 
 ---
@@ -29,32 +29,24 @@ AI-powered travel destination finder. User describes their dream trip in plain E
 ### Project Structure
 ```
 ~/tripsync/
-├── index.html        # Main Search/Inspiration UI
-├── planner.html      # Detailed Day-by-Day Planner UI
-├── docs/             # Technical Documentation & Handoffs
-├── legacy/           # Backup & Test files
-├── server.py         # Flask API
-├── requirements.txt  # Python dependencies
-└── .env              # API keys (NEVER commit this)
-```
- ├── index.html        # Main Search/Inspiration UI
-├── planner.html      # NEW: Detailed Day-by-Day Planner UI
+├── index.html        # Main Search / Hero Inspiration UI
+├── planner.html      # Detailed Day-by-Day Planner UI & Checklist Tracker
+├── assistant.html    # Standalone AI Travel Assistant & Key Cipher
+├── dashboard.html    # Creator / Influencer Partner Dashboard
+├── handle.html       # Public Referral Profile (@handle)
+├── affiliate.html    # Creator / Influencer Partner Registration
 ├── privacy.html      # Legal: Privacy Policy
 ├── terms.html        # Legal: Terms of Service
-├── manifest.json     # PWA: App metadata for Store readiness
+├── manifest.json     # PWA: App metadata
 ├── sw.js             # PWA: Service worker for offline caching
-├── icon.png          # PWA: App icon
-├── server.py          # Flask API (Groq + SQLite)
-  requirements.txt — clean Python dependencies
-  .gitignore       — protects .env and .db files
-  .env             — API keys (NEVER commit this)
-
-~/symbiotic/       — Symbiotic Engine (separate app, separate repo)
-  server.py        — SE + old combined TripSync code
-  tripsync/        — old frontend (now superseded by ~/tripsync/)
+├── netlify.toml      # Netlify CDN headers & redirects
+├── server.py         # Flask API backend (Render)
+├── requirements.txt  # Clean Python dependencies
+├── AGENTS.md         # Full Agent Session Briefing & Operational Rules
+└── docs/             # Technical Documentation & Handoffs
 ```
 
-### On Render (Production)
+### On Render (Production Backend)
 ```
 /opt/render/project/src/
   server.py

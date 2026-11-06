@@ -25,17 +25,55 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
 app = Flask(__name__, static_url_path='', static_folder='.')
+# No request body in this app is bigger than a few KB. Without a cap, a single
+# large POST can exhaust a small Render instance's memory.
+app.config['MAX_CONTENT_LENGTH'] = 256 * 1024
 
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=[],
-    storage_uri="memory://"
+    storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
 )
 
 @app.errorhandler(429)
 def ratelimit_handler(e):
     return jsonify({"error": "Too many requests. Please wait a moment and try again."}), 429
+
+# --- JSON error envelope -------------------------------------------------
+# Every /api/* client is JSON. Flask's default handlers answer with HTML, which
+# the frontend then fails to parse, turning a clean 415 into an unreadable crash.
+def _json_error(status, message):
+    return jsonify({"error": message, "status": status}), status
+
+@app.errorhandler(400)
+def bad_request(e):
+    return _json_error(400, "Bad request. Expected a JSON body.")
+
+@app.errorhandler(404)
+def not_found(e):
+    if request.path.startswith('/api/'):
+        return _json_error(404, "Unknown endpoint.")
+    return e
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    if request.path.startswith('/api/'):
+        return _json_error(405, "Method not allowed on this endpoint.")
+    return e
+
+@app.errorhandler(413)
+def payload_too_large(e):
+    return _json_error(413, "Request body too large.")
+
+@app.errorhandler(415)
+def unsupported_media_type(e):
+    return _json_error(415, "Unsupported content type. Send application/json.")
+
+@app.errorhandler(500)
+def internal_error(e):
+    logging.exception("Unhandled server error")
+    return _json_error(500, "Something went wrong on our side. Please try again.")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -230,6 +268,11 @@ def init_db():
                 currency TEXT,
                 price_data TEXT,
                 cached_at BIGINT)''')
+            c.execute('''CREATE TABLE IF NOT EXISTS search_cache (
+                id SERIAL PRIMARY KEY,
+                cache_key TEXT UNIQUE,
+                payload TEXT,
+                cached_at BIGINT)''')
         else:
             c.execute('''CREATE TABLE IF NOT EXISTS search_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -249,6 +292,11 @@ def init_db():
                 flight_class TEXT,
                 currency TEXT,
                 price_data TEXT,
+                cached_at INTEGER)''')
+            c.execute('''CREATE TABLE IF NOT EXISTS search_cache (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cache_key TEXT UNIQUE,
+                payload TEXT,
                 cached_at INTEGER)''')
         conn.commit()
         conn.close()
@@ -306,6 +354,54 @@ def cache_flight_price(origin, destination, dep_date, ret_date, flight_class, cu
         conn.close()
     except Exception as e:
         logging.error(f"Error caching flight price: {e}")
+
+# --- Search result cache -------------------------------------------------
+# The AI is asked for a fresh answer on every identical search, which is why the
+# same trip could come back with a 2.6x different daily budget a few seconds
+# apart. Caching makes repeat searches consistent and cuts LLM spend.
+SEARCH_CACHE_TTL = int(os.environ.get("SEARCH_CACHE_TTL", 6 * 3600))
+
+def search_cache_key(**kwargs):
+    parts = []
+    for k in sorted(kwargs):
+        v = kwargs[k]
+        if isinstance(v, (list, tuple)):
+            v = ",".join(str(x) for x in v)
+        parts.append(f"{k}={str(v).strip().lower()}")
+    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
+
+def get_cached_search(key):
+    try:
+        conn, is_pg = get_db_connection()
+        c = conn.cursor()
+        q = "SELECT payload, cached_at FROM search_cache WHERE cache_key=?"
+        if is_pg:
+            q = q.replace('?', '%s')
+        c.execute(q, (key,))
+        row = c.fetchone()
+        conn.close()
+        if row and (time.time() - int(row[1])) < SEARCH_CACHE_TTL:
+            return json.loads(row[0])
+    except Exception as e:
+        logging.error(f"Search cache read failed: {e}")
+    return None
+
+def cache_search(key, payload):
+    try:
+        conn, is_pg = get_db_connection()
+        c = conn.cursor()
+        d = "DELETE FROM search_cache WHERE cache_key=?"
+        if is_pg:
+            d = d.replace('?', '%s')
+        c.execute(d, (key,))
+        q = "INSERT INTO search_cache (cache_key, payload, cached_at) VALUES (?, ?, ?)"
+        if is_pg:
+            q = q.replace('?', '%s')
+        c.execute(q, (key, json.dumps(payload), int(time.time())))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Search cache write failed: {e}")
 
 # --- Amadeus OAuth ---
 def get_amadeus_token():
@@ -642,8 +738,14 @@ def get_curated_destinations_fallback(query, depart_city="", currency="USD", bud
     # Currency symbols & conversion approximation if needed
     curr = currency if currency else "USD"
     origin_text = f" from {depart_city}" if depart_city else ""
-    flight_dur = "4-7 hours" if depart_city else "Duration varies"
-    flight_est = f"350-650 {curr} return{origin_text}" if depart_city else f"Check live fares in {curr}"
+    # Generic archetype cards are static suggestions, so we have NO fare or
+    # duration for them. Previously every one claimed "350-650 {curr} return" and
+    # "4-7 hours" for every route on earth (Toronto->Bali is not 4-7 hours). The
+    # frontend fills in a real fare from /api/flight-prices when it can, so an
+    # empty estimate is both honest and non-destructive.
+    # (The long-haul archetypes below keep their own region-specific ranges.)
+    flight_dur = ""
+    flight_est = ""
     
     # Archetype 1: Tropical / Beach / Warm
     beach_pack = [
@@ -804,7 +906,7 @@ def get_curated_destinations_fallback(query, depart_city="", currency="USD", bud
 
 # --- Build destination search prompt ---
 def build_prompt(query, depart_city="", currency="USD", check_in="", check_out="",
-                 guests="2", budget="", flight_class="economy", hotel_rating="any",
+                 guests="1", budget="", flight_class="economy", hotel_rating="any",
                  amenities=None, car_type="none"):
     extra = ""
     if depart_city:    extra += f" Departing from: {depart_city}."
@@ -878,6 +980,7 @@ def get_fallback_image(query):
     return 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80'
 
 @app.route('/api/destination-image')
+@limiter.limit("30 per minute")
 def destination_image():
     query = request.args.get('query', '').strip()
     if not query:
@@ -912,15 +1015,40 @@ def destination_image():
 
 @app.route('/api/ping')
 def ping():
+    # Public warm-up endpoint. Deliberately says nothing about which providers
+    # are configured — that told anyone probing the API exactly where to attack.
+    return jsonify({"status": "online", "timestamp": time.time()})
+
+@app.route('/api/health')
+def health():
+    """Detailed readiness, only for whoever holds HEALTH_TOKEN."""
+    token = os.environ.get("HEALTH_TOKEN")
+    supplied = request.headers.get("X-Health-Token") or request.args.get("token")
+    if not token or supplied != token:
+        return _json_error(404, "Unknown endpoint.")
+    db_ok = False
+    try:
+        conn, is_pg = get_db_connection()
+        conn.close()
+        db_ok = True
+    except Exception as e:
+        logging.error(f"Health DB check failed: {e}")
     return jsonify({
-        "status": "online",
-        "timestamp": time.time(),
+        "status": "ok" if db_ok else "degraded",
         "version": "2.6",
-        "has_groq": bool(GROQ_KEY),
-        "has_gemini": bool(GEMINI_API_KEY)
+        "database": "ok" if db_ok else "unreachable",
+        "providers": {
+            "groq": bool(GROQ_KEY),
+            "gemini": bool(GEMINI_API_KEY),
+            "travelpayouts": bool(os.environ.get("TRAVELPAYOUTS_TOKEN")),
+            "unsplash": bool(UNSPLASH_ACCESS_KEY),
+        },
+        "search_cache_ttl_seconds": SEARCH_CACHE_TTL,
+        "timestamp": time.time(),
     })
 
 @app.route('/api/autocomplete')
+@limiter.limit("60 per minute")
 def autocomplete():
     """Autocomplete endpoint for cities and airports using Travelpayouts API"""
     query = request.args.get('q', '').strip()
@@ -1038,7 +1166,7 @@ def affiliate_register():
         'contact': 'hello@justmemedia.ca'
     }), 410
 
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     handle = data.get('handle', '').strip().lower()
     email = data.get('email', '').strip()
     display_name = data.get('display_name', '').strip()
@@ -1121,7 +1249,7 @@ def affiliate_dashboard(handle):
 
 @app.route('/api/affiliate/update-deal', methods=['POST'])
 def affiliate_update_deal():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     handle = data.get('handle', '').strip().lower()
     pin = data.get('pin', '').strip()
     action = data.get('action', '').strip()
@@ -1329,7 +1457,7 @@ def sw():
 
 @app.route('/api/verify-key', methods=['POST'])
 def verify_key():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     key = data.get('key', '').strip()
     provider = data.get('provider', 'deepseek').strip()
     
@@ -1498,45 +1626,93 @@ def call_gemini_history(system_prompt, history_messages):
         logging.error(f"Gemini history error: {e}")
     return None
 
+# --- Server-key abuse guard -------------------------------------------------
+# /api/llm/proxy falls back to OUR Groq/Gemini keys whenever a user key is
+# missing or fails. The obfuscation salt ships in static/js/encryption.js, so a
+# junk "encrypted_key" is trivial to forge and the fallback turns TripSync into a
+# free LLM relay billed to us. Verified live in production before this guard.
+SERVER_KEY_DAILY_LIMIT = int(os.environ.get("SERVER_KEY_DAILY_LIMIT", 20))
+_server_key_usage = {}   # ip -> [date_str, count]
+
+def allow_server_key(ip):
+    """Daily per-IP allowance for inference on OUR keys. In-process only."""
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    entry = _server_key_usage.get(ip)
+    if not entry or entry[0] != today:
+        _server_key_usage[ip] = [today, 0]
+        entry = _server_key_usage[ip]
+    if entry[1] >= SERVER_KEY_DAILY_LIMIT:
+        return False
+    entry[1] += 1
+    return True
+
+def server_key_exhausted(ip):
+    """Read-only check — used to pick the right error message without double-counting."""
+    entry = _server_key_usage.get(ip)
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    return bool(entry and entry[0] == today and entry[1] >= SERVER_KEY_DAILY_LIMIT)
+
 @app.route('/api/llm/proxy', methods=['POST'])
+@limiter.limit("10 per minute")
 def llm_proxy():
-    data = request.get_json()
-    prompt = data.get('prompt', '').strip()
-    encrypted_key = data.get('encrypted_key', '').strip()
-    email = data.get('email', '').strip()
-    provider = data.get('provider', 'deepseek').strip()
-    destination = data.get('destination', '').strip()
-    history = data.get('history', [])
+    data = request.get_json(silent=True) or {}
+    prompt = (data.get('prompt') or '').strip()
+    encrypted_key = (data.get('encrypted_key') or '').strip()
+    email = (data.get('email') or '').strip()
+    provider = (data.get('provider') or 'deepseek').strip()
+    destination = (data.get('destination') or '').strip()
+    history = data.get('history') or []
+    client_ip = get_remote_address()
 
     if not prompt:
         return jsonify({'error': 'No prompt message provided'}), 400
 
-    decrypted_key = decrypt_key(encrypted_key, email)
-    if not decrypted_key:
+    # Cap the payload — unbounded prompt/history is both a cost and a memory risk.
+    if len(prompt) > 4000:
+        return jsonify({'error': 'Prompt too long. Please shorten your message.'}), 413
+    if not isinstance(history, list):
+        history = []
+    history = [m for m in history[-12:] if isinstance(m, dict)]
+    for m in history:
+        if isinstance(m.get('content'), str) and len(m['content']) > 4000:
+            m['content'] = m['content'][:4000]
+
+    decrypted_key = decrypt_key(encrypted_key, email) if encrypted_key else None
+    if encrypted_key and not decrypted_key:
         return jsonify({'error': 'Invalid key decrypt challenge'}), 400
+
+    def server_llm(hist):
+        """Use OUR keys only if this IP still has daily allowance."""
+        if not allow_server_key(client_ip):
+            return None
+        return call_groq_history(system_prompt, hist) or call_gemini_history(system_prompt, hist)
 
     system_prompt = f"You are TripSync, a premium AI travel curate assistant. Let's refine the trip to {destination} step-by-step. Keep responses structured, concise, friendly, and under 3-4 paragraphs. Incorporate helpful advice and bullet points where applicable."
 
     # Priority Order list for Auto Failover:
     # 1. Active User Key (either DeepSeek, Groq, or Gemini)
-    # 2. Server Groq
-    # 3. Server Gemini
+    # 2. Server Groq (daily-capped per IP)
+    # 3. Server Gemini (daily-capped per IP)
     
     failover_triggered = False
     failover_provider = None
     response_text = None
 
-    if provider == 'deepseek':
+    if not decrypted_key:
+        # No user key at all — this is the free tier, straight to our keys.
+        failover_triggered = True
+        failover_provider = 'server'
+        response_text = server_llm(history)
+
+    elif provider == 'deepseek':
         response_text, failed = call_deepseek_history(decrypted_key, system_prompt, history)
         if failed:
-            logging.warning("DeepSeek API failed. Triggering auto-failover to Groq (Tier 2)")
+            logging.warning("DeepSeek API failed. Triggering auto-failover to server keys")
             failover_triggered = True
             failover_provider = 'groq'
-            response_text = call_groq_history(system_prompt, history)
+            response_text = server_llm(history)
             if not response_text:
-                logging.warning("Groq backup failed. Triggering auto-failover to Gemini (Tier 3)")
                 failover_provider = 'gemini'
-                response_text = call_gemini_history(system_prompt, history)
     
     elif provider == 'groq':
         url = "https://api.groq.com/openai/v1/chat/completions"
@@ -1555,12 +1731,9 @@ def llm_proxy():
         
         if not response_text:
             logging.warning("User Groq failed. Triggering auto-failover to Server Groq")
-            response_text = call_groq_history(system_prompt, history)
-            if not response_text:
-                logging.warning("Server Groq failed. Triggering auto-failover to Server Gemini")
-                failover_triggered = True
-                failover_provider = 'gemini'
-                response_text = call_gemini_history(system_prompt, history)
+            failover_triggered = True
+            failover_provider = 'groq'
+            response_text = server_llm(history)
 
     elif provider == 'gemini':
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={decrypted_key}"
@@ -1580,14 +1753,16 @@ def llm_proxy():
             
         if not response_text:
             logging.warning("User Gemini failed. Triggering auto-failover to Server Gemini")
-            response_text = call_gemini_history(system_prompt, history)
-            if not response_text:
-                logging.warning("Server Gemini failed. Triggering auto-failover to Server Groq")
-                failover_triggered = True
-                failover_provider = 'groq'
-                response_text = call_groq_history(system_prompt, history)
+            failover_triggered = True
+            failover_provider = 'gemini'
+            response_text = server_llm(history)
 
     if not response_text:
+        if server_key_exhausted(client_ip):
+            return jsonify({
+                'error': "You've reached today's free assistant limit. Add your own API key in Settings "
+                         "to keep chatting, or try again tomorrow."
+            }), 429
         return jsonify({'error': 'All LLM failovers exhausted. API keys may be blocked or offline.'}), 502
 
     return jsonify({
@@ -1600,7 +1775,7 @@ def llm_proxy():
 @limiter.limit("5 per minute")
 def api_chat():
     try:
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         destination = data.get('destination', '').strip()
         days = data.get('days', '5').strip()
         currency = data.get('currency', 'USD').strip()
@@ -1634,13 +1809,13 @@ def api_chat():
 @app.route('/api/tripsync', methods=['POST'])
 @limiter.limit("5 per minute")
 def tripsync():
-    data = request.get_json()
-    query       = data.get('query', '').strip()
-    depart_city = data.get('departCity', data.get('departure', '')).strip()
-    currency    = data.get('currency', 'USD')
+    data = request.get_json(silent=True) or {}
+    query       = (data.get('query') or '').strip()
+    depart_city = (data.get('departCity') or data.get('departure') or '').strip()
+    currency    = data.get('currency') or 'USD'
     check_in    = data.get('checkIn', '')
     check_out   = data.get('checkOut', '')
-    guests      = data.get('guests', '2')
+    guests      = str(data.get('guests') or '1')
     budget      = data.get('budget', '')
     flight_class= data.get('flightClass', 'economy')
     hotel_rating= data.get('hotelRating', 'any')
@@ -1649,6 +1824,16 @@ def tripsync():
 
     if not query:
         return jsonify({'error': 'No query provided'}), 400
+
+    cache_key = search_cache_key(
+        query=query, depart=depart_city, currency=currency, ci=check_in, co=check_out,
+        guests=guests, budget=budget, flight_class=flight_class,
+        hotel_rating=hotel_rating, amenities=amenities, car_type=car_type)
+
+    cached = get_cached_search(cache_key)
+    if cached:
+        cached['cached'] = True
+        return jsonify(cached)
 
     prompt = build_prompt(query, depart_city, currency, check_in, check_out,
                          guests, budget, flight_class, hotel_rating, amenities, car_type)
@@ -1671,6 +1856,14 @@ def tripsync():
     if not result or "destinations" not in result:
         logging.warning("All AI providers unavailable, generating curated destinations fallback")
         result = get_curated_destinations_fallback(query, depart_city, currency, budget)
+        result["source"] = "curated"
+        result["pricing_note"] = ("These are curated suggestions, not live results. "
+                                  "Prices shown are typical ranges, not bookable fares.")
+    else:
+        result["source"] = "ai"
+        result["pricing_note"] = ("Prices and durations are AI estimates, not live fares. "
+                                  "Check the booking links for current prices.")
+    result["cached"] = False
 
     try:
         conn, is_pg = get_db_connection()
@@ -1684,17 +1877,22 @@ def tripsync():
     except Exception as e:
         logging.error(f"DB log error: {e}")
 
+    # Only cache real AI answers — caching a curated fallback would pin canned
+    # content to a query for hours after the provider recovered.
+    if result.get("source") == "ai":
+        cache_search(cache_key, result)
+
     return jsonify(result)
 
 @app.route('/api/tripsync-local', methods=['POST'])
 def tripsync_local():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     query       = data.get('query', '').strip()
     depart_city = data.get('departCity', data.get('departure', '')).strip()
     currency    = data.get('currency', 'USD')
     check_in    = data.get('checkIn', '')
     check_out   = data.get('checkOut', '')
-    guests      = data.get('guests', '2')
+    guests      = str(data.get('guests') or '1')
     budget      = data.get('budget', '')
     flight_class= data.get('flightClass', 'economy')
     hotel_rating= data.get('hotelRating', 'any')
@@ -1730,13 +1928,13 @@ def tripsync_local():
 
 @app.route('/api/tripsync-gemma', methods=['POST'])
 def tripsync_gemma():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     query       = data.get('query', '').strip()
     depart_city = data.get('departCity', data.get('departure', '')).strip()
     currency    = data.get('currency', 'USD')
     check_in    = data.get('checkIn', '')
     check_out   = data.get('checkOut', '')
-    guests      = data.get('guests', '2')
+    guests      = str(data.get('guests') or '1')
     budget      = data.get('budget', '')
     flight_class= data.get('flightClass', 'economy')
     hotel_rating= data.get('hotelRating', 'any')
@@ -1766,6 +1964,13 @@ def tripsync_gemma():
     if not result or "destinations" not in result:
         logging.warning("Gemma & Groq unavailable on /api/tripsync-gemma, using curated fallback")
         result = get_curated_destinations_fallback(query, depart_city, currency, budget)
+        result["source"] = "curated"
+        result["pricing_note"] = ("Curated suggestions, not live results. Prices are typical "
+                                  "ranges, not bookable fares.")
+    else:
+        result["source"] = "ai"
+        result["pricing_note"] = ("Prices and durations are AI estimates, not live fares. "
+                                  "Check the booking links for current prices.")
 
     try:
         conn, is_pg = get_db_connection()
@@ -1785,8 +1990,9 @@ def tripsync_gemma():
 
 # --- Multi-stop route planner ---
 @app.route('/api/multi-stop', methods=['POST'])
+@limiter.limit("5 per minute")
 def multi_stop():
-    data        = request.get_json()
+    data        = request.get_json(silent=True) or {}
     query       = data.get('query', '')
     depart_city = data.get('departCity', data.get('departure', '')).strip()
     currency    = data.get('currency', 'USD')
@@ -1947,7 +2153,7 @@ def build_curated_itinerary_fallback(destination, days=5, currency="USD"):
 @app.route('/api/generate-itinerary', methods=['POST'])
 @limiter.limit("5 per minute")
 def generate_itinerary():
-    data        = request.get_json() or {}
+    data        = request.get_json(silent=True) or {}
     destination = data.get('destination', '')
     days        = data.get('days', 5)
     preferences = data.get('preferences', '')
@@ -1973,7 +2179,7 @@ def generate_itinerary():
 @app.route('/api/generate-itinerary-local', methods=['POST'])
 @limiter.limit("10 per minute")
 def generate_itinerary_local():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     destination = data.get('destination', '')
     days = data.get('days', 5)
     currency = data.get('currency', 'USD')
@@ -1989,7 +2195,7 @@ def generate_itinerary_local():
 @app.route('/api/generate-itinerary-gemma', methods=['POST'])
 @limiter.limit("5 per minute")
 def generate_itinerary_gemma():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     destination = data.get('destination', '')
     days = data.get('days', 5)
     currency = data.get('currency', 'USD')
@@ -2012,7 +2218,7 @@ def generate_itinerary_gemma():
 @app.route('/api/refine-itinerary', methods=['POST'])
 @limiter.limit("5 per minute")
 def refine_itinerary():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     destination = data.get('destination', '')
     days = data.get('days', 5)
     currency = data.get('currency', 'USD')
@@ -2029,8 +2235,9 @@ def refine_itinerary():
 
 # --- Flight prices ---
 @app.route('/api/flight-prices', methods=['POST'])
+@limiter.limit("20 per minute")
 def get_flight_prices():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     origin = data.get('origin', '').strip()
     destination = data.get('destination', '').strip()
     dep_date = data.get('departureDate', '').strip() # YYYY-MM-DD
@@ -2064,8 +2271,9 @@ def get_flight_prices():
 
 # --- Click tracking ---
 @app.route('/api/track-click', methods=['POST'])
+@limiter.limit("60 per minute")
 def track_click():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     try:
         conn, is_pg = get_db_connection()
         c = conn.cursor()

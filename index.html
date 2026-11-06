@@ -464,6 +464,8 @@ textarea#tripInput::placeholder{color:var(--muted)}
 .results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem}
 .results-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700}
 .results-query{font-size:0.8rem;color:var(--muted);font-style:italic}
+.provenance{font-size:0.74rem;line-height:1.45;color:var(--muted);margin-top:0.45rem;max-width:620px;padding:0.4rem 0.6rem;border-left:3px solid var(--teal);background:rgba(26,107,107,0.06);border-radius:0 4px 4px 0}
+.provenance.curated{border-left-color:var(--rust);background:rgba(193,80,46,0.08);color:var(--ink)}
 .results-actions{display:flex;gap:0.5rem;flex-wrap:wrap}
 .btn-action{background:white;border:1.5px solid var(--sand);color:var(--ink);padding:0.32rem 0.75rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.74rem;font-weight:600;cursor:pointer;transition:all 0.2s}
 .btn-action:hover{border-color:var(--teal);color:var(--teal);background:var(--sky)}
@@ -835,7 +837,7 @@ footer a:hover{color:var(--rust-light)}
           <div class="field">
             <label for="departCity" class="depart-label">From</label>
             <div style="position: relative;">
-              <input type="text" class="from-inline" id="departCity" placeholder="City or airport (e.g. Toronto YYZ)" autocomplete="off" oninput="showAutocomplete('departCity', this.value)">
+              <input type="text" class="from-inline" id="departCity" placeholder="City or airport of departure" autocomplete="off" oninput="showAutocomplete('departCity', this.value)">
               <div id="departCityAutocomplete" class="autocomplete-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid var(--sand); border-radius: 8px; box-shadow: var(--shadow); max-height: 200px; overflow-y: auto; z-index: 100; margin-top: 4px;"></div>
             </div>
           </div>
@@ -878,7 +880,7 @@ footer a:hover{color:var(--rust-light)}
           </div>
           <div class="field">
             <label for="guests" class="depart-label">Guests</label>
-            <input type="number" class="param-input" id="guests" value="2" min="1" max="20">
+            <input type="number" class="param-input" id="guests" placeholder="1" min="1" max="20">
           </div>
           <div class="field">
             <label for="currency" class="depart-label">Currency</label>
@@ -1056,10 +1058,10 @@ footer a:hover{color:var(--rust-light)}
     &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; 
     <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp; 
     <a href="terms.html">Terms of Service</a> &nbsp;·&nbsp; 
-
+    <a href="affiliate.html">Partner Program</a>
   </div>
-  <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto">
-    
+  <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto;line-height:1.5">
+    <strong>Affiliate Disclosure:</strong> TripSync is a free travel tool. We may earn a commission if you book through our links. This helps us keep the lights on at no extra cost to you. AI-generated content — please verify all details before booking.
   </div>
 </footer>
 
@@ -1116,16 +1118,20 @@ const AFFILIATE={
    in one place. Skyscanner no longer supports /flights-from/.../to/..., and
    Tiqets 404s on /en/search/?q= (trailing slash) — keep both tested. */
 function citySlug(s){
-  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  /* "Cancun & Riviera Maya" must slug to `cancun`: Skyscanner has no
+     `cancun-riviera-maya` airport and returns an empty results page. Keep the
+     first segment before & , ( or / and slug only that. */
+  const first=String(s||'').split(/[&,(\/]/)[0];
+  return first.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'anywhere';
 }
 function yymmdd(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||'').trim());return m?m[1].slice(2)+m[2]+m[3]:'';}
 function skyscannerUrl(from,to,ci,co,guests){
   const a=citySlug(from), b=citySlug(to), d1=yymmdd(ci), d2=yymmdd(co);
   const dates=(d1&&d2)?`${d1}/${d2}/`:'';
-  return `https://www.skyscanner.net/transport/flights/${a}/${b}/${dates}?adults=${encodeURIComponent(guests||2)}`;
+  return `https://www.skyscanner.net/transport/flights/${a}/${b}/${dates}?adults=${encodeURIComponent(guests||1)}`;
 }
-function tiqetsUrl(city){ return 'https://www.tiqets.com/en/search?q=' + city; }
+function tiqetsUrl(city){ return 'https://www.tiqets.com/en/search?q=' + encodeURIComponent(city); }
 function viatorUrl(city){
   /* /search/<city> 302s and can drop pid; the results URL keeps attribution. */
   return 'https://www.viator.com/searchResults/all?text=' + encodeURIComponent(city) +
@@ -1230,9 +1236,6 @@ function init(){
       });
     }catch(e){}
   }
-  setDefaultDates();
-  const savedCity=localStorage.getItem('tripsync_depart_city');
-  if(savedCity)document.getElementById('departCity').value=savedCity;
   const savedCurrency=localStorage.getItem('tripsync_currency');
   if(savedCurrency)document.getElementById('currency').value=savedCurrency;
   
@@ -1280,17 +1283,19 @@ function setDefaultDates(){
 function resetFields(){
   describeManual=false;
   setTripType('roundtrip');
+  document.getElementById('departCity').value='';
   document.getElementById('destCity').value='';
   document.getElementById('tripInput').value='';
+  document.getElementById('checkIn').value='';
+  document.getElementById('checkOut').value='';
   document.getElementById('budget').value='';
-  document.getElementById('guests').value='2';
+  document.getElementById('guests').value='';
   document.getElementById('flightClass').value='economy';
   document.getElementById('flightPriority').value='cheapest';
   document.getElementById('hotelRating').value='any';
   document.getElementById('carType').value='none';
   selectedAmenities=[];
   document.querySelectorAll('.amenity-tag').forEach(tag=>tag.classList.remove('active'));
-  setDefaultDates();
   showWelcome();
 }
 
@@ -1428,7 +1433,7 @@ function selectProject(id){
     if(last.budget)document.getElementById('budget').value=last.budget;
     if(last.guests)document.getElementById('guests').value=last.guests;
     if(last.currency)document.getElementById('currency').value=last.currency;
-    renderResults(last.results,last.query,last.checkIn,last.checkOut,last.guests,last.departCity,last.currency);
+    renderResults(last.results,last.query,last.checkIn,last.checkOut,last.guests,last.departCity,last.currency,last.source);
   } else {
     resetFields();
   }
@@ -1516,7 +1521,7 @@ function restoreSearch(pid,query,timestamp){
   if(s.guests)document.getElementById('guests').value=s.guests;
   if(s.currency)document.getElementById('currency').value=s.currency;
   renderSidebar();updateLabel();
-  renderResults(s.results,s.query,s.checkIn,s.checkOut,s.guests,s.departCity,s.currency);
+  renderResults(s.results,s.query,s.checkIn,s.checkOut,s.guests,s.departCity,s.currency,s.source);
   
   // Also update header link explicitly
   if (s.results && s.results.length > 0) {
@@ -1527,8 +1532,15 @@ function restoreSearch(pid,query,timestamp){
 }
 
 function updateLabel(){
+  // #projectLabel was removed from the markup when the hero heading became a
+  // marketing line. The unguarded .textContent write threw a TypeError on the
+  // *first* search of every new visitor (no active project -> this path runs),
+  // which surfaced as "Something went wrong" instead of results. Keep the
+  // lookup defensive so a future markup change can never break the search flow.
+  const el=document.getElementById('projectLabel');
+  if(!el) return;
   const p=state.projects[state.activeProjectId];
-  document.getElementById('projectLabel').textContent=p?p.name.toUpperCase():'GENERAL SEARCH';
+  el.textContent=p?p.name.toUpperCase():'GENERAL SEARCH';
 }
 
 async function setExample(txt){
@@ -1562,26 +1574,18 @@ async function searchTrip(isRetry = false){
     if(!dest){document.getElementById('destCity').focus();showToast('Where do you want to go?');return;}
     const flexibleDepart = document.getElementById('flexibleDepart').checked;
     const flexibleReturn = document.getElementById('flexibleReturn').checked;
-    let ciVal, coVal, nights = 0;
-    if (!flexibleDepart) {
-      ciVal=document.getElementById('checkIn').value;
-      if(!ciVal){document.getElementById('checkIn').focus();showToast('Please select a departure date, or enable Flexible');return;}
-      if(!flexibleReturn) {
-        coVal=document.getElementById('checkOut').value;
-        if(!coVal){document.getElementById('checkOut').focus();showToast('Please select a return date, or enable Flexible');return;}
-        const diff=Math.round((new Date(coVal)-new Date(ciVal))/86400000);
-        if(diff>0&&diff<=60) nights=diff;
-      } else {
-        coVal='';
-      }
-    } else {
-      ciVal='';
-      if(!flexibleReturn) {
-        coVal=document.getElementById('checkOut').value;
-        if(!coVal){document.getElementById('checkOut').focus();showToast('Please select a return date, or enable Flexible');return;}
-      } else {
-        coVal='';
-      }
+    let ciVal = document.getElementById('checkIn').value;
+    let coVal = document.getElementById('checkOut').value;
+    let nights = 0;
+    if (flexibleDepart || !ciVal) {
+      ciVal = '';
+    }
+    if (flexibleReturn || !coVal) {
+      coVal = '';
+    }
+    if (ciVal && coVal) {
+      const diff=Math.round((new Date(coVal)-new Date(ciVal))/86400000);
+      if(diff>0&&diff<=60) nights=diff;
     }
     query=(nights?`${nights}-day trip to ${dest}`:`Trip to ${dest}`);
   }
@@ -1590,7 +1594,7 @@ async function searchTrip(isRetry = false){
   const flexibleReturn = document.getElementById('flexibleReturn').checked;
   const checkIn=document.getElementById('checkIn').value;
   const checkOut=document.getElementById('checkOut').value;
-  const guests=document.getElementById('guests').value||'2';
+  const guests=document.getElementById('guests').value.trim()||'1';
   const budget=document.getElementById('budget').value;
   const currency=document.getElementById('currency').value;
   const flightClass=document.getElementById('flightClass').value;
@@ -1633,7 +1637,7 @@ async function searchTrip(isRetry = false){
     }
     if(!data.destinations||!Array.isArray(data.destinations))throw new Error('No destinations returned. Try again.');
     lastResults=data.destinations;lastQuery=query;
-    const entry={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,hotelRating,timestamp:Date.now(),results:data.destinations};
+    const entry={query,departCity,checkIn,checkOut,guests,budget,currency,flightClass,hotelRating,timestamp:Date.now(),results:data.destinations,source:data.source};
     if(state.activeProjectId&&state.projects[state.activeProjectId]){
       const searches = state.projects[state.activeProjectId].searches;
       const existingIdx = searches.findIndex(s => s.query === query && s.departCity === departCity);
@@ -1648,7 +1652,7 @@ async function searchTrip(isRetry = false){
       state.activeProjectId=id;updateLabel();
     }
     save();renderSidebar();
-    renderResults(data.destinations,query,checkIn,checkOut,guests,departCity,currency);
+    renderResults(data.destinations,query,checkIn,checkOut,guests,departCity,currency,data.source);
   }catch(err){stopLoadingAnimations();showError(err.message);}
 }
 
@@ -1743,7 +1747,7 @@ function showError(msg){
     </div>`;
 }
 
-function renderResults(destinations,query,checkIn,checkOut,guests,departCity,currency){
+function renderResults(destinations,query,checkIn,checkOut,guests,departCity,currency,provenance){
   localStorage.setItem('tripsync_has_searched','1');
   if(deferredInstallPrompt && !localStorage.getItem('tripsync_install_dismissed'))
     document.getElementById('installBanner').classList.add('show');
@@ -1752,7 +1756,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
   document.getElementById('errorState').style.display='none';
   document.getElementById('searchBtn').disabled=false;
   const ranks=['BEST MATCH','GREAT PICK','WORTH IT'];
-  const ci=checkIn||'';const co=checkOut||'';const g=guests||'2';
+  const ci=checkIn||'';const co=checkOut||'';const g=guests||'1';
   const fromLabel=departCity?`from ${departCity}`:'';
   
   const tripType = document.getElementById('tripType').value;
@@ -1788,11 +1792,17 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
     const isOneWay=tripType==='oneway';
     const googleFlightsUrl=`https://www.google.com/travel/flights?q=Flights+${departCity?'from+'+encodeURIComponent(departCity)+'+':''}to+${encodeURIComponent(cityRaw)}${ci?'+on+'+ci:''}${isOneWay?'':'+returning+'+co}`;
     const isMissingOrigin = d.flight_estimate && d.flight_estimate.includes("Set origin");
-    const flightBlock=d.flight_estimate?`<div class="flight-block" style="${isMissingOrigin ? 'border-style:dashed; background:rgba(255,255,255,0.5)' : ''}">
+    /* Always render the flight block, even when the result carries no estimate.
+       Curated fallback cards deliberately have no fare (we refuse to invent one),
+       but this block is the DOM target that fetchFlightPriceRealTime() writes the
+       live Travelpayouts fare into. Making it conditional meant every curated
+       card silently skipped the live lookup and showed no airfare at all. */
+    const hasEstimate = !!d.flight_estimate;
+    const flightBlock=`<div class="flight-block" style="${isMissingOrigin ? 'border-style:dashed; background:rgba(255,255,255,0.5)' : ''}">
       <div class="flight-icon">✈️</div>
       <div class="flight-info">
-        <div class="flight-price" id="flight-price-${i}" style="${isMissingOrigin ? 'font-size:0.85rem; color:var(--muted)' : ''}">${d.flight_estimate}</div>
-        <div class="flight-detail" id="flight-detail-${i}">${d.flight_duration && !isMissingOrigin ? '~'+d.flight_duration+' travel time ' : ''}${fromLabel}</div>
+        <div class="flight-price" id="flight-price-${i}" style="${isMissingOrigin ? 'font-size:0.85rem; color:var(--muted)' : (hasEstimate ? '' : 'font-size:0.85rem; color:var(--muted)')}">${hasEstimate ? d.flight_estimate : 'Checking live fares…'}</div>
+        <div class="flight-detail" id="flight-detail-${i}">${hasEstimate && d.flight_duration && !isMissingOrigin ? '~'+d.flight_duration+' travel time ' : ''}${fromLabel}</div>
       </div>
       <a href="${isMissingOrigin ? '#tripInput' : googleFlightsUrl}" 
          target="${isMissingOrigin ? '_self' : '_blank'}" 
@@ -1802,7 +1812,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
          onclick="${isMissingOrigin ? "window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('departCity').focus(), 500); return false;" : `track('google_flights','${jsStr(cityRaw)}')`}">
          ${isMissingOrigin ? 'Add Origin' : 'Check fare'}
       </a>
-    </div>`:'';
+    </div>`;
     const cardText=`I found ${cityRaw}, ${d.country||''} on TripSync! ${d.flight_estimate?'Flights: '+d.flight_estimate+'.':''} Plan your trip free:`;
     const waUrl=`https://wa.me/?text=${encodeURIComponent(cardText+' '+SITE_URL)}`;
     const twUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(cardText)}&url=${encodeURIComponent(SITE_URL)}`;
@@ -1848,7 +1858,7 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
             </div>
             <div class="booking-label">Book Hotels (Best Price Guarantee)</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
-              <a href="${bookingUrl(city, ci, co, g, 'tripsync_results')}" target="_blank" class="booking-btn btn-booking" style="background:#003580;color:white;font-weight:700;flex:2;text-align:center;" onclick="track('booking','${jsStr(cityRaw)}')">🏨 Find Deals on Booking.com</a>
+              <a href="${bookingUrl(cityRaw, ci, co, g, 'tripsync_results')}" target="_blank" class="booking-btn btn-booking" style="background:#003580;color:white;font-weight:700;flex:2;text-align:center;" onclick="track('booking','${jsStr(cityRaw)}')">🏨 Find Deals on Booking.com</a>
             </div>
             <div class="booking-label">Book Tours & Activities</div>
             <div class="booking-links" style="margin-bottom:0.5rem">
@@ -1867,7 +1877,6 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
             </div>
           </div>
         </div>
-      </div>
     </div>`;
   }).join('');
 
@@ -1886,7 +1895,9 @@ function renderResults(destinations,query,checkIn,checkOut,guests,departCity,cur
       <div>
         <div class="results-title">Your matches</div>
         <div class="results-query">"${query.substring(0,60)}${query.length>60?'...':''}"</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Pick a card for the full plan. Prices are estimates — confirm the final rate on the partner site.</div>
+        ${provenance==='curated'
+          ? `<div class="provenance curated">📌 Curated suggestions — our AI was unavailable, so these are hand-picked ideas with typical price ranges, not live quotes.</div>`
+          : `<div class="provenance">💡 Prices and durations are AI estimates, not live fares — confirm the final rate on the partner site.</div>`}
       </div>
       <div class="results-actions">
         <button class="btn-action pdf" onclick="downloadPDF('${query.replace(/'/g,"\\'")}')">⬇ Download PDF</button>
@@ -1965,10 +1976,28 @@ async function fetchFlightPriceRealTime(idx, origin, destination, depDate, retDa
         elLink.style.background = "var(--rust)";
         elLink.style.borderColor = "var(--rust)";
         elLink.style.color = "white";
+      } else {
+        // Provider answered but had no fare for this route/date. Say so instead of
+        // leaving "Checking live fares…" spinning forever.
+        markFareUnavailable(elPrice, elDetail, origin, destination);
       }
+    } else {
+      markFareUnavailable(elPrice, elDetail, origin, destination);
     }
   } catch (e) {
-    console.warn("Unable to fetch real-time price, keeping AI estimate:", e);
+    console.warn("Unable to fetch real-time price:", e);
+    markFareUnavailable(elPrice, elDetail, origin, destination);
+  }
+}
+
+/* Honest dead-end state: no live fare, no invented number. */
+function markFareUnavailable(elPrice, elDetail, origin, destination) {
+  if (elPrice) {
+    elPrice.textContent = 'No live fare found';
+    elPrice.style.color = 'var(--muted)';
+  }
+  if (elDetail) {
+    elDetail.textContent = `${origin} → ${destination} · check current prices on Google Flights`;
   }
 }
 
@@ -2161,7 +2190,7 @@ function openPlanner(){
     const params=new URLSearchParams({
       destination:city,
       currency:document.getElementById('currency').value,
-      guests:document.getElementById('guests').value||'2',
+      guests:document.getElementById('guests').value.trim()||'1',
       ci:document.getElementById('checkIn').value,
       co:document.getElementById('checkOut').value,
       from:document.getElementById('departCity').value

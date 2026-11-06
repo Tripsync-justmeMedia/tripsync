@@ -1045,7 +1045,8 @@
   <div style="margin-bottom:1rem">
     &copy; 2026 TripSync by Just Me Media &nbsp;·&nbsp; 
     <a href="privacy.html" style="color:var(--sand);text-decoration:none">Privacy Policy</a> &nbsp;·&nbsp; 
-    <a href="terms.html" style="color:var(--sand);text-decoration:none">Terms of Service</a>
+    <a href="terms.html" style="color:var(--sand);text-decoration:none">Terms of Service</a> &nbsp;·&nbsp; 
+    <a href="affiliate.html" style="color:var(--sand);text-decoration:none">Partner Program</a>
   </div>
   <div style="font-size:0.65rem;opacity:0.6;max-width:600px;margin:0 auto;line-height:1.5">
     <strong>Affiliate Disclosure:</strong> TripSync is a free travel tool. We may earn a commission if you book through our links. This helps us keep the lights on at no extra cost to you. AI-generated content — please verify all details before booking.
@@ -1068,16 +1069,20 @@
      Booking.com has no /search.html (dead end); Tiqets 404s on /en/search/?q=
      and Skyscanner dropped /flights-from/.../to/... - all verified 2026-10-25. */
   function citySlug(v){
-    return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    /* "Cancun & Riviera Maya" must slug to `cancun`: Skyscanner has no
+       `cancun-riviera-maya` airport and returns an empty results page. Keep the
+       first segment before & , ( or / and slug only that. */
+    const first=String(v||'').split(/[&,(\/]/)[0];
+    return first.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
       .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'anywhere';
   }
   function yymmdd(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||'').trim());return m?m[1].slice(2)+m[2]+m[3]:'';}
   function skyscannerUrl(from,to,ci,co,guests){
     const a=citySlug(from), b=citySlug(to), d1=yymmdd(ci), d2=yymmdd(co);
     const dates=(d1&&d2)?`${d1}/${d2}/`:'';
-    return `https://www.skyscanner.net/transport/flights/${a}/${b}/${dates}?adults=${encodeURIComponent(guests||2)}`;
+    return `https://www.skyscanner.net/transport/flights/${a}/${b}/${dates}?adults=${encodeURIComponent(guests||1)}`;
   }
-  function tiqetsUrl(city){ return 'https://www.tiqets.com/en/search?q=' + city; }
+  function tiqetsUrl(city){ return 'https://www.tiqets.com/en/search?q=' + encodeURIComponent(city); }
   function viatorUrl(city){
     /* /search/<city> 302s and can drop pid; the results URL keeps attribution. */
     return 'https://www.viator.com/searchResults/all?text=' + encodeURIComponent(city) +
@@ -1123,7 +1128,7 @@
     const from = params.get('from') || '';
     const ci = params.get('ci') || '';
     const co = params.get('co') || '';
-    const guests = params.get('guests') || '2';
+    const guests = params.get('guests') || '1';
     const flightClass = params.get('flightClass') || 'economy';
     const hotelRating = params.get('hotelRating') || 'any';
     const budget = params.get('budget') || '';
@@ -1153,7 +1158,7 @@
             if(last.results && last.results.length > 0){
               const firstMatch = last.results[0];
               // Redirect or just re-run with this data
-              window.location.search = `?destination=${encodeURIComponent(firstMatch.city)}&currency=${last.currency||'USD'}&days=5&from=${encodeURIComponent(last.departCity||'')}&ci=${last.checkIn||''}&co=${last.checkOut||''}&guests=${last.guests||'2'}&flightClass=${encodeURIComponent(last.flightClass||'economy')}&hotelRating=${encodeURIComponent(last.hotelRating||'any')}&budget=${encodeURIComponent(last.budget||'')}`;
+              window.location.search = `?destination=${encodeURIComponent(firstMatch.city)}&currency=${last.currency||'USD'}&days=5&from=${encodeURIComponent(last.departCity||'')}&ci=${last.checkIn||''}&co=${last.checkOut||''}&guests=${last.guests||'1'}&flightClass=${encodeURIComponent(last.flightClass||'economy')}&hotelRating=${encodeURIComponent(last.hotelRating||'any')}&budget=${encodeURIComponent(last.budget||'')}`;
               return;
             }
           }
@@ -1367,7 +1372,7 @@
     }
   }
 
-  function render(data, destination, currency, ci = '', co = '', guests = '2', from = '', flightClass = 'economy'){
+  function render(data, destination, currency, ci = '', co = '', guests = '1', from = '', flightClass = 'economy'){
     document.getElementById('loadingOverlay').style.display = 'none';
     document.getElementById('content').style.display = 'block';
 
@@ -2067,11 +2072,13 @@
   }
 
   function changeAIMode(){
+    const sel = document.getElementById('aiModeSelect');
+    if (!sel) return;
     const labels = {
       cloud: '⚡ Switched to Fast Mode (instant ideas)',
       gemma: '✨ Switched to Deep Mode (curated reasoning)'
     };
-    const next = document.getElementById('aiModeSelect').value;
+    const next = sel.value;
     localStorage.setItem('tripsync_ai_mode', next);
     showToast(labels[next]);
   }

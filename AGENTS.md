@@ -104,6 +104,49 @@ TripSync generates detailed travel itineraries with pricing, booking links, and 
 - On mobile the marquee is moved to the end of the hero with `order: 10` so it never pushes
   the search form, CTA, or "Optional extras" down. Logos shrink to 16px at ≤640px.
 
+## API Contract & Trust Rules (learned the hard way)
+
+**Never present an AI guess as a price.** The model is asked for
+`flight_estimate` / `budget_per_day` / `match_score` in `build_prompt()`. Those are
+generated text, not data. Before caching existed, the *same* query sent twice returned
+Tokyo at `350-650 CAD`/day and then `150-250 CAD`/day, and swapped Osaka for Seoul.
+Every results response now carries a provenance contract:
+
+- `source` — `"ai"` (model answered) or `"curated"` (`get_curated_destinations_fallback()`).
+  The frontend renders a different notice for each; `curated` is the honest "AI was down" state.
+- `pricing_note` — human-readable disclaimer text, one per source.
+- `cached` — `true` when served from `search_cache`.
+
+**Only `source == "ai"` results are cached.** Caching a curated fallback would pin
+canned content to a query for `SEARCH_CACHE_TTL` (default 6h) after the provider recovered.
+
+**Live fares are real and separate.** `/api/flight-prices` returns `price` +
+`basis` (`exact` / `month` / `route`) from Travelpayouts. It needs `TRAVELPAYOUTS_TOKEN`
+on the host — without it, every call returns `price: null` and live pricing silently
+disappears. Do not let a `null` price fall through to a fabricated estimate without
+labelling it.
+
+**Error envelope.** Every `/api/*` failure returns JSON `{"error", "status"}` via the
+`_json_error` handlers (400/404/405/413/415/429/500). Flask's default HTML error pages
+were unparseable by the frontend. Always read bodies with `request.get_json(silent=True) or {}`
+— bare `get_json()` raises 415/500 on odd payloads, and `silent=True` alone returns `None`.
+
+**`/api/llm/proxy` is a relay onto our own keys — guard it.** The handler fails over
+from a user-supplied key to the server's Groq/Gemini. The obfuscation salt ships publicly
+in `static/js/encryption.js`, so a forged `encrypted_key` is trivial: verified live in
+production that a junk key returned a full Groq answer billed to us. `allow_server_key()`
+now caps server-key inference per IP per day (`SERVER_KEY_DAILY_LIMIT`, default 20) and
+prompt/history are length-capped. Never re-introduce an uncapped path onto server keys.
+
+**`/api/ping` is intentionally bare** (`status`, `timestamp`). It used to disclose
+`has_groq` / `has_gemini`, which told anyone probing the API where to aim. Detailed
+provider flags live on `/api/health`, which 404s unless `HEALTH_TOKEN` is set and supplied.
+
+**Rate limits are per-process (`memory://`) and reset on deploy.** Set
+`RATELIMIT_STORAGE_URI` (e.g. Redis) to make them real across instances. Every expensive
+route has a limit: `/api/tripsync*` 5/min, `/api/multi-stop` 5/min, `/api/llm/proxy` 10/min,
+`/api/flight-prices` 20/min, `/api/autocomplete` and `/api/track-click` 60/min.
+
 ## Dev Commands
 ```bash
 # Install deps
@@ -203,3 +246,5 @@ This rule was added because previous sessions wasted GitHub and Netlify rate lim
 | Travelpayouts | Marker 733310 / trs 533550 | Klook, Tiqets, Aviasales, AirHelp, KiwiTaxi, Welcome Pickups, GetRentACar |
 | Viator (Partnerize) | pid P00327306 / mcid 42383 | Active |
 | Netlify | William@lexsort.com | tripsync.ca frontend |
+| **Render** | **`promailer@justmemedia.ca`** | Backend `tripsync-nvss`. Deliberately a **separate** Render account from `wcommu@gmail.com` (sidesteps its free-hour limit) — that is why the service is not visible when logged in as William. Sign in at [dashboard.render.com](https://dashboard.render.com) with `promailer@justmemedia.ca` to edit env vars. |
+| UptimeRobot | wcommu@gmail.com | 5-min ping to `/api/ping` keeps the free Render instance awake |
